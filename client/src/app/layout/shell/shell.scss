@@ -1,0 +1,32 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.toolbar {
+  gap: 12px;
+  background: var(--mat-sys-surface-container);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.logo {
+  color: var(--mat-sys-primary);
+}
+
+.brand {
+  font: var(--mat-sys-title-large);
+}
+
+.container {
+  flex: 1;
+}
+
+.sidenav {
+  width: 240px;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+}
+
+.content {
+  padding: 24px;
+}

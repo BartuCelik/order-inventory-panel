@@ -1,0 +1,33 @@
+# ---------- Environment ----------
+.env
+*.env.local
+
+# ---------- .NET ----------
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.rsuser
+*.userprefs
+.vs/
+TestResults/
+*.trx
+*.nupkg
+appsettings.*.local.json
+
+# ---------- Node / Angular ----------
+node_modules/
+dist/
+.angular/
+coverage/
+npm-debug.log*
+yarn-error.log*
+
+# ---------- IDE / OS ----------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+.DS_Store
+Thumbs.db
