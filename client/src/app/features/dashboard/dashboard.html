@@ -2,7 +2,7 @@
   <h1>Dashboard</h1>
   <button mat-stroked-button (click)="refresh()" [disabled]="loading()">
     <mat-icon>refresh</mat-icon>
-    Yenile
+    Refresh
   </button>
 </header>
 
@@ -12,8 +12,8 @@
   }
 
   <mat-card-header>
-    <mat-card-title>Sistem durumu</mat-card-title>
-    <mat-card-subtitle>API ve bağımlılıklarının anlık sağlık kontrolü</mat-card-subtitle>
+    <mat-card-title>System status</mat-card-title>
+    <mat-card-subtitle>Live health check of the API and its dependencies</mat-card-subtitle>
   </mat-card-header>
 
   <mat-card-content>
@@ -22,13 +22,13 @@
         <span class="label">API</span>
         @switch (apiReachable()) {
           @case (true) {
-            <span class="status healthy"><mat-icon>check_circle</mat-icon>Erişilebilir</span>
+            <span class="status healthy"><mat-icon>check_circle</mat-icon>Reachable</span>
           }
           @case (false) {
-            <span class="status unhealthy"><mat-icon>error</mat-icon>Erişilemiyor</span>
+            <span class="status unhealthy"><mat-icon>error</mat-icon>Unreachable</span>
           }
           @default {
-            <span class="status">Kontrol ediliyor…</span>
+            <span class="status">Checking…</span>
           }
         }
       </li>

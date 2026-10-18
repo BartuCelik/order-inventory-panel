@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace SiparisStok.Infrastructure.Persistence;
+namespace OrderInventory.Infrastructure.Persistence;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

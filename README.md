@@ -1,49 +1,49 @@
-# Sipariş & Stok Paneli
+# Order & Inventory Panel
 
-KOBİ'ler için sipariş ve stok takibi yapan bir yönetim paneli. Angular ile yazılmış bir arayüz, .NET 10 ile katmanlı mimaride bir Web API ve SQL Server veritabanından oluşur.
+An admin panel for small and medium-sized businesses to manage orders and track inventory. It pairs an Angular front end with a .NET 10 Web API built on a layered (Clean Architecture) design, backed by SQL Server.
 
-> **Durum:** Proje iskeleti hazır. İş mantığı (ürünler, siparişler, stok hareketleri) henüz eklenmedi.
+> **Status:** Project scaffold is in place. Business features (products, orders, stock movements) are not implemented yet.
 
-## Teknolojiler
+## Tech stack
 
-| Katman      | Teknoloji                                                        |
-| ----------- | ---------------------------------------------------------------- |
-| Arayüz      | Angular 22 (standalone components, signals), Angular Material 3 |
-| API         | .NET 10 Web API, Entity Framework Core 10, OpenAPI               |
-| Veritabanı  | SQL Server 2022 (Docker)                                         |
+| Layer     | Technology                                                       |
+| --------- | ---------------------------------------------------------------- |
+| Front end | Angular 22 (standalone components, signals), Angular Material 3 |
+| API       | .NET 10 Web API, Entity Framework Core 10, OpenAPI               |
+| Database  | SQL Server 2022 (Docker)                                         |
 
-## Mimari
+## Architecture
 
 ```
-siparis-stok-paneli/
-├── api/                          .NET 10 solution (SiparisStok.slnx)
+order-inventory-panel/
+├── api/                             .NET 10 solution (OrderInventory.slnx)
 │   └── src/
-│       ├── SiparisStok.Domain          Entity'ler ve domain kuralları (bağımlılığı yok)
-│       ├── SiparisStok.Application     Use case'ler, arayüzler      → Domain
-│       ├── SiparisStok.Infrastructure  EF Core, DbContext, dış servisler → Application
-│       └── SiparisStok.Api             HTTP katmanı, DI kurulumu    → Application, Infrastructure
-├── client/                       Angular uygulaması
+│       ├── OrderInventory.Domain          Entities and domain rules (no dependencies)
+│       ├── OrderInventory.Application     Use cases and abstractions      → Domain
+│       ├── OrderInventory.Infrastructure  EF Core, DbContext, external services → Application
+│       └── OrderInventory.Api             HTTP layer and composition root → Application, Infrastructure
+├── client/                          Angular application
 │   └── src/app/
-│       ├── core/                       Uygulama genelindeki servisler (API, health)
-│       ├── layout/                     Uygulama kabuğu (toolbar, sidenav)
-│       └── features/                   Özellik modülleri (dashboard, ...)
-└── docker-compose.yml            SQL Server
+│       ├── core/                          App-wide services (API, health)
+│       ├── layout/                        App shell (toolbar, sidenav)
+│       └── features/                      Feature areas (dashboard, ...)
+└── docker-compose.yml               SQL Server
 ```
 
-Bağımlılıklar dıştan içe doğru gider (Clean Architecture). Domain hiçbir katmana bağlı değildir. Altyapıya özel kod (EF Core, SQL Server) yalnızca Infrastructure katmanında bulunur.
+Dependencies point inward. The Domain layer depends on nothing, and infrastructure concerns (EF Core, SQL Server) are confined to the Infrastructure layer.
 
-## Gereksinimler
+## Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Node.js 22+](https://nodejs.org/) ve npm
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows'ta WSL 2 ve BIOS'ta sanallaştırma açık olmalı)
+- [Node.js 22+](https://nodejs.org/) and npm
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (on Windows, WSL 2 and hardware virtualization must be enabled)
 
-## Çalıştırma
+## Getting started
 
-**1. Veritabanı**
+**1. Database**
 
 ```bash
-cp .env.example .env          # gerekirse parolayı değiştirin
+cp .env.example .env          # change the password if you like
 docker compose up -d
 ```
 
@@ -51,10 +51,10 @@ docker compose up -d
 
 ```bash
 cd api
-dotnet run --project src/SiparisStok.Api
+dotnet run --project src/OrderInventory.Api
 ```
 
-Development ortamında API açılırken veritabanı yoksa oluşturulur ve bekleyen EF Core migration'ları uygulanır.
+In the Development environment the API creates the database on startup if needed and applies any pending EF Core migrations.
 
 **3. Client** → http://localhost:4200
 
@@ -64,32 +64,32 @@ npm install
 npm start
 ```
 
-Client'tan `/api/*` adresine giden istekler, geliştirme ortamında `proxy.conf.json` üzerinden API'ye yönlendirilir.
+During development, requests from the client to `/api/*` are forwarded to the API by `proxy.conf.json`.
 
-> `.env` dosyasındaki parolayı değiştirirseniz `api/src/SiparisStok.Api/appsettings.Development.json` içindeki connection string'i de güncelleyin. Alternatif olarak user-secrets kullanabilirsiniz:
-> `dotnet user-secrets set "ConnectionStrings:Default" "<connection-string>" --project src/SiparisStok.Api`
+> If you change the password in `.env`, update the connection string in `api/src/OrderInventory.Api/appsettings.Development.json` as well, or override it with user secrets:
+> `dotnet user-secrets set "ConnectionStrings:Default" "<connection-string>" --project src/OrderInventory.Api`
 
-## Endpoint'ler
+## Endpoints
 
-| Endpoint                | Açıklama                                                    |
-| ----------------------- | ----------------------------------------------------------- |
-| `GET /health`           | Uygulama ve veritabanı bağlantısının durumu (sorun varsa 503) |
-| `GET /health/live`      | Uygulamanın ayakta olup olmadığı, dış bağımlılıklara bakmaz |
-| `GET /openapi/v1.json`  | OpenAPI dokümanı (yalnızca Development)                     |
+| Endpoint               | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| `GET /health`          | Status of the app and its database connection (503 if unhealthy) |
+| `GET /health/live`     | Liveness only; external dependencies are not checked         |
+| `GET /openapi/v1.json` | OpenAPI document (Development only)                          |
 
-## Portlar
+## Ports
 
-| Servis     | Port |
+| Service    | Port |
 | ---------- | ---- |
 | Client     | 4200 |
 | API        | 5080 |
 | SQL Server | 1433 |
 
-## Yol haritası
+## Roadmap
 
-- [ ] Ürün ve kategori yönetimi
-- [ ] Stok hareketleri (giriş / çıkış / sayım)
-- [ ] Sipariş yönetimi ve durum akışı
-- [ ] Kritik stok uyarıları
-- [ ] Kimlik doğrulama ve yetkilendirme
-- [ ] Testler ve CI
+- [ ] Product and category management
+- [ ] Stock movements (receiving / dispatch / stock count)
+- [ ] Order management and status workflow
+- [ ] Low-stock alerts
+- [ ] Authentication and authorization
+- [ ] Tests and CI

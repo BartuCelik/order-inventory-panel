@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace SiparisStok.Api.HealthChecks;
+namespace OrderInventory.Api.HealthChecks;
 
 public static class HealthCheckEndpoints
 {
@@ -10,13 +10,13 @@ public static class HealthCheckEndpoints
 
     public static IEndpointRouteBuilder MapHealthCheckEndpoints(this IEndpointRouteBuilder app)
     {
-        // Tüm bağımlılıkları (veritabanı vb.) kontrol eder.
+        // Checks every dependency (database, etc.).
         app.MapHealthChecks("/health", new HealthCheckOptions
         {
             ResponseWriter = WriteResponseAsync,
         });
 
-        // Sadece uygulamanın ayakta olduğunu doğrular, dış bağımlılıklara bakmaz.
+        // Only confirms the app is running; external dependencies are not checked.
         app.MapHealthChecks("/health/live", new HealthCheckOptions
         {
             Predicate = _ => false,

@@ -1,7 +1,7 @@
-using SiparisStok.Api.HealthChecks;
-using SiparisStok.Application;
-using SiparisStok.Infrastructure;
-using SiparisStok.Infrastructure.Persistence;
+using OrderInventory.Api.HealthChecks;
+using OrderInventory.Application;
+using OrderInventory.Infrastructure;
+using OrderInventory.Infrastructure.Persistence;
 
 const string ClientCorsPolicy = "Client";
 

@@ -1,10 +1,10 @@
 @baseUrl = http://localhost:5080
 
-### Tüm kontroller (veritabanı dahil)
+### Full health check (including database)
 GET {{baseUrl}}/health
 
-### Liveness (sadece uygulama)
+### Liveness (app only)
 GET {{baseUrl}}/health/live
 
-### OpenAPI dokümanı
+### OpenAPI document
 GET {{baseUrl}}/openapi/v1.json

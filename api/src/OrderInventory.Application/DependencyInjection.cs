@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SiparisStok.Application;
+namespace OrderInventory.Application;
 
 public static class DependencyInjection
 {
     /// <summary>
-    /// Use case'ler, validator'lar ve uygulama servisleri burada kaydedilir.
+    /// Registers use cases, validators and application services.
     /// </summary>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {

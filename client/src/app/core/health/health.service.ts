@@ -23,8 +23,8 @@ export class HealthService {
   private readonly http = inject(HttpClient);
 
   /**
-   * API'nin /health endpoint'ini çağırır. Bir bağımlılık çalışmadığında API 503 döner
-   * ama gövdede yine rapor bulunur. API'ye hiç ulaşılamıyorsa null döner.
+   * Calls the API's /health endpoint. When a dependency is down the API returns 503
+   * but still includes the report in the body. Returns null if the API is unreachable.
    */
   check(): Observable<HealthReport | null> {
     return this.http.get<HealthReport>(`${API_BASE_URL}/health`).pipe(

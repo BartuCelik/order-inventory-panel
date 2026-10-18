@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\SiparisStok.Domain\SiparisStok.Domain.csproj" />
+    <ProjectReference Include="..\OrderInventory.Domain\OrderInventory.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

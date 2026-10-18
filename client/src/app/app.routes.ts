@@ -9,7 +9,7 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
-        title: 'Dashboard · Sipariş & Stok',
+        title: 'Dashboard · Order & Inventory',
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
     ],

@@ -1,12 +1,12 @@
-name: siparis-stok
+name: order-inventory
 
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: siparis-stok-db
+    container_name: order-inventory-db
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?MSSQL_SA_PASSWORD .env dosyasında tanımlanmalı}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?MSSQL_SA_PASSWORD must be set in the .env file}
       MSSQL_PID: Developer
     ports:
       - "${MSSQL_PORT:-1433}:1433"

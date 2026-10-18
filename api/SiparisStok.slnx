@@ -1,8 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/SiparisStok.Api/SiparisStok.Api.csproj" />
-    <Project Path="src/SiparisStok.Application/SiparisStok.Application.csproj" />
-    <Project Path="src/SiparisStok.Domain/SiparisStok.Domain.csproj" />
-    <Project Path="src/SiparisStok.Infrastructure/SiparisStok.Infrastructure.csproj" />
-  </Folder>
-</Solution>

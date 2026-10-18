@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SiparisStok.Infrastructure.Persistence;
+namespace OrderInventory.Infrastructure.Persistence;
 
 public static class DatabaseMigrator
 {
     /// <summary>
-    /// Veritabanı yoksa oluşturur ve bekleyen migration'ları uygular.
-    /// Yalnızca geliştirme ortamında kullanılmalıdır.
+    /// Creates the database if it does not exist and applies pending migrations.
+    /// Intended for development only.
     /// </summary>
     public static async Task MigrateDatabaseAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
     {
