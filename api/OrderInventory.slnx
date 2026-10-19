@@ -5,4 +5,8 @@
     <Project Path="src/OrderInventory.Domain/OrderInventory.Domain.csproj" />
     <Project Path="src/OrderInventory.Infrastructure/OrderInventory.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OrderInventory.IntegrationTests/OrderInventory.IntegrationTests.csproj" />
+    <Project Path="tests/OrderInventory.UnitTests/OrderInventory.UnitTests.csproj" />
+  </Folder>
 </Solution>

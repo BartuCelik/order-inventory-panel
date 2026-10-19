@@ -17,11 +17,14 @@ An admin panel for small and medium-sized businesses to manage orders and track 
 ```
 order-inventory-panel/
 ├── api/                             .NET 10 solution (OrderInventory.slnx)
-│   └── src/
-│       ├── OrderInventory.Domain          Entities and domain rules (no dependencies)
-│       ├── OrderInventory.Application     Use cases and abstractions      → Domain
-│       ├── OrderInventory.Infrastructure  EF Core, DbContext, external services → Application
-│       └── OrderInventory.Api             HTTP layer and composition root → Application, Infrastructure
+│   ├── src/
+│   │   ├── OrderInventory.Domain          Entities and domain rules (no dependencies)
+│   │   ├── OrderInventory.Application     Use cases and abstractions      → Domain
+│   │   ├── OrderInventory.Infrastructure  EF Core, DbContext, external services → Application
+│   │   └── OrderInventory.Api             HTTP layer and composition root → Application, Infrastructure
+│   └── tests/
+│       ├── OrderInventory.UnitTests         Pure domain/application logic
+│       └── OrderInventory.IntegrationTests  Real PostgreSQL via Testcontainers
 ├── client/                          Angular application
 │   └── src/app/
 │       ├── core/                          App-wide services (API, health)
@@ -66,6 +69,15 @@ npm start
 
 During development, requests from the client to `/api/*` are forwarded to the API by `proxy.conf.json`.
 
+**4. Tests**
+
+```bash
+cd api
+dotnet test
+```
+
+Integration tests start a throwaway PostgreSQL container through Testcontainers, so Docker must be running.
+
 > If you change the credentials in `.env`, update the connection string in `api/src/OrderInventory.Api/appsettings.Development.json` as well, or override it with user secrets:
 > `dotnet user-secrets set "ConnectionStrings:Default" "<connection-string>" --project src/OrderInventory.Api`
 
@@ -92,4 +104,4 @@ During development, requests from the client to `/api/*` are forwarded to the AP
 - [ ] Order management and status workflow
 - [ ] Low-stock alerts
 - [ ] Authentication and authorization
-- [ ] Tests and CI
+- [ ] CI

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- No tests yet: don't fail on exit code 8 ("zero tests ran"). Remove once the first unit tests land (Phase 2). -->
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OrderInventory.Domain\OrderInventory.Domain.csproj" />
+    <ProjectReference Include="..\..\src\OrderInventory.Application\OrderInventory.Application.csproj" />
+  </ItemGroup>
+
+</Project>
