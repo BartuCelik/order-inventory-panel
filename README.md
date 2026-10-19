@@ -1,6 +1,6 @@
 # Order & Inventory Panel
 
-An admin panel for small and medium-sized businesses to manage orders and track inventory. It pairs an Angular front end with a .NET 10 Web API built on a layered (Clean Architecture) design, backed by SQL Server.
+An admin panel for small and medium-sized businesses to manage orders and track inventory. It pairs an Angular front end with a .NET 10 Web API built on a layered (Clean Architecture) design, backed by PostgreSQL.
 
 > **Status:** Project scaffold is in place. Business features (products, orders, stock movements) are not implemented yet.
 
@@ -10,7 +10,7 @@ An admin panel for small and medium-sized businesses to manage orders and track 
 | --------- | ---------------------------------------------------------------- |
 | Front end | Angular 22 (standalone components, signals), Angular Material 3 |
 | API       | .NET 10 Web API, Entity Framework Core 10, OpenAPI               |
-| Database  | SQL Server 2022 (Docker)                                         |
+| Database  | PostgreSQL 18 (Docker), Npgsql EF Core provider                  |
 
 ## Architecture
 
@@ -27,10 +27,10 @@ order-inventory-panel/
 │       ├── core/                          App-wide services (API, health)
 │       ├── layout/                        App shell (toolbar, sidenav)
 │       └── features/                      Feature areas (dashboard, ...)
-└── docker-compose.yml               SQL Server
+└── docker-compose.yml               PostgreSQL
 ```
 
-Dependencies point inward. The Domain layer depends on nothing, and infrastructure concerns (EF Core, SQL Server) are confined to the Infrastructure layer.
+Dependencies point inward. The Domain layer depends on nothing, and infrastructure concerns (EF Core, PostgreSQL) are confined to the Infrastructure layer.
 
 ## Prerequisites
 
@@ -43,7 +43,7 @@ Dependencies point inward. The Domain layer depends on nothing, and infrastructu
 **1. Database**
 
 ```bash
-cp .env.example .env          # change the password if you like
+cp .env.example .env          # change the credentials if you like
 docker compose up -d
 ```
 
@@ -66,7 +66,7 @@ npm start
 
 During development, requests from the client to `/api/*` are forwarded to the API by `proxy.conf.json`.
 
-> If you change the password in `.env`, update the connection string in `api/src/OrderInventory.Api/appsettings.Development.json` as well, or override it with user secrets:
+> If you change the credentials in `.env`, update the connection string in `api/src/OrderInventory.Api/appsettings.Development.json` as well, or override it with user secrets:
 > `dotnet user-secrets set "ConnectionStrings:Default" "<connection-string>" --project src/OrderInventory.Api`
 
 ## Endpoints
@@ -83,7 +83,7 @@ During development, requests from the client to `/api/*` are forwarded to the AP
 | ---------- | ---- |
 | Client     | 4200 |
 | API        | 5080 |
-| SQL Server | 1433 |
+| PostgreSQL | 5432 |
 
 ## Roadmap
 

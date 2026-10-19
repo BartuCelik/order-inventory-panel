@@ -2,23 +2,24 @@ name: order-inventory
 
 services:
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:18-alpine
     container_name: order-inventory-db
     environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?MSSQL_SA_PASSWORD must be set in the .env file}
-      MSSQL_PID: Developer
+      POSTGRES_DB: ${POSTGRES_DB:-order_inventory}
+      POSTGRES_USER: ${POSTGRES_USER:-order_inventory}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in the .env file}
     ports:
-      - "${MSSQL_PORT:-1433}:1433"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - mssql-data:/var/opt/mssql
+      # PostgreSQL 18+ images keep data under /var/lib/postgresql/<major>/docker.
+      - postgres-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      start_period: 10s
     restart: unless-stopped
 
 volumes:
-  mssql-data:
+  postgres-data:

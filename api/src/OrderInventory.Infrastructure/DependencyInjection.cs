@@ -12,7 +12,7 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("Connection string 'ConnectionStrings:Default' is not configured.");
 
-        services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddHealthChecks()
             .AddDbContextCheck<AppDbContext>(name: "database", tags: ["ready"]);
