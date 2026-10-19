@@ -15,4 +15,13 @@ public sealed class DatabaseSmokeTests(PostgresFixture postgres) : IClassFixture
 
         Assert.True(await dbContext.Database.CanConnectAsync(cancellationToken));
     }
+
+    [Fact]
+    public void Model_HasNoChangesMissingFromMigrations()
+    {
+        using var dbContext = postgres.CreateDbContext();
+
+        // Fails when an entity or configuration changed without `dotnet ef migrations add`.
+        Assert.False(dbContext.Database.HasPendingModelChanges());
+    }
 }

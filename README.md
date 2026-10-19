@@ -78,6 +78,18 @@ dotnet test
 
 Integration tests start a throwaway PostgreSQL container through Testcontainers, so Docker must be running.
 
+**5. Database migrations**
+
+`dotnet-ef` is pinned as a local tool in `api/dotnet-tools.json`. After changing an entity or its configuration:
+
+```bash
+cd api
+dotnet tool restore
+dotnet ef migrations add <Name> -p src/OrderInventory.Infrastructure -s src/OrderInventory.Api -o Persistence/Migrations
+```
+
+A test fails if the model has changes that no migration covers.
+
 > If you change the credentials in `.env`, update the connection string in `api/src/OrderInventory.Api/appsettings.Development.json` as well, or override it with user secrets:
 > `dotnet user-secrets set "ConnectionStrings:Default" "<connection-string>" --project src/OrderInventory.Api`
 
