@@ -13,8 +13,12 @@ public sealed class PostgresFixture : IAsyncLifetime
 
     public string ConnectionString => _container.GetConnectionString();
 
-    public AppDbContext CreateDbContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(ConnectionString).Options);
+    public AppDbContext CreateDbContext()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>();
+        options.UseAppDatabase(ConnectionString);
+        return new AppDbContext(options.Options);
+    }
 
     public async ValueTask InitializeAsync() => await _container.StartAsync();
 

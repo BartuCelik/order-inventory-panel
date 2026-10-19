@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderInventory.Application.Abstractions;
 using OrderInventory.Infrastructure.Persistence;
 
 namespace OrderInventory.Infrastructure;
@@ -12,7 +13,8 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("Connection string 'ConnectionStrings:Default' is not configured.");
 
-        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<AppDbContext>(options => options.UseAppDatabase(connectionString));
+        services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         services.AddHealthChecks()
             .AddDbContextCheck<AppDbContext>(name: "database", tags: ["ready"]);
