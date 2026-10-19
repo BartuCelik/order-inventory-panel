@@ -2,6 +2,7 @@ using OrderInventory.Api.HealthChecks;
 using OrderInventory.Application;
 using OrderInventory.Infrastructure;
 using OrderInventory.Infrastructure.Persistence;
+using OrderInventory.Infrastructure.Persistence.Seeding;
 
 const string ClientCorsPolicy = "Client";
 
@@ -29,6 +30,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     await app.Services.MigrateDatabaseAsync();
+    await app.Services.SeedDemoDataAsync();
 }
 
 app.UseCors(ClientCorsPolicy);

@@ -15,6 +15,7 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options => options.UseAppDatabase(connectionString));
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+        services.AddSingleton(TimeProvider.System);
 
         services.AddHealthChecks()
             .AddDbContextCheck<AppDbContext>(name: "database", tags: ["ready"]);
