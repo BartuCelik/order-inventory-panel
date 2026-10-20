@@ -1,0 +1,45 @@
+# Render Blueprint for the live demo (free plan). PostgreSQL is hosted on Neon, not Render.
+services:
+  - type: web
+    name: order-inventory-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerContext: ./api
+    dockerfilePath: ./api/Dockerfile
+    # Liveness only: a slow database wake-up should not make Render restart the API.
+    healthCheckPath: /health/live
+    buildFilter:
+      paths:
+        - api/src/**
+        - api/Dockerfile
+        - api/Directory.Build.props
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: ConnectionStrings__Default
+        sync: false
+      - key: Database__MigrateOnStartup
+        value: "true"
+      - key: Database__SeedDemoData
+        value: "true"
+
+  - type: web
+    name: order-inventory-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist/client/browser
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+    routes:
+      # Same-origin proxy to the API, mirroring proxy.conf.json in development (no CORS needed).
+      # If the API service gets a different onrender.com URL, update this destination.
+      - type: rewrite
+        source: /api/*
+        destination: https://order-inventory-api.onrender.com/*
+      # Angular client-side routing: unknown paths serve the app shell.
+      - type: rewrite
+        source: /*
+        destination: /index.html
