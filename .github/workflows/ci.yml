@@ -34,6 +34,10 @@ jobs:
       - name: Test
         run: dotnet test --solution OrderInventory.slnx --configuration Release --no-build
 
+      # Same image the demo host deploys; catches a broken Dockerfile before it reaches deploy.
+      - name: Build Docker image
+        run: docker build --tag order-inventory-api .
+
   client:
     name: Client build
     runs-on: ubuntu-latest
