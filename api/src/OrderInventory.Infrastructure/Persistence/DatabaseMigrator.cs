@@ -7,7 +7,7 @@ public static class DatabaseMigrator
 {
     /// <summary>
     /// Creates the database if it does not exist and applies pending migrations.
-    /// Intended for development only.
+    /// Only safe when a single API instance runs (local development and the demo host).
     /// </summary>
     public static async Task MigrateDatabaseAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
     {

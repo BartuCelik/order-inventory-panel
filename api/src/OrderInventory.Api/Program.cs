@@ -29,7 +29,17 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+// Startup migration is safe while the API runs as a single instance (local dev and the demo host).
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
     await app.Services.MigrateDatabaseAsync();
+}
+
+// The seeder writes nothing when the database already has data, so it can run on every start.
+if (app.Configuration.GetValue<bool>("Database:SeedDemoData"))
+{
     await app.Services.SeedDemoDataAsync();
 }
 
