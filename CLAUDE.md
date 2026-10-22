@@ -156,4 +156,5 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
 ## Current status
 
 - [x] Scaffold: .NET 10 layered solution, health checks, Angular 22 + Material shell, Docker Compose
-- [ ] Phase 1 in progress — done: PostgreSQL, test projects, entities + EF configs + initial migration, furniture workshop seed (no users until Phase 3 auth), GitHub Actions CI; next: live deploy of the skeleton
+- [x] Phase 1 — Foundation: PostgreSQL, test projects, entities + EF configs + initial migration, furniture workshop seed (no users until Phase 3 auth), GitHub Actions CI, live demo on Render (API + static client) with PostgreSQL on Neon
+- [ ] Phase 2 in progress — next: BOM explosion and cycle check (tests first)
