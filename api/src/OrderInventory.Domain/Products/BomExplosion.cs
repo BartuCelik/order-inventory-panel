@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace OrderInventory.Domain.Products;
 
 /// <summary>
@@ -12,6 +14,53 @@ public static class BomExplosion
     /// </summary>
     public static IReadOnlyDictionary<int, decimal> Explode(int productId, decimal quantity, IEnumerable<BomLine> bomLines)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(bomLines);
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(quantity),
+                string.Format(CultureInfo.InvariantCulture, "Quantity must be greater than zero, was {0}.", quantity));
+        }
+
+        var linesByParent = bomLines.ToLookup(l => l.ParentProductId);
+        var need = new Dictionary<int, decimal>();
+
+        // Only the ancestors of the current node, not every node seen so far: a shared subassembly
+        // reached through two branches is valid and must be counted on each path.
+        var path = new HashSet<int>();
+        Visit(productId, quantity, linesByParent, path, need);
+        return need;
+    }
+
+    private static void Visit(
+        int productId, decimal multiplier, ILookup<int, BomLine> linesByParent, HashSet<int> path, Dictionary<int, decimal> need)
+    {
+        path.Add(productId);
+
+        foreach (var line in linesByParent[productId])
+        {
+            var componentId = line.ComponentProductId;
+            var componentNeed = multiplier * line.QtyPerUnit;
+
+            if (path.Contains(componentId))
+            {
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "The bill of materials contains a cycle: product {0} is a component of itself (via product {1}).",
+                    componentId,
+                    productId));
+            }
+
+            if (linesByParent.Contains(componentId))
+            {
+                Visit(componentId, componentNeed, linesByParent, path, need);
+            }
+            else
+            {
+                need[componentId] = need.GetValueOrDefault(componentId) + componentNeed;
+            }
+        }
+
+        path.Remove(productId);
     }
 }
