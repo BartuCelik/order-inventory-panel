@@ -2,7 +2,9 @@
 
 An admin panel for small and medium-sized businesses to manage orders and track inventory. It pairs an Angular front end with a .NET 10 Web API built on a layered (Clean Architecture) design, backed by PostgreSQL.
 
-> **Status:** Project scaffold is in place. Business features (products, orders, stock movements) are not implemented yet.
+> **Live demo:** https://order-inventory-client.onrender.com (free hosting; the first load after a quiet period can take up to a minute)
+>
+> **Status:** Foundation and live deploy are done; BOM explosion and cycle check are implemented and tested. Product, stock, order and work-order screens are in progress.
 
 ## Tech stack
 
