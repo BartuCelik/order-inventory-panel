@@ -35,10 +35,11 @@ services:
         value: "24"
     routes:
       # Same-origin proxy to the API, mirroring proxy.conf.json in development (no CORS needed).
-      # If the API service gets a different onrender.com URL, update this destination.
+      # Render appended a suffix to the API's onrender.com name (the plain one was taken).
+      # If the API service is ever recreated, check its URL and update this destination.
       - type: rewrite
         source: /api/*
-        destination: https://order-inventory-api.onrender.com/*
+        destination: https://order-inventory-api-wjwq.onrender.com/*
       # Angular client-side routing: unknown paths serve the app shell.
       - type: rewrite
         source: /*
