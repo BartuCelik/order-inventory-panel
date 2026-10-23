@@ -9,6 +9,9 @@ namespace OrderInventory.Application.Products;
 /// <summary>Product use cases: list, read, create, update and BOM explosion.</summary>
 public sealed class ProductService(IAppDbContext db)
 {
+    // Passed explicitly: without an escape argument Npgsql emits ESCAPE '', which turns escaping off.
+    private const string LikeEscape = @"\";
+
     public async Task<PagedResult<ProductListItem>> ListAsync(ProductListQuery query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
@@ -27,7 +30,8 @@ public sealed class ProductService(IAppDbContext db)
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var pattern = $"%{EscapeLikePattern(query.Search.Trim())}%";
-            products = products.Where(p => EF.Functions.ILike(p.Code, pattern) || EF.Functions.ILike(p.Name, pattern));
+            products = products.Where(p =>
+                EF.Functions.ILike(p.Code, pattern, LikeEscape) || EF.Functions.ILike(p.Name, pattern, LikeEscape));
         }
 
         var totalCount = await products.CountAsync(cancellationToken);
@@ -189,7 +193,7 @@ public sealed class ProductService(IAppDbContext db)
         }
     }
 
-    /// <summary>Makes <c>%</c>, <c>_</c> and <c>\</c> in user input match literally (backslash is PostgreSQL's default LIKE escape).</summary>
+    /// <summary>Makes <c>%</c>, <c>_</c> and <c>\</c> in user input match literally, using <see cref="LikeEscape"/>.</summary>
     private static string EscapeLikePattern(string text) =>
         text.Replace(@"\", @"\\", StringComparison.Ordinal)
             .Replace("%", @"\%", StringComparison.Ordinal)
