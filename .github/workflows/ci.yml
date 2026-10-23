@@ -32,7 +32,28 @@ jobs:
 
       # Integration tests use Testcontainers; ubuntu-latest runners ship with Docker.
       - name: Test
-        run: dotnet test --solution OrderInventory.slnx --configuration Release --no-build
+        run: dotnet test --solution OrderInventory.slnx --configuration Release --no-build --report-xunit-trx
+
+      # Turns each failed test into an annotation, so failures show on the PR without opening the log.
+      - name: Annotate failed tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import glob
+          import xml.etree.ElementTree as ET
+
+          ns = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}"
+          for path in glob.glob("**/*.trx", recursive=True):
+              for result in ET.parse(path).getroot().iter(ns + "UnitTestResult"):
+                  if result.get("outcome") != "Failed":
+                      continue
+                  message = result.find(f".//{ns}Message")
+                  stack = result.find(f".//{ns}StackTrace")
+                  text = "\n".join(t.text.strip() for t in (message, stack) if t is not None and t.text)
+                  text = text[:3000].replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+                  title = result.get("testName", "test").replace("%", "%25").replace(",", "%2C").replace(":", "%3A")
+                  print(f"::error title={title}::{text}")
+          PY
 
       # Same image the demo host deploys; catches a broken Dockerfile before it reaches deploy.
       - name: Build Docker image
