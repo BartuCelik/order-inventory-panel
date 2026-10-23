@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using OrderInventory.Api.ErrorHandling;
 using OrderInventory.Api.HealthChecks;
 using OrderInventory.Application;
 using OrderInventory.Infrastructure;
@@ -12,7 +14,11 @@ builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
 
-builder.Services.AddControllers();
+// Enums travel as names ("Finished", "Meter"); numbers are rejected so a typo cannot become a valid value.
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)));
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ApplicationExceptionHandler>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
@@ -43,6 +49,7 @@ if (app.Configuration.GetValue<bool>("Database:SeedDemoData"))
     await app.Services.SeedDemoDataAsync();
 }
 
+app.UseExceptionHandler();
 app.UseCors(ClientCorsPolicy);
 app.UseAuthorization();
 
