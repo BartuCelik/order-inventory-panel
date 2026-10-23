@@ -14,6 +14,32 @@ public static class BomLineRules
     public static BomLineViolation? CheckNewLine(
         Product parent, int componentProductId, decimal qtyPerUnit, IEnumerable<BomLine> existingLines)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(parent);
+        ArgumentNullException.ThrowIfNull(existingLines);
+
+        if (parent.Type == ProductType.RawMaterial)
+        {
+            return BomLineViolation.ParentIsRawMaterial;
+        }
+
+        if (qtyPerUnit <= 0)
+        {
+            return BomLineViolation.QtyPerUnitNotPositive;
+        }
+
+        // Materialised once: the duplicate check and the cycle check both walk the lines.
+        var lines = existingLines as IReadOnlyCollection<BomLine> ?? existingLines.ToList();
+
+        if (lines.Any(l => l.ParentProductId == parent.Id && l.ComponentProductId == componentProductId))
+        {
+            return BomLineViolation.DuplicateComponent;
+        }
+
+        if (BomCycleCheck.WouldCreateCycle(parent.Id, componentProductId, lines))
+        {
+            return BomLineViolation.WouldCreateCycle;
+        }
+
+        return null;
     }
 }
