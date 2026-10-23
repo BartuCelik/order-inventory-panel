@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.13" />
+    <!-- The services are PostgreSQL-specific on purpose: ILIKE for search, advisory and row locks
+         (pg_advisory_xact_lock, SELECT ... FOR UPDATE) for the rules that need serialised writes. -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
   </ItemGroup>
 
 </Project>

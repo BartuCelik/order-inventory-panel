@@ -20,6 +20,22 @@ public sealed class PostgresFixture : IAsyncLifetime
         return new AppDbContext(options.Options);
     }
 
+    /// <summary>A context on a database that has the current schema; migrates on first use.</summary>
+    /// <remarks>No locking needed: xUnit runs the tests of one class (one fixture instance) one at a time.</remarks>
+    public async Task<AppDbContext> CreateMigratedDbContextAsync(CancellationToken cancellationToken)
+    {
+        var dbContext = CreateDbContext();
+        if (!_migrated)
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+            _migrated = true;
+        }
+
+        return dbContext;
+    }
+
+    private bool _migrated;
+
     public async ValueTask InitializeAsync() => await _container.StartAsync();
 
     public async ValueTask DisposeAsync() => await _container.DisposeAsync();
