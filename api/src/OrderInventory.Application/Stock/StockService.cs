@@ -9,7 +9,7 @@ namespace OrderInventory.Application.Stock;
 /// <summary>Manual stock movements (receipt, issue, adjustment) and the ledger view.</summary>
 public sealed class StockService(IAppDbContext db, StockLedger ledger)
 {
-    private static readonly Expression<Func<StockMovement, StockMovementDto>> ToDto = m => new StockMovementDto(
+    internal static readonly Expression<Func<StockMovement, StockMovementDto>> ToDto = m => new StockMovementDto(
         m.Id, m.ProductId, m.Product!.Code, m.Product.Name, m.Product.Unit, m.Type, m.Quantity,
         m.RefType, m.RefId, m.Note, m.CreatedBy, m.CreatedAt);
 
