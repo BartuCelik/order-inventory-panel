@@ -163,9 +163,45 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
 - [x] Scaffold: .NET 10 layered solution, health checks, Angular 22 + Material shell, Docker Compose
 - [x] Phase 1 — Foundation: PostgreSQL, test projects, entities + EF configs + initial migration, furniture workshop seed (no users until Phase 3 auth), GitHub Actions CI, live demo on Render (API + static client) with PostgreSQL on Neon
 - [x] Phase 2 — Products, BOM, stock: BOM explosion and cycle check, BOM line validation (rule 5), products + BOM API (ProblemDetails errors), stock ledger with row locking (rules 2–4, concurrency tests), screens for products, BOM editing and stock
-- [x] Design refresh and a first dashboard (requested ahead of Phase 4): shared design system, dark sidebar shell,
-      restyled screens; `GET /dashboard` with product counts, below-minimum (on-hand, until reservations exist),
-      latest movements and 14-day activity, shown as KPI tiles and a CSS chart. Phase 4 extends it.
-- [ ] Phase 3 in progress (branch `feat/phase3-orders-v2`, not merged yet) — done: work order transitions and
-      availability with reservation (rules 9, 12), customers + sales orders API with ship/cancel (rules 13–15);
-      next: work orders API (rules 8, 10, 11), then JWT auth + roles, then order and work order screens
+- [x] Design refresh and a first dashboard (requested ahead of Phase 4, merged in #10): shared design system,
+      dark sidebar shell, restyled screens; `GET /dashboard` with product counts, below-minimum (on-hand, until
+      reservations exist), latest movements and 14-day activity, shown as KPI tiles and a CSS chart.
+- [ ] Phase 3 in progress on branch `feat/phase3-orders-v2` (pushed, no PR yet, **not merged**):
+  - [x] Work order transitions (rule 12) and availability with reservation (rule 9) — pure domain + unit tests
+  - [x] Customers API; sales orders API: create (finished goods only, rule 13), list with derived late flag
+        (rule 15), ship in one transaction with an order-row lock and Issue movements via StockLedger (rule 14),
+        cancel; SO numbers via `DocumentNumbers` (advisory lock per prefix)
+  - [ ] Work orders API (rules 8, 10, 11)
+  - [ ] JWT auth + roles
+  - [ ] Screens: customers, sales orders, work orders, login
+
+### Next session (planned 2026-10-25)
+
+1. **Rebase `feat/phase3-orders-v2` onto `main`.** It branched before #10; expect a small conflict in
+   `Application/DependencyInjection.cs` (keep every registration). Run all tests after the rebase.
+2. **Work orders API, tests first:**
+   - Create: product must be SemiFinished/Finished with BOM lines; snapshot the **direct** BOM into
+     `WorkOrderComponent` (`RequiredQty = QtyPerUnit × Quantity`, rule 8); optional `SalesOrderLineId`
+     (line must exist, its order Open, same product); number `WO-00001` via `DocumentNumbers`.
+   - List and detail with per-component availability from `WorkOrderAvailability` (rule 9).
+   - Start, cancel (rules 11, 12): lock the work order row, invalid transition → 409.
+   - Complete (rule 10): lock the work order row, then post `ProductionConsumption` per component and one
+     `ProductionOutput` through `StockLedger` in the same transaction; set `ConsumedQty`, `CompletedAt`.
+     "Short" = physical on-hand (see rule 10). Tests: shortage writes nothing; two simultaneous completes
+     consume once; later BOM edits do not change an existing work order.
+3. **Open the Phase 3 API PR** (sales orders + work orders) against `main`.
+4. **JWT auth + roles** (owner reviews line by line — explain every decision in the PR):
+   login endpoint, password hashing, demo users in the seed (one per role), `[Authorize]` per the roles table,
+   `CreatedBy` from the token (`ICurrentUser` is already in place), signing key from configuration
+   (Render: `generateValue: true` in `render.yaml`, never committed). Existing integration tests need an
+   authenticated client.
+5. **Screens:** login page + functional auth interceptor/guard, customers, sales orders (late badge, ship,
+   cancel, create work order from a line), work orders (availability/shortage per component,
+   start/complete/cancel); hide actions the role may not perform.
+
+Open questions for the owner:
+- Cancelling a sales order that has open work orders: leave them, cancel them, or refuse?
+- Enforce the append-only ledger in the database too (trigger), at the cost of `TRUNCATE` for the Phase 5 nightly reset?
+
+Local dev note: the local database holds two leftover test products (`UI-TEST-…`, `UIV2-…`) from manual checks;
+`docker compose down -v` resets it to the seed.
