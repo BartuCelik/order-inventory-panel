@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using OrderInventory.Application.Products;
+using OrderInventory.Application.Stock;
 
 namespace OrderInventory.Application;
 
@@ -12,6 +13,8 @@ public static class DependencyInjection
     {
         services.AddScoped<ProductService>();
         services.AddScoped<BomService>();
+        services.AddScoped<StockLedger>();
+        services.AddScoped<StockService>();
 
         return services;
     }

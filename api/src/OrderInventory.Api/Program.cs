@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
+using OrderInventory.Api.Auth;
 using OrderInventory.Api.ErrorHandling;
 using OrderInventory.Api.HealthChecks;
 using OrderInventory.Application;
+using OrderInventory.Application.Abstractions;
 using OrderInventory.Infrastructure;
 using OrderInventory.Infrastructure.Persistence;
 using OrderInventory.Infrastructure.Persistence.Seeding;
@@ -20,6 +22,10 @@ builder.Services.AddControllers()
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApplicationExceptionHandler>();
 builder.Services.AddOpenApi();
+
+// Who is calling: CreatedBy on stock movements comes from here, never from the request body.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
 builder.Services.AddCors(options =>
 {
