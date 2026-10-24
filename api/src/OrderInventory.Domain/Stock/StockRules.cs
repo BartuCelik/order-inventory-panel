@@ -17,15 +17,27 @@ public static class StockRules
     public static IReadOnlyList<StockShortage> FindShortages(
         IReadOnlyDictionary<int, decimal> onHand, IEnumerable<StockMovement> movements)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(onHand);
+        ArgumentNullException.ThrowIfNull(movements);
+
+        return movements
+            .GroupBy(m => m.ProductId)
+            .Select(g => (ProductId: g.Key, Net: g.Sum(m => m.Quantity), OnHand: onHand.GetValueOrDefault(g.Key)))
+            .Where(p => p.OnHand + p.Net < 0)
+            .OrderBy(p => p.ProductId)
+            .Select(p => new StockShortage(p.ProductId, p.OnHand, -p.Net))
+            .ToList();
     }
 
     /// <summary>
     /// Whether <paramref name="quantity"/> has the sign <paramref name="type"/> requires:
     /// Receipt and ProductionOutput add (+), Issue and ProductionConsumption remove (−), Adjustment is either. Never zero.
     /// </summary>
-    public static bool HasValidSign(StockMovementType type, decimal quantity)
+    public static bool HasValidSign(StockMovementType type, decimal quantity) => type switch
     {
-        throw new NotImplementedException();
-    }
+        StockMovementType.Receipt or StockMovementType.ProductionOutput => quantity > 0,
+        StockMovementType.Issue or StockMovementType.ProductionConsumption => quantity < 0,
+        StockMovementType.Adjustment => quantity != 0,
+        _ => false,
+    };
 }
