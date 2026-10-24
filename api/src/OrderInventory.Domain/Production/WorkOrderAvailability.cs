@@ -21,6 +21,26 @@ public static class WorkOrderAvailability
     public static IReadOnlyList<ComponentAvailability> Evaluate(
         WorkOrder workOrder, IReadOnlyDictionary<int, decimal> onHand, IEnumerable<WorkOrder> workOrders)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(workOrder);
+        ArgumentNullException.ThrowIfNull(onHand);
+        ArgumentNullException.ThrowIfNull(workOrders);
+
+        var reserved = workOrders
+            .Where(w => w.Id != workOrder.Id && WorkOrderTransitions.IsOpen(w.Status))
+            .SelectMany(w => w.Components)
+            .GroupBy(c => c.ComponentProductId)
+            .ToDictionary(g => g.Key, g => g.Sum(c => c.RequiredQty - c.ConsumedQty));
+
+        return workOrder.Components
+            .OrderBy(c => c.ComponentProductId)
+            .Select(c =>
+            {
+                var stock = onHand.GetValueOrDefault(c.ComponentProductId);
+                var reservedByOthers = reserved.GetValueOrDefault(c.ComponentProductId);
+                var available = stock - reservedByOthers;
+                return new ComponentAvailability(
+                    c.ComponentProductId, c.RequiredQty, stock, reservedByOthers, available, Math.Max(0m, c.RequiredQty - available));
+            })
+            .ToList();
     }
 }
