@@ -102,6 +102,8 @@ A test fails if the model has changes that no migration covers.
 | `GET /health`          | Status of the app and its database connection (503 if unhealthy) |
 | `GET /health/live`     | Liveness only; external dependencies are not checked         |
 | `GET /openapi/v1.json` | OpenAPI document (Development only)                          |
+| `POST /stock/movements` | Receipt / Issue (positive quantity) or Adjustment (signed); rejected if stock would go negative |
+| `GET /stock/movements?productId=` | Stock ledger, newest first, paged; append-only (no update or delete) |
 
 ## Ports
 
