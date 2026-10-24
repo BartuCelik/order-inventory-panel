@@ -1,3 +1,4 @@
+using OrderInventory.Api.Errors;
 using OrderInventory.Api.HealthChecks;
 using OrderInventory.Application;
 using OrderInventory.Infrastructure;
@@ -14,6 +15,11 @@ builder.Services
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+// Every error response is RFC 7807 ProblemDetails: validation (400, from [ApiController]),
+// application errors (404/409/422, from ApplicationExceptionHandler) and anything unexpected (500).
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ApplicationExceptionHandler>();
 
 builder.Services.AddCors(options =>
 {
@@ -42,6 +48,10 @@ if (app.Configuration.GetValue<bool>("Database:SeedDemoData"))
 {
     await app.Services.SeedDemoDataAsync();
 }
+
+app.UseExceptionHandler();
+// Bodiless error responses, such as 404 for an unknown route, also get a ProblemDetails body.
+app.UseStatusCodePages();
 
 app.UseCors(ClientCorsPolicy);
 app.UseAuthorization();
