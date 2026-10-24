@@ -13,12 +13,26 @@ export interface Product {
   onHand: number;
 }
 
-/** Body of POST and PUT /api/products. */
-export interface ProductRequest {
+/** GET /products/{id}: the product with its direct BOM lines. */
+export interface ProductDetails extends Product {
+  bomLines: BomLine[];
+}
+
+/** Body of POST /products. */
+export interface CreateProductRequest {
   code: string;
   name: string;
   type: ProductType;
   unit: UnitOfMeasure;
+  minStock: number;
+}
+
+/**
+ * Body of PUT /products/{id}. Code, type and unit are fixed after creation: the ledger, BOM lines
+ * and orders are expressed in the product's unit and depend on its type.
+ */
+export interface UpdateProductRequest {
+  name: string;
   minStock: number;
   isActive: boolean;
 }
@@ -40,17 +54,11 @@ export interface BomLine {
   qtyPerUnit: number;
 }
 
-export interface BomExplosion {
-  productId: number;
-  quantity: number;
-  items: BomExplosionItem[];
-}
-
-export interface BomExplosionItem {
+/** One leaf material of GET /products/{id}/explosion (rule 7). */
+export interface MaterialNeed {
   productId: number;
   code: string;
   name: string;
-  type: ProductType;
   unit: UnitOfMeasure;
   quantity: number;
 }

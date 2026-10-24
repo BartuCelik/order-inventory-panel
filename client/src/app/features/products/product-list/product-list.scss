@@ -13,6 +13,7 @@
 .filters {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 16px;
 
   .search {
@@ -61,4 +62,8 @@
   &.error {
     color: var(--mat-sys-error);
   }
+}
+
+.inactive {
+  margin-bottom: 20px;
 }

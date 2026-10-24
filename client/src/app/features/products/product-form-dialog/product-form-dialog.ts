@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { applyServerErrors, errorMessage } from '../../../core/problem';
-import { PRODUCT_TYPES, Product, ProductRequest, UNITS } from '../product.models';
+import { PRODUCT_TYPES, Product, ProductDetails, UNITS } from '../product.models';
 import { ProductsApi } from '../products.api';
 
 export interface ProductFormDialogData {
@@ -32,7 +32,8 @@ export interface ProductFormDialogData {
 })
 export class ProductFormDialog {
   private readonly api = inject(ProductsApi);
-  private readonly dialogRef = inject<MatDialogRef<ProductFormDialog, Product>>(MatDialogRef);
+  private readonly dialogRef =
+    inject<MatDialogRef<ProductFormDialog, ProductDetails>>(MatDialogRef);
   protected readonly product = inject<ProductFormDialogData>(MAT_DIALOG_DATA).product;
 
   protected readonly types = PRODUCT_TYPES;
@@ -40,12 +41,22 @@ export class ProductFormDialog {
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  // Limits match the API (and the database columns).
+  // Limits match the API (and the database columns). Code, type and unit are fixed once the
+  // product exists (the ledger and BOMs depend on them), so they are shown but disabled when editing.
   protected readonly form = inject(NonNullableFormBuilder).group({
-    code: [this.product?.code ?? '', [Validators.required, Validators.maxLength(32)]],
+    code: [
+      { value: this.product?.code ?? '', disabled: !!this.product },
+      [Validators.required, Validators.maxLength(32)],
+    ],
     name: [this.product?.name ?? '', [Validators.required, Validators.maxLength(200)]],
-    type: [this.product?.type ?? PRODUCT_TYPES[0].value, Validators.required],
-    unit: [this.product?.unit ?? UNITS[0].value, Validators.required],
+    type: [
+      { value: this.product?.type ?? PRODUCT_TYPES[0].value, disabled: !!this.product },
+      Validators.required,
+    ],
+    unit: [
+      { value: this.product?.unit ?? UNITS[0].value, disabled: !!this.product },
+      Validators.required,
+    ],
     minStock: [this.product?.minStock ?? 0, [Validators.required, Validators.min(0)]],
     isActive: [this.product?.isActive ?? true],
   });
@@ -56,13 +67,13 @@ export class ProductFormDialog {
       return;
     }
 
-    const request: ProductRequest = this.form.getRawValue();
+    const { code, name, type, unit, minStock, isActive } = this.form.getRawValue();
     this.saving.set(true);
     this.error.set(null);
 
     const save$ = this.product
-      ? this.api.update(this.product.id, request)
-      : this.api.create(request);
+      ? this.api.update(this.product.id, { name, minStock, isActive })
+      : this.api.create({ code, name, type, unit, minStock });
     save$.subscribe({
       next: (product) => this.dialogRef.close(product),
       error: (error: unknown) => {

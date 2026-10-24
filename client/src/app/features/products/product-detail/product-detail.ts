@@ -24,7 +24,15 @@ import {
 } from '../../stock/record-movement-dialog/record-movement-dialog';
 import { STOCK_MOVEMENTS_URL } from '../../stock/stock.api';
 import { StockMovement } from '../../stock/stock.models';
-import { BomExplosion, BomLine, Paged, Product, typeLabel, unitLabel } from '../product.models';
+import {
+  BomLine,
+  MaterialNeed,
+  Paged,
+  Product,
+  ProductDetails,
+  typeLabel,
+  unitLabel,
+} from '../product.models';
 import {
   ProductFormDialog,
   ProductFormDialogData,
@@ -66,15 +74,18 @@ export class ProductDetail {
   protected readonly unitLabel = unitLabel;
   protected readonly errorMessage = errorMessage;
   protected readonly bomColumns = ['code', 'name', 'type', 'qtyPerUnit', 'actions'];
-  protected readonly explosionColumns = ['code', 'name', 'type', 'quantity'];
+  protected readonly explosionColumns = ['code', 'name', 'quantity'];
   protected readonly maxQty = MAX_EXPLOSION_QTY;
 
   private readonly productUrl = computed(
     () => `${API_BASE_URL}/products/${encodeURIComponent(this.id())}`,
   );
 
-  protected readonly product = httpResource<Product>(() => this.productUrl());
-  protected readonly bom = httpResource<BomLine[]>(() => `${this.productUrl()}/bom`);
+  /** The product with its direct BOM lines, in one request. */
+  protected readonly product = httpResource<ProductDetails>(() => this.productUrl());
+  protected readonly bomLines = computed(() =>
+    this.product.hasValue() ? this.product.value().bomLines : [],
+  );
 
   /** Latest movements of this product; the full ledger is on the Stock page. */
   protected readonly movements = httpResource<Paged<StockMovement>>(() => ({
@@ -100,13 +111,13 @@ export class ProductDetail {
     { initialValue: 1 },
   );
 
-  protected readonly explosion = httpResource<BomExplosion>(() => {
+  protected readonly explosion = httpResource<MaterialNeed[]>(() => {
     const qty = this.debouncedQuantity();
     // Raw materials have no BOM, and an invalid quantity would only produce a 400.
     if (this.isRawMaterial() || qty === null || qty <= 0 || qty > MAX_EXPLOSION_QTY) {
       return undefined;
     }
-    return { url: `${this.productUrl()}/bom/explosion`, params: { qty } };
+    return { url: `${this.productUrl()}/explosion`, params: { quantity: qty } };
   });
 
   // ---------- BOM editing ----------
@@ -119,7 +130,7 @@ export class ProductDetail {
   /** The product itself and its current components cannot be picked; the API checks rules 5 and 6. */
   protected readonly excludedComponentIds = computed(() => [
     Number(this.id()),
-    ...(this.bom.hasValue() ? this.bom.value().map((l) => l.componentProductId) : []),
+    ...this.bomLines().map((l) => l.componentProductId),
   ]);
 
   protected setNewQtyPerUnit(value: string): void {
@@ -173,7 +184,7 @@ export class ProductDetail {
   }
 
   private reloadBom(): void {
-    this.bom.reload();
+    this.product.reload();
     this.explosion.reload();
   }
 
@@ -181,7 +192,7 @@ export class ProductDetail {
 
   protected edit(product: Product): void {
     this.dialog
-      .open<ProductFormDialog, ProductFormDialogData, Product>(ProductFormDialog, {
+      .open<ProductFormDialog, ProductFormDialogData, ProductDetails>(ProductFormDialog, {
         data: { product },
       })
       .afterClosed()
@@ -189,7 +200,6 @@ export class ProductDetail {
         if (updated) {
           this.snackBar.open(`Saved ${updated.code}.`, undefined, { duration: 3000 });
           this.product.reload();
-          this.bom.reload();
         }
       });
   }

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,6 +24,7 @@ import {
   PRODUCT_TYPES,
   Paged,
   Product,
+  ProductDetails,
   ProductType,
   typeLabel,
   unitLabel,
@@ -32,6 +34,7 @@ import {
   selector: 'app-product-list',
   imports: [
     MatButtonModule,
+    MatCheckboxModule,
     DecimalPipe,
     MatFormFieldModule,
     MatIconModule,
@@ -57,6 +60,7 @@ export class ProductList {
 
   protected readonly search = signal('');
   protected readonly type = signal<ProductType | null>(null);
+  protected readonly includeInactive = signal(false);
   protected readonly pageIndex = signal(0);
   protected readonly pageSize = signal(20);
 
@@ -80,6 +84,7 @@ export class ProductList {
         pageSize: this.pageSize(),
         ...(search ? { search } : {}),
         ...(type ? { type } : {}),
+        ...(this.includeInactive() ? { includeInactive: true } : {}),
       },
     };
   });
@@ -89,6 +94,11 @@ export class ProductList {
     source: () => (this.products.hasValue() ? this.products.value() : undefined),
     computation: (current, previous) => current ?? previous?.value,
   });
+
+  protected setIncludeInactive(value: boolean): void {
+    this.includeInactive.set(value);
+    this.pageIndex.set(0);
+  }
 
   protected setType(type: ProductType | null): void {
     this.type.set(type);
@@ -102,7 +112,9 @@ export class ProductList {
 
   protected create(): void {
     this.dialog
-      .open<ProductFormDialog, ProductFormDialogData, Product>(ProductFormDialog, { data: {} })
+      .open<ProductFormDialog, ProductFormDialogData, ProductDetails>(ProductFormDialog, {
+        data: {},
+      })
       .afterClosed()
       .subscribe((product) => {
         if (product) {

@@ -22,6 +22,13 @@
       }
     </mat-select>
   </mat-form-field>
+
+  <mat-checkbox
+    class="inactive"
+    [checked]="includeInactive()"
+    (change)="setIncludeInactive($event.checked)"
+    >Show inactive</mat-checkbox
+  >
 </div>
 
 <div class="table-card">

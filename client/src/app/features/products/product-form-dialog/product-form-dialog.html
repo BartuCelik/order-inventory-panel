@@ -4,7 +4,10 @@
   <mat-dialog-content class="fields">
     <mat-form-field appearance="outline">
       <mat-label>Code</mat-label>
-      <input matInput formControlName="code" maxlength="32" cdkFocusInitial />
+      <input matInput formControlName="code" maxlength="32" />
+      @if (!product) {
+        <mat-hint>Stored in capitals. Code, type and unit cannot change later.</mat-hint>
+      }
       @if (form.controls.code.hasError('required')) {
         <mat-error>Code is required.</mat-error>
       } @else if (form.controls.code.hasError('server')) {
