@@ -14,7 +14,7 @@ public sealed record ProductRequest(
     [Required, StringLength(200)] string Name,
     ProductType Type,
     UnitOfMeasure Unit,
-    [Range(0, double.MaxValue)] decimal MinStock,
+    [Range(0, QuantityLimits.Max)] decimal MinStock,
     bool IsActive = true);
 
 public sealed class ProductListQuery : PageQuery

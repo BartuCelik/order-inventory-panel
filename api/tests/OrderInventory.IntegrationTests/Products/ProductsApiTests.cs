@@ -69,6 +69,16 @@ public sealed class ProductsApiTests(ApiFactory api) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task Post_MinStockBeyondColumnRange_Returns400()
+    {
+        // numeric(18,4) holds 14 integer digits; a larger value must not reach the database.
+        var response = await _client.PostAsJsonAsync("/api/products",
+            NewProduct("POST-BIG", ProductType.RawMaterial, minStock: 1_000_000_000_000_000m), ApiFactory.JsonOptions, CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Post_UnknownEnumValue_Returns400()
     {
         var response = await _client.PostAsync("/api/products", JsonContent.Create(new
