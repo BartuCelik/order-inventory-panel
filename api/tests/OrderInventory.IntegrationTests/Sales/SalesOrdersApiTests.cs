@@ -85,7 +85,7 @@ public sealed class SalesOrdersApiTests(ApiFactory api) : IClassFixture<ApiFacto
         Assert.Equal(HttpStatusCode.BadRequest, (await PostOrderAsync(customer, Today)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await PostOrderAsync(customer, Today, (desk, 0m))).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await PostOrderAsync(customer, Today, (desk, 1m), (desk, 2m))).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await PostOrderAsync(customer, Today.AddDays(-1), Today, (desk, 1m))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostOrderAsync(customer, Today, Today.AddDays(-1), (desk, 1m))).StatusCode);
     }
 
     // ---------- list / late (rule 15) ----------
@@ -96,9 +96,11 @@ public sealed class SalesOrdersApiTests(ApiFactory api) : IClassFixture<ApiFacto
         var customer = await _client.CreateCustomerAsync("SO-Late Customer");
         var stool = await _client.CreateProductAsync("SOL-STOOL", ProductType.Finished);
         await _client.ReceiveAsync(stool, 5m);
-        var late = await CreateOrderAsync(customer, Today.AddDays(-1), (stool, 1m));
-        var dueToday = await CreateOrderAsync(customer, Today, (stool, 1m));
-        var shippedPastDue = await CreateOrderAsync(customer, Today.AddDays(-2), (stool, 1m));
+        // Past-due orders were placed earlier; an order cannot be due before it was placed.
+        var placed = Today.AddDays(-10);
+        var late = await CreateOrderAsync(customer, placed, Today.AddDays(-1), (stool, 1m));
+        var dueToday = await CreateOrderAsync(customer, placed, Today, (stool, 1m));
+        var shippedPastDue = await CreateOrderAsync(customer, placed, Today.AddDays(-2), (stool, 1m));
         Assert.Equal(HttpStatusCode.OK, (await ShipAsync(shippedPastDue.Id)).StatusCode);
 
         var all = await ListAsync("search=SO-Late Customer");
@@ -231,9 +233,13 @@ public sealed class SalesOrdersApiTests(ApiFactory api) : IClassFixture<ApiFacto
             },
             ApiFactory.JsonOptions, CancellationToken);
 
-    private async Task<OrderResponse> CreateOrderAsync(int customerId, DateOnly dueDate, params (int ProductId, decimal Quantity)[] lines)
+    private Task<OrderResponse> CreateOrderAsync(int customerId, DateOnly dueDate, params (int ProductId, decimal Quantity)[] lines) =>
+        CreateOrderAsync(customerId, null, dueDate, lines);
+
+    private async Task<OrderResponse> CreateOrderAsync(
+        int customerId, DateOnly? orderDate, DateOnly dueDate, params (int ProductId, decimal Quantity)[] lines)
     {
-        var response = await PostOrderAsync(customerId, dueDate, lines);
+        var response = await PostOrderAsync(customerId, orderDate, dueDate, lines);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         return await response.ReadAsync<OrderResponse>();
     }
