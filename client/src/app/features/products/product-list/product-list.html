@@ -1,0 +1,106 @@
+<header class="page-header">
+  <h1>Products</h1>
+  <button mat-flat-button (click)="create()">
+    <mat-icon>add</mat-icon>
+    New product
+  </button>
+</header>
+
+<div class="filters">
+  <mat-form-field appearance="outline" class="search">
+    <mat-label>Search code or name</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput [value]="search()" (input)="search.set($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Type</mat-label>
+    <mat-select [value]="type()" (valueChange)="setType($event)">
+      <mat-option [value]="null">All types</mat-option>
+      @for (t of types; track t.value) {
+        <mat-option [value]="t.value">{{ t.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-checkbox
+    class="inactive"
+    [checked]="includeInactive()"
+    (change)="setIncludeInactive($event.checked)"
+    >Show inactive</mat-checkbox
+  >
+</div>
+
+<div class="table-card">
+  @if (products.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (products.error(); as error) {
+    <p class="message error">{{ errorMessage(error) }}</p>
+  } @else if (page(); as page) {
+    <table mat-table [dataSource]="page.items">
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef>Code</th>
+        <td mat-cell *matCellDef="let p" class="code">{{ p.code }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let p">{{ p.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>Type</th>
+        <td mat-cell *matCellDef="let p">{{ typeLabel(p.type) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="onHand">
+        <th mat-header-cell *matHeaderCellDef class="number">On hand</th>
+        <td mat-cell *matCellDef="let p" class="number">
+          {{ p.onHand | number: '1.0-4' }} {{ unitLabel(p.unit) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="minStock">
+        <th mat-header-cell *matHeaderCellDef class="number">Min stock</th>
+        <td mat-cell *matCellDef="let p" class="number">
+          {{ p.minStock | number: '1.0-4' }} {{ unitLabel(p.unit) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="status" [class.inactive]="!p.isActive">{{
+            p.isActive ? 'Active' : 'Inactive'
+          }}</span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let p; columns: columns"
+        class="row"
+        tabindex="0"
+        (click)="open(p)"
+        (keydown.enter)="open(p)"
+      ></tr>
+      <tr class="mat-mdc-row" *matNoDataRow>
+        <td class="mat-mdc-cell message" [attr.colspan]="columns.length">
+          No products match the filters.
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator
+      [length]="page.totalCount"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="changePage($event)"
+      aria-label="Product pages"
+    />
+  }
+</div>
