@@ -28,5 +28,6 @@ interface NavItem {
 export class Shell {
   protected readonly navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
+    { label: 'Products', icon: 'category', route: '/products' },
   ];
 }
