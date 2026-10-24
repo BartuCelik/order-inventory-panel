@@ -90,6 +90,27 @@ const UNIT_LABELS: Record<UnitOfMeasure, string> = {
   Liter: 'L',
 };
 
+/** CSS chip modifier for a product type (see .chip in styles.scss). */
+export function typeChip(type: ProductType): string {
+  return type === 'RawMaterial' ? 'raw' : type === 'SemiFinished' ? 'semi' : 'finished';
+}
+
+/** True when the product has a minimum and on-hand is below it. */
+export function isBelowMinimum(p: { onHand: number; minStock: number }): boolean {
+  return p.minStock > 0 && p.onHand < p.minStock;
+}
+
+/**
+ * Width (0–100) of a stock meter: full at twice the minimum, so "just above minimum" still looks
+ * half empty. Null when the product has no minimum.
+ */
+export function stockLevel(p: { onHand: number; minStock: number }): number | null {
+  if (p.minStock <= 0) {
+    return null;
+  }
+  return Math.max(0, Math.min(100, (p.onHand / (p.minStock * 2)) * 100));
+}
+
 export function typeLabel(type: ProductType): string {
   return TYPE_LABELS[type];
 }

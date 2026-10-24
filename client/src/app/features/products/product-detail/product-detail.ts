@@ -1,4 +1,4 @@
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -30,6 +30,9 @@ import {
   Paged,
   Product,
   ProductDetails,
+  isBelowMinimum,
+  stockLevel,
+  typeChip,
   typeLabel,
   unitLabel,
 } from '../product.models';
@@ -46,6 +49,7 @@ const MAX_EXPLOSION_QTY = 1_000_000;
 @Component({
   selector: 'app-product-detail',
   imports: [
+    DatePipe,
     DecimalPipe,
     RouterLink,
     MatButtonModule,
@@ -71,9 +75,12 @@ export class ProductDetail {
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly typeLabel = typeLabel;
+  protected readonly typeChip = typeChip;
+  protected readonly isBelowMinimum = isBelowMinimum;
+  protected readonly stockLevel = stockLevel;
   protected readonly unitLabel = unitLabel;
   protected readonly errorMessage = errorMessage;
-  protected readonly bomColumns = ['code', 'name', 'type', 'qtyPerUnit', 'actions'];
+  protected readonly bomColumns = ['code', 'type', 'qtyPerUnit', 'actions'];
   protected readonly explosionColumns = ['code', 'name', 'quantity'];
   protected readonly maxQty = MAX_EXPLOSION_QTY;
 

@@ -55,3 +55,17 @@ const TYPE_LABELS: Record<StockMovementType, string> = {
 export function movementTypeLabel(type: StockMovementType): string {
   return TYPE_LABELS[type];
 }
+
+/** CSS chip modifier for a movement type (see .chip in styles.scss). */
+export function movementTypeChip(type: StockMovementType): string {
+  switch (type) {
+    case 'Receipt':
+      return 'success';
+    case 'Issue':
+      return 'danger';
+    case 'Adjustment':
+      return 'warning';
+    default:
+      return 'production';
+  }
+}

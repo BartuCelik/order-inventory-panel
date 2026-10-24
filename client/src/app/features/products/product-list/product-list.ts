@@ -3,14 +3,14 @@ import { httpResource } from '@angular/common/http';
 import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
@@ -26,6 +26,9 @@ import {
   Product,
   ProductDetails,
   ProductType,
+  isBelowMinimum,
+  stockLevel,
+  typeChip,
   typeLabel,
   unitLabel,
 } from '../product.models';
@@ -33,15 +36,15 @@ import {
 @Component({
   selector: 'app-product-list',
   imports: [
-    MatButtonModule,
-    MatCheckboxModule,
     DecimalPipe,
+    MatButtonModule,
+    MatButtonToggleModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
-    MatSelectModule,
+    MatSlideToggleModule,
     MatTableModule,
   ],
   templateUrl: './product-list.html',
@@ -52,10 +55,13 @@ export class ProductList {
   private readonly dialog = inject(MatDialog);
 
   protected readonly types = PRODUCT_TYPES;
-  protected readonly columns = ['code', 'name', 'type', 'onHand', 'minStock', 'status'];
+  protected readonly columns = ['product', 'type', 'onHand', 'minStock', 'status'];
   protected readonly pageSizeOptions = [10, 20, 50, 100];
   protected readonly typeLabel = typeLabel;
+  protected readonly typeChip = typeChip;
   protected readonly unitLabel = unitLabel;
+  protected readonly isBelowMinimum = isBelowMinimum;
+  protected readonly stockLevel = stockLevel;
   protected readonly errorMessage = errorMessage;
 
   protected readonly search = signal('');

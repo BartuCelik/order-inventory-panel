@@ -1,113 +1,122 @@
-.back {
-  margin: -8px 0 8px -12px;
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-
-  h1 {
-    margin: 4px 0 0;
-    font: var(--mat-sys-headline-medium);
-  }
-}
-
-.code {
-  font-family: 'Roboto Mono', monospace;
-  color: var(--mat-sys-primary);
-}
-
-.badge {
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: var(--mat-sys-surface-container-highest);
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-label-large);
-}
-
-.facts {
+.badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 32px;
-  margin: 24px 0;
-
-  dt {
-    font: var(--mat-sys-label-medium);
-    color: var(--mat-sys-on-surface-variant);
-  }
-
-  dd {
-    margin: 4px 0 0;
-    font: var(--mat-sys-title-medium);
-  }
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
-.section {
-  max-width: 880px;
-  margin-bottom: 24px;
-  overflow: hidden;
-
-  mat-card-content {
-    padding-top: 16px;
-  }
+.code-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  color: var(--app-muted);
 }
 
-.qty {
-  width: 240px;
+.kpi-value.small {
+  font-size: 24px;
 }
 
-.hint-error {
-  color: var(--mat-sys-error);
+.meter.wide {
+  width: 100%;
+  margin-top: 8px;
 }
 
-.number {
-  text-align: right;
-  white-space: nowrap;
-}
-
-.message {
-  padding: 16px 0;
-  color: var(--mat-sys-on-surface-variant);
-
-  &.error {
-    color: var(--mat-sys-error);
-  }
-}
-
-.header-actions {
+.info {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  color: var(--app-muted);
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+  }
 }
 
 .actions {
-  width: 48px;
+  width: 56px;
   text-align: right;
+
+  button {
+    color: var(--app-faint);
+
+    &:hover {
+      color: var(--app-danger);
+    }
+  }
 }
 
 .add-line {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  margin-top: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--app-border);
+  background: var(--app-surface-muted);
 
   .component {
-    flex: 1;
-    min-width: 240px;
+    flex: 1 1 240px;
   }
 
   .qty-per-unit {
-    width: 160px;
-  }
-
-  button {
-    margin-top: 8px;
+    width: 150px;
   }
 }
 
-.record {
-  margin-bottom: 8px;
+.form-error {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--app-danger-fg);
+}
+
+.qty {
+  width: 130px;
+}
+
+.needs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--app-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  a:hover {
+    text-decoration: none;
+
+    .primary-line {
+      color: var(--mat-sys-primary);
+    }
+  }
+}
+
+.need {
+  font-weight: 600;
+}
+
+a.stack:hover {
+  text-decoration: none;
+
+  .primary-line {
+    color: var(--mat-sys-primary);
+  }
+}
+
+// The picker's own form field should not reserve space for a hint here.
+.add-line app-product-picker ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
 }
