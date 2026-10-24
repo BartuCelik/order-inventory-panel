@@ -104,6 +104,7 @@ A test fails if the model has changes that no migration covers.
 | `GET /openapi/v1.json` | OpenAPI document (Development only)                          |
 | `POST /stock/movements` | Receipt / Issue (positive quantity) or Adjustment (signed); rejected if stock would go negative |
 | `GET /stock/movements?productId=` | Stock ledger, newest first, paged; append-only (no update or delete) |
+| `GET /dashboard` | Product counts, products below minimum, latest movements and 14-day activity in one call |
 
 ## Ports
 
