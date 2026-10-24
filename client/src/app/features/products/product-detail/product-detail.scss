@@ -75,3 +75,39 @@
     color: var(--mat-sys-error);
   }
 }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.actions {
+  width: 48px;
+  text-align: right;
+}
+
+.add-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 16px;
+
+  .component {
+    flex: 1;
+    min-width: 240px;
+  }
+
+  .qty-per-unit {
+    width: 160px;
+  }
+
+  button {
+    margin-top: 8px;
+  }
+}
+
+.record {
+  margin-bottom: 8px;
+}

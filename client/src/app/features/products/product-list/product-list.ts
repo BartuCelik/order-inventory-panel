@@ -2,6 +2,8 @@ import { DecimalPipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -14,6 +16,10 @@ import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
 import { API_BASE_URL } from '../../../core/api';
 import { errorMessage } from '../../../core/problem';
 import {
+  ProductFormDialog,
+  ProductFormDialogData,
+} from '../product-form-dialog/product-form-dialog';
+import {
   PRODUCT_TYPES,
   Paged,
   Product,
@@ -25,6 +31,7 @@ import {
 @Component({
   selector: 'app-product-list',
   imports: [
+    MatButtonModule,
     DecimalPipe,
     MatFormFieldModule,
     MatIconModule,
@@ -39,6 +46,7 @@ import {
 })
 export class ProductList {
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly types = PRODUCT_TYPES;
   protected readonly columns = ['code', 'name', 'type', 'onHand', 'minStock', 'status'];
@@ -90,6 +98,17 @@ export class ProductList {
   protected changePage(event: PageEvent): void {
     this.pageIndex.set(event.pageIndex);
     this.pageSize.set(event.pageSize);
+  }
+
+  protected create(): void {
+    this.dialog
+      .open<ProductFormDialog, ProductFormDialogData, Product>(ProductFormDialog, { data: {} })
+      .afterClosed()
+      .subscribe((product) => {
+        if (product) {
+          this.open(product);
+        }
+      });
   }
 
   protected open(product: Product): void {

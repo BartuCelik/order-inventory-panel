@@ -1,0 +1,61 @@
+<h2 mat-dialog-title>Record stock movement</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-dialog-content class="fields">
+    @if (fixedProduct; as p) {
+      <p class="product">
+        <span class="code">{{ p.code }}</span> · {{ p.name }}
+        <small>{{ p.onHand | number: '1.0-4' }} {{ unitLabel(p.unit) }} on hand</small>
+      </p>
+    } @else {
+      <app-product-picker [(product)]="product" [error]="productError()" />
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Type</mat-label>
+      <mat-select formControlName="type">
+        @for (t of types; track t.value) {
+          <mat-option [value]="t.value">{{ t.label }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>{{ typeHint() }}</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Quantity</mat-label>
+      <input matInput type="number" step="any" formControlName="quantity" />
+      @if (product(); as p) {
+        <span matTextSuffix>{{ unitLabel(p.unit) }}</span>
+      }
+      @if (form.controls.quantity.hasError('required')) {
+        <mat-error>Quantity is required.</mat-error>
+      } @else if (form.controls.quantity.hasError('server')) {
+        <mat-error>{{ form.controls.quantity.getError('server') }}</mat-error>
+      }
+    </mat-form-field>
+    @if (form.hasError('quantityForType') && form.controls.quantity.touched) {
+      <p class="error">
+        {{
+          form.controls.type.value === 'Adjustment'
+            ? 'An adjustment cannot be zero.'
+            : 'Enter a positive quantity; the type decides the direction.'
+        }}
+      </p>
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Note</mat-label>
+      <textarea matInput formControlName="note" rows="2" maxlength="500"></textarea>
+      <mat-hint>Optional, e.g. a delivery note number or the reason for an adjustment.</mat-hint>
+    </mat-form-field>
+
+    @if (error(); as error) {
+      <p class="error" role="alert">{{ error }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="saving()">Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="saving()">Record</button>
+  </mat-dialog-actions>
+</form>
