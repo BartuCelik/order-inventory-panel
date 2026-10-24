@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
+using OrderInventory.Api.Auth;
 using OrderInventory.Api.Errors;
 using OrderInventory.Api.HealthChecks;
 using OrderInventory.Application;
+using OrderInventory.Application.Abstractions;
 using OrderInventory.Infrastructure;
 using OrderInventory.Infrastructure.Persistence;
 using OrderInventory.Infrastructure.Persistence.Seeding;
@@ -24,6 +26,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     json.RespectNullableAnnotations = true;
 });
 builder.Services.AddOpenApi();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
 // Every error response is RFC 7807 ProblemDetails: validation (400, from [ApiController]),
 // application errors (404/409/422, from ApplicationExceptionHandler) and anything unexpected (500).
