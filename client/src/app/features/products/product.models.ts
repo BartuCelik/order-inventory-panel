@@ -13,6 +13,16 @@ export interface Product {
   onHand: number;
 }
 
+/** Body of POST and PUT /api/products. */
+export interface ProductRequest {
+  code: string;
+  name: string;
+  type: ProductType;
+  unit: UnitOfMeasure;
+  minStock: number;
+  isActive: boolean;
+}
+
 export interface Paged<T> {
   items: T[];
   page: number;
@@ -55,6 +65,14 @@ const TYPE_LABELS = Object.fromEntries(PRODUCT_TYPES.map((t) => [t.value, t.labe
   ProductType,
   string
 >;
+
+export const UNITS: readonly { value: UnitOfMeasure; label: string }[] = [
+  { value: 'Piece', label: 'Piece (pcs)' },
+  { value: 'Meter', label: 'Meter (m)' },
+  { value: 'SquareMeter', label: 'Square meter (m²)' },
+  { value: 'Kilogram', label: 'Kilogram (kg)' },
+  { value: 'Liter', label: 'Liter (L)' },
+];
 
 const UNIT_LABELS: Record<UnitOfMeasure, string> = {
   Piece: 'pcs',
