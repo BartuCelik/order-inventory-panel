@@ -157,4 +157,4 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
 
 - [x] Scaffold: .NET 10 layered solution, health checks, Angular 22 + Material shell, Docker Compose
 - [x] Phase 1 — Foundation: PostgreSQL, test projects, entities + EF configs + initial migration, furniture workshop seed (no users until Phase 3 auth), GitHub Actions CI, live demo on Render (API + static client) with PostgreSQL on Neon
-- [ ] Phase 2 in progress — done: BOM explosion and cycle check, rule 5 validation, products API; next: BOM API, then products screens
+- [ ] Phase 2 in progress — done: BOM explosion and cycle check, rule 5 validation, products and BOM API, products list/detail screens (read-only); next: stock ledger with locking (rules 2–4)
