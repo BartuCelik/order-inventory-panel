@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, of } from 'rxjs';
-import { API_BASE_URL } from '../api';
+import { HEALTH_URL } from '../api';
 
 export type HealthStatus = 'Healthy' | 'Degraded' | 'Unhealthy';
 
@@ -27,7 +27,7 @@ export class HealthService {
    * but still includes the report in the body. Returns null if the API is unreachable.
    */
   check(): Observable<HealthReport | null> {
-    return this.http.get<HealthReport>(`${API_BASE_URL}/health`).pipe(
+    return this.http.get<HealthReport>(HEALTH_URL).pipe(
       catchError((error: HttpErrorResponse) => of(isHealthReport(error.error) ? error.error : null)),
     );
   }

@@ -69,7 +69,7 @@ npm install
 npm start
 ```
 
-During development, requests from the client to `/api/*` are forwarded to the API by `proxy.conf.json`.
+During development, requests from the client to `/api/*` and `/health` are forwarded unchanged to the API by `proxy.conf.json`.
 
 **4. Tests**
 
@@ -102,6 +102,12 @@ A test fails if the model has changes that no migration covers.
 | `GET /health`          | Status of the app and its database connection (503 if unhealthy) |
 | `GET /health/live`     | Liveness only; external dependencies are not checked         |
 | `GET /openapi/v1.json` | OpenAPI document (Development only)                          |
+| `GET /api/products`    | Paged products with on-hand stock; `?page=&pageSize=&type=&search=` |
+| `GET /api/products/{id}` · `POST /api/products` · `PUT /api/products/{id}` | Read, create, update a product |
+| `GET /api/products/{id}/bom` · `POST /api/products/{id}/bom` · `DELETE /api/products/{id}/bom/{lineId}` | Direct BOM lines of a product |
+| `GET /api/products/{id}/bom/explosion?qty=N` | Total leaf-component need for N units (multi-level) |
+
+Errors are RFC 7807 ProblemDetails: 400 validation, 404 not found, 409 conflict (e.g. duplicate code), 422 business rule.
 
 ## Ports
 

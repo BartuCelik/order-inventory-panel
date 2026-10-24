@@ -37,9 +37,13 @@ services:
       # Same-origin proxy to the API, mirroring proxy.conf.json in development (no CORS needed).
       # Render appended a suffix to the API's onrender.com name (the plain one was taken).
       # If the API service is ever recreated, check its URL and update this destination.
+      # The API's own routes start with /api, so the prefix is kept; health checks live at the root.
       - type: rewrite
         source: /api/*
-        destination: https://order-inventory-api-wjwq.onrender.com/*
+        destination: https://order-inventory-api-wjwq.onrender.com/api/*
+      - type: rewrite
+        source: /health
+        destination: https://order-inventory-api-wjwq.onrender.com/health
       # Angular client-side routing: unknown paths serve the app shell.
       - type: rewrite
         source: /*
