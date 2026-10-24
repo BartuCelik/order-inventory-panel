@@ -84,6 +84,18 @@ public sealed class ProductsApiTests(ApiFactory api) : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("""{ "code": "POST-MISS", "name": "No type", "unit": "Piece", "minStock": 0 }""")]
+    [InlineData("""{ "code": "POST-INT", "name": "Numeric type", "type": 7, "unit": "Piece", "minStock": 0 }""")]
+    public async Task Post_MissingOrNumericEnum_Returns400(string json)
+    {
+        // Without this a missing type would silently become RawMaterial, and 7 would be stored as an undefined type.
+        var response = await _client.PostAsync("/api/products",
+            new StringContent(json, System.Text.Encoding.UTF8, "application/json"), CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     // ---------- GET by id ----------
 
     [Fact]

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using OrderInventory.Api.Errors;
 using OrderInventory.Api.HealthChecks;
 using OrderInventory.Application;
@@ -13,7 +14,15 @@ builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    var json = options.JsonSerializerOptions;
+    // Enums travel by name ("RawMaterial"); numbers are refused so an undefined value cannot slip in.
+    json.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+    // A missing or null field is a 400, not a silent default (e.g. a missing Type becoming RawMaterial).
+    json.RespectRequiredConstructorParameters = true;
+    json.RespectNullableAnnotations = true;
+});
 builder.Services.AddOpenApi();
 
 // Every error response is RFC 7807 ProblemDetails: validation (400, from [ApiController]),
