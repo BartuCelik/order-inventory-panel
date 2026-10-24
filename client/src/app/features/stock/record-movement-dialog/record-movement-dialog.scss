@@ -1,0 +1,27 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: min(480px, 80vw);
+  padding-top: 8px !important;
+}
+
+.product {
+  margin: 0 0 16px;
+  font: var(--mat-sys-title-medium);
+
+  small {
+    display: block;
+    font: var(--mat-sys-body-medium);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.code {
+  font-family: 'Roboto Mono', monospace;
+}
+
+.error {
+  margin: 0 0 8px;
+  color: var(--mat-sys-error);
+}

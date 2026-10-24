@@ -1,0 +1,37 @@
+<header class="page-header">
+  <div>
+    <h1>Stock</h1>
+    <p class="subtitle">
+      Every receipt, issue and adjustment. Entries are never edited; a mistake is fixed with an
+      adjustment.
+    </p>
+  </div>
+  <button mat-flat-button (click)="record()">
+    <mat-icon>add</mat-icon>
+    Record movement
+  </button>
+</header>
+
+<div class="filters">
+  <app-product-picker label="Filter by product" [(product)]="product" />
+</div>
+
+<div class="table-card">
+  @if (movements.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (movements.error(); as error) {
+    <p class="message error">{{ errorMessage(error) }}</p>
+  } @else if (page(); as page) {
+    <app-movement-table [movements]="page.items" />
+    <mat-paginator
+      [length]="page.totalCount"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="changePage($event)"
+      aria-label="Stock movement pages"
+    />
+  }
+</div>

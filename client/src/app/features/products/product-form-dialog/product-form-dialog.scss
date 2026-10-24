@@ -1,0 +1,21 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: min(480px, 80vw);
+  padding-top: 8px !important;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+.error {
+  margin: 8px 0 0;
+  color: var(--mat-sys-error);
+}

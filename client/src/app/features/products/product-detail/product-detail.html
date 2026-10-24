@@ -1,0 +1,234 @@
+<a mat-button routerLink="/products" class="back">
+  <mat-icon>arrow_back</mat-icon>
+  Products
+</a>
+
+@if (product.isLoading() && !product.hasValue()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (product.error(); as error) {
+  <p class="message error">
+    {{ notFound() ? 'This product does not exist.' : errorMessage(error) }}
+  </p>
+} @else if (product.hasValue()) {
+  @let p = product.value();
+
+  <header class="page-header">
+    <div>
+      <span class="code">{{ p.code }}</span>
+      <h1>{{ p.name }}</h1>
+    </div>
+    <div class="header-actions">
+      @if (!p.isActive) {
+        <span class="badge">Inactive</span>
+      }
+      <button mat-stroked-button (click)="edit(p)">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+    </div>
+  </header>
+
+  <dl class="facts">
+    <div>
+      <dt>Type</dt>
+      <dd>{{ typeLabel(p.type) }}</dd>
+    </div>
+    <div>
+      <dt>Unit</dt>
+      <dd>{{ unitLabel(p.unit) }}</dd>
+    </div>
+    <div>
+      <dt>On hand</dt>
+      <dd>{{ p.onHand | number: '1.0-4' }} {{ unitLabel(p.unit) }}</dd>
+    </div>
+    <div>
+      <dt>Min stock</dt>
+      <dd>{{ p.minStock | number: '1.0-4' }} {{ unitLabel(p.unit) }}</dd>
+    </div>
+  </dl>
+
+  @if (isRawMaterial()) {
+    <p class="message">Raw materials are bought, not made, so they have no bill of materials.</p>
+  } @else {
+    <mat-card appearance="outlined" class="section">
+      @if (bom.isLoading()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <mat-card-header>
+        <mat-card-title>Bill of materials</mat-card-title>
+        <mat-card-subtitle
+          >Direct components needed for one {{ unitLabel(p.unit) }}</mat-card-subtitle
+        >
+      </mat-card-header>
+      <mat-card-content>
+        @if (bom.error(); as error) {
+          <p class="message error">{{ errorMessage(error) }}</p>
+        } @else if (bom.hasValue()) {
+          <table mat-table [dataSource]="bom.value()">
+            <ng-container matColumnDef="code">
+              <th mat-header-cell *matHeaderCellDef>Component</th>
+              <td mat-cell *matCellDef="let line">
+                <a class="code" [routerLink]="['/products', line.componentProductId]">{{
+                  line.componentCode
+                }}</a>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let line">{{ line.componentName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let line">{{ typeLabel(line.componentType) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="qtyPerUnit">
+              <th mat-header-cell *matHeaderCellDef class="number">Qty per unit</th>
+              <td mat-cell *matCellDef="let line" class="number">
+                {{ line.qtyPerUnit | number: '1.0-4' }} {{ unitLabel(line.componentUnit) }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let line" class="actions">
+                <button
+                  mat-icon-button
+                  (click)="removeBomLine(line)"
+                  [attr.aria-label]="'Remove ' + line.componentCode"
+                  matTooltip="Remove"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="bomColumns"></tr>
+            <tr mat-row *matRowDef="let line; columns: bomColumns"></tr>
+            <tr class="mat-mdc-row" *matNoDataRow>
+              <td class="mat-mdc-cell message" [attr.colspan]="bomColumns.length">
+                No components yet.
+              </td>
+            </tr>
+          </table>
+
+          <form class="add-line" (submit)="$event.preventDefault(); addBomLine()">
+            <app-product-picker
+              class="component"
+              label="Add component"
+              [excludeIds]="excludedComponentIds()"
+              [(product)]="newComponent"
+            />
+            <mat-form-field appearance="outline" class="qty-per-unit">
+              <mat-label>Qty per unit</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                step="any"
+                [value]="newQtyPerUnit()"
+                (input)="setNewQtyPerUnit($any($event.target).value)"
+              />
+              @if (newComponent(); as c) {
+                <span matTextSuffix>{{ unitLabel(c.unit) }}</span>
+              }
+            </mat-form-field>
+            <button mat-flat-button type="submit" [disabled]="bomSaving()">Add</button>
+          </form>
+          @if (bomError(); as error) {
+            <p class="message error" role="alert">{{ error }}</p>
+          }
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="section">
+      @if (explosion.isLoading()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <mat-card-header>
+        <mat-card-title>Material requirement</mat-card-title>
+        <mat-card-subtitle
+          >Total leaf components, through every semi-finished level</mat-card-subtitle
+        >
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="qty">
+          <mat-label>Units to make</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            [max]="maxQty"
+            step="any"
+            [value]="quantity()"
+            (input)="setQuantity($any($event.target).value)"
+          />
+          <span matTextSuffix>{{ unitLabel(p.unit) }}</span>
+          @if (!quantityValid()) {
+            <mat-hint class="hint-error"
+              >Enter a quantity above 0, up to {{ maxQty | number }}.</mat-hint
+            >
+          }
+        </mat-form-field>
+
+        @if (explosion.error(); as error) {
+          <p class="message error">{{ errorMessage(error) }}</p>
+        } @else if (quantityValid() && explosion.hasValue()) {
+          <table mat-table [dataSource]="explosion.value().items">
+            <ng-container matColumnDef="code">
+              <th mat-header-cell *matHeaderCellDef>Component</th>
+              <td mat-cell *matCellDef="let item">
+                <a class="code" [routerLink]="['/products', item.productId]">{{ item.code }}</a>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let item">{{ item.name }}</td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let item">{{ typeLabel(item.type) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="quantity">
+              <th mat-header-cell *matHeaderCellDef class="number">Total need</th>
+              <td mat-cell *matCellDef="let item" class="number">
+                {{ item.quantity | number: '1.0-4' }} {{ unitLabel(item.unit) }}
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="explosionColumns"></tr>
+            <tr mat-row *matRowDef="let item; columns: explosionColumns"></tr>
+            <tr class="mat-mdc-row" *matNoDataRow>
+              <td class="mat-mdc-cell message" [attr.colspan]="explosionColumns.length">
+                This product has no components yet.
+              </td>
+            </tr>
+          </table>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <mat-card appearance="outlined" class="section">
+    @if (movements.isLoading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+    <mat-card-header>
+      <mat-card-title>Stock movements</mat-card-title>
+      <mat-card-subtitle>Latest 10 entries; the full ledger is on the Stock page</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <button mat-stroked-button class="record" (click)="recordMovement(p)">
+        <mat-icon>add</mat-icon>
+        Record movement
+      </button>
+      @if (movements.error(); as error) {
+        <p class="message error">{{ errorMessage(error) }}</p>
+      } @else if (movements.hasValue()) {
+        <app-movement-table [movements]="movements.value().items" [showProduct]="false" />
+      }
+    </mat-card-content>
+  </mat-card>
+}
