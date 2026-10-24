@@ -99,6 +99,9 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 10. **Complete** (InProgress → Done): one transaction, rows locked per rule 4; for every component writes
     `ProductionConsumption`, then one `ProductionOutput` for the product; sets `ConsumedQty`, `CompletedAt`.
     Fails entirely if any component is short. **No partial completion** (out of scope).
+    "Short" here means **physical on-hand** (the ledger's rule 3 check), not rule 9's reserved shortage:
+    with reservations, two work orders can block each other forever (10 on hand, A needs 5, B needs 8:
+    neither is "available") although A could be made. Reserved shortage is a planning signal only.
 11. **Cancel** is allowed from Planned/InProgress; nothing was consumed, so it only releases the reservation.
 12. Transitions: Planned → InProgress → Done; Planned/InProgress → Cancelled. Anything else is rejected.
 
@@ -127,6 +130,8 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 - Paging: `?page=&pageSize=` returning `{ items, page, pageSize, totalCount }`.
 - Controllers stay thin; logic lives in Application services or Domain.
 - Client: one folder per feature, lazy-loaded routes, signals for state, functional interceptors/guards.
+- Client styling: use the shared classes and tokens in `client/src/styles.scss` (`page`, `page-header`, `grid`,
+  `panel`, `kpi`, `chip`, `data-table`, `meter`, `empty-state`) before writing component styles.
 - `TreatWarningsAsErrors` is on — keep the build clean.
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `chore:` …).
 
@@ -158,4 +163,9 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
 - [x] Scaffold: .NET 10 layered solution, health checks, Angular 22 + Material shell, Docker Compose
 - [x] Phase 1 — Foundation: PostgreSQL, test projects, entities + EF configs + initial migration, furniture workshop seed (no users until Phase 3 auth), GitHub Actions CI, live demo on Render (API + static client) with PostgreSQL on Neon
 - [x] Phase 2 — Products, BOM, stock: BOM explosion and cycle check, BOM line validation (rule 5), products + BOM API (ProblemDetails errors), stock ledger with row locking (rules 2–4, concurrency tests), screens for products, BOM editing and stock
-- [ ] Phase 3 — next: sales orders, work orders, availability with reservation, JWT auth + roles
+- [x] Design refresh and a first dashboard (requested ahead of Phase 4): shared design system, dark sidebar shell,
+      restyled screens; `GET /dashboard` with product counts, below-minimum (on-hand, until reservations exist),
+      latest movements and 14-day activity, shown as KPI tiles and a CSS chart. Phase 4 extends it.
+- [ ] Phase 3 in progress (branch `feat/phase3-orders-v2`, not merged yet) — done: work order transitions and
+      availability with reservation (rules 9, 12), customers + sales orders API with ship/cancel (rules 13–15);
+      next: work orders API (rules 8, 10, 11), then JWT auth + roles, then order and work order screens

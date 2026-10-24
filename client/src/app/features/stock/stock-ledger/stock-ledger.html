@@ -1,37 +1,55 @@
-<header class="page-header">
-  <div>
-    <h1>Stock</h1>
-    <p class="subtitle">
-      Every receipt, issue and adjustment. Entries are never edited; a mistake is fixed with an
-      adjustment.
-    </p>
-  </div>
-  <button mat-flat-button (click)="record()">
-    <mat-icon>add</mat-icon>
-    Record movement
-  </button>
-</header>
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Stock</h1>
+      <p class="page-subtitle">
+        Every receipt, issue and adjustment. Entries are never edited; a mistake is fixed with an
+        adjustment.
+      </p>
+    </div>
+    <div class="page-actions">
+      <button mat-flat-button (click)="record()">
+        <mat-icon>add</mat-icon>
+        Record movement
+      </button>
+    </div>
+  </header>
 
-<div class="filters">
-  <app-product-picker label="Filter by product" [(product)]="product" />
-</div>
+  <section class="panel">
+    <div class="toolbar">
+      <app-product-picker class="filter" label="Filter by product" [(product)]="product" />
+      @if (product(); as p) {
+        <button mat-button (click)="product.set(null)">
+          <mat-icon>close</mat-icon>
+          Clear filter
+        </button>
+      }
+      @if (page(); as page) {
+        <span class="count muted">{{ page.totalCount }} movements</span>
+      }
+    </div>
 
-<div class="table-card">
-  @if (movements.isLoading()) {
-    <mat-progress-bar mode="indeterminate" />
-  }
+    <div class="panel-progress">
+      @if (movements.isLoading()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+    </div>
 
-  @if (movements.error(); as error) {
-    <p class="message error">{{ errorMessage(error) }}</p>
-  } @else if (page(); as page) {
-    <app-movement-table [movements]="page.items" />
-    <mat-paginator
-      [length]="page.totalCount"
-      [pageIndex]="pageIndex()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions"
-      (page)="changePage($event)"
-      aria-label="Stock movement pages"
-    />
-  }
+    @if (movements.error(); as error) {
+      <div class="empty-state error">
+        <mat-icon>error</mat-icon>
+        {{ errorMessage(error) }}
+      </div>
+    } @else if (page(); as page) {
+      <app-movement-table [movements]="page.items" />
+      <mat-paginator
+        [length]="page.totalCount"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="changePage($event)"
+        aria-label="Stock movement pages"
+      />
+    }
+  </section>
 </div>

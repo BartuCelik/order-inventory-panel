@@ -1,27 +1,50 @@
-<mat-toolbar class="toolbar">
-  <mat-icon class="logo" aria-hidden="true">inventory_2</mat-icon>
-  <span class="brand">Order &amp; Inventory</span>
-</mat-toolbar>
-
 <mat-sidenav-container class="container">
-  <mat-sidenav mode="side" opened class="sidenav">
-    <mat-nav-list>
+  <mat-sidenav
+    #drawer
+    class="sidebar"
+    [mode]="compact() ? 'over' : 'side'"
+    [opened]="!compact()"
+    [fixedInViewport]="compact()"
+  >
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><mat-icon>inventory_2</mat-icon></span>
+      <span class="brand-text">
+        <strong>Order &amp; Inventory</strong>
+        <small>Workshop panel</small>
+      </span>
+    </div>
+
+    <nav class="nav" aria-label="Main">
+      <span class="nav-section">Overview</span>
       @for (item of navItems; track item.route) {
         <a
-          mat-list-item
+          class="nav-item"
           [routerLink]="item.route"
-          routerLinkActive
-          #rla="routerLinkActive"
-          [activated]="rla.isActive"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          (click)="compact() && drawer.close()"
         >
-          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-          <span matListItemTitle>{{ item.label }}</span>
+          <mat-icon>{{ item.icon }}</mat-icon>
+          <span>{{ item.label }}</span>
         </a>
       }
-    </mat-nav-list>
+    </nav>
+
+    <div class="sidebar-foot">
+      <mat-icon>chair</mat-icon>
+      <span>Demo data: an invented furniture workshop</span>
+    </div>
   </mat-sidenav>
 
   <mat-sidenav-content class="content">
+    @if (compact()) {
+      <header class="topbar">
+        <button mat-icon-button (click)="drawer.toggle()" aria-label="Open navigation">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <strong>Order &amp; Inventory</strong>
+      </header>
+    }
     <router-outlet />
   </mat-sidenav-content>
 </mat-sidenav-container>

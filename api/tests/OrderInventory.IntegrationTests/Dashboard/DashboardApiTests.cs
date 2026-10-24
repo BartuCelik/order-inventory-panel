@@ -1,0 +1,144 @@
+using System.Net;
+using System.Net.Http.Json;
+using OrderInventory.Domain.Products;
+using OrderInventory.Domain.Stock;
+using OrderInventory.IntegrationTests.Infrastructure;
+
+namespace OrderInventory.IntegrationTests.Dashboard;
+
+/// <summary>
+/// GET /dashboard. This class has its own database (one ApiFactory per class), so the counts only
+/// include what these tests create; each test still asserts on its own products or on deltas.
+/// </summary>
+public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory>
+{
+    private readonly HttpClient _client = api.CreateClient();
+
+    private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+    [Fact]
+    public async Task ProductCounts_CountActiveProductsPerTypeAndInactiveSeparately()
+    {
+        var before = await GetAsync();
+        await CreateProductAsync("DB-CNT-RAW", ProductType.RawMaterial);
+        await CreateProductAsync("DB-CNT-FIN", ProductType.Finished);
+        var inactive = await CreateProductAsync("DB-CNT-OFF", ProductType.SemiFinished);
+        await DeactivateAsync(inactive);
+
+        var after = await GetAsync();
+
+        Assert.Equal(before.Products.RawMaterial + 1, after.Products.RawMaterial);
+        Assert.Equal(before.Products.SemiFinished, after.Products.SemiFinished);
+        Assert.Equal(before.Products.Finished + 1, after.Products.Finished);
+        Assert.Equal(before.Products.Inactive + 1, after.Products.Inactive);
+    }
+
+    [Fact]
+    public async Task BelowMinimum_ListsActiveProductsUnderTheirMinimum_MostCriticalFirst()
+    {
+        var empty = await CreateProductAsync("DB-MIN-EMPTY", ProductType.RawMaterial, minStock: 10m);
+        var low = await CreateProductAsync("DB-MIN-LOW", ProductType.RawMaterial, minStock: 10m);
+        var atMin = await CreateProductAsync("DB-MIN-AT", ProductType.RawMaterial, minStock: 10m);
+        var noMin = await CreateProductAsync("DB-MIN-NONE", ProductType.RawMaterial, minStock: 0m);
+        var inactive = await CreateProductAsync("DB-MIN-OFF", ProductType.RawMaterial, minStock: 10m);
+        await DeactivateAsync(inactive);
+        await ReceiveAsync(low, 7.5m);
+        await ReceiveAsync(atMin, 10m);
+
+        var dashboard = await GetAsync();
+        var mine = dashboard.BelowMinimum.Where(p => p.Code.StartsWith("DB-MIN-", StringComparison.Ordinal)).ToList();
+
+        // At the minimum is not below it; no minimum means never critical; inactive products are not tracked.
+        Assert.Equal(["DB-MIN-EMPTY", "DB-MIN-LOW"], mine.Select(p => p.Code));
+        Assert.Equal((empty, 0m, 10m), (mine[0].ProductId, mine[0].OnHand, mine[0].MinStock));
+        Assert.Equal((low, 7.5m), (mine[1].ProductId, mine[1].OnHand));
+        Assert.DoesNotContain(dashboard.BelowMinimum, p => p.ProductId == noMin);
+    }
+
+    [Fact]
+    public async Task RecentMovements_NewestFirst_AtMostEight()
+    {
+        var glue = await CreateProductAsync("DB-REC-GLUE", ProductType.RawMaterial);
+        for (var i = 1; i <= 9; i++)
+        {
+            await ReceiveAsync(glue, i);
+        }
+
+        var recent = (await GetAsync()).RecentMovements;
+
+        Assert.Equal(8, recent.Count);
+        Assert.Equal(9m, recent[0].Quantity);
+        Assert.Equal("DB-REC-GLUE", recent[0].ProductCode);
+    }
+
+    [Fact]
+    public async Task Activity_HasFourteenDaysEndingToday_CountingInAndOutMovements()
+    {
+        var before = await GetAsync();
+        var oil = await CreateProductAsync("DB-ACT-OIL", ProductType.RawMaterial);
+        await ReceiveAsync(oil, 5m);
+        await ReceiveAsync(oil, 1m);
+        await IssueAsync(oil, 2m);
+
+        var activity = (await GetAsync()).Activity;
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        Assert.Equal(14, activity.Count);
+        Assert.Equal(today.AddDays(-13), activity[0].Date);
+        Assert.Equal(today, activity[^1].Date);
+        Assert.Equal(before.Activity[^1].In + 2, activity[^1].In);
+        Assert.Equal(before.Activity[^1].Out + 1, activity[^1].Out);
+    }
+
+    // ---------- helpers ----------
+
+    private async Task<DashboardResponse> GetAsync()
+    {
+        var response = await _client.GetAsync("/dashboard", CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<DashboardResponse>(ApiFactory.JsonOptions, CancellationToken))!;
+    }
+
+    private async Task<int> CreateProductAsync(string code, ProductType type, decimal minStock = 0m)
+    {
+        var response = await _client.PostAsJsonAsync("/products",
+            new { code, name = $"Product {code}", type, unit = UnitOfMeasure.Piece, minStock }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<IdOnly>(ApiFactory.JsonOptions, CancellationToken))!.Id;
+    }
+
+    private async Task DeactivateAsync(int productId)
+    {
+        var response = await _client.PutAsJsonAsync($"/products/{productId}",
+            new { name = "Inactive product", minStock = 10m, isActive = false }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    private Task ReceiveAsync(int productId, decimal quantity) => RecordAsync(productId, StockMovementType.Receipt, quantity);
+
+    private Task IssueAsync(int productId, decimal quantity) => RecordAsync(productId, StockMovementType.Issue, quantity);
+
+    private async Task RecordAsync(int productId, StockMovementType type, decimal quantity)
+    {
+        var response = await _client.PostAsJsonAsync("/stock/movements",
+            new { productId, type, quantity }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    private sealed record IdOnly(int Id);
+
+    private sealed record DashboardResponse(
+        ProductCountsResponse Products,
+        IReadOnlyList<BelowMinimumResponse> BelowMinimum,
+        IReadOnlyList<MovementResponse> RecentMovements,
+        IReadOnlyList<ActivityDayResponse> Activity);
+
+    private sealed record ProductCountsResponse(int RawMaterial, int SemiFinished, int Finished, int Inactive);
+
+    private sealed record BelowMinimumResponse(
+        int ProductId, string Code, string Name, UnitOfMeasure Unit, decimal OnHand, decimal MinStock);
+
+    private sealed record MovementResponse(int Id, string ProductCode, StockMovementType Type, decimal Quantity);
+
+    private sealed record ActivityDayResponse(DateOnly Date, int In, int Out);
+}
