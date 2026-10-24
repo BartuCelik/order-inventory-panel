@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OrderInventory.Application.Dashboard;
 using OrderInventory.Application.Products;
+using OrderInventory.Application.Sales;
 using OrderInventory.Application.Stock;
 
 namespace OrderInventory.Application;
@@ -17,6 +18,8 @@ public static class DependencyInjection
         services.AddScoped<StockLedger>();
         services.AddScoped<StockService>();
         services.AddScoped<DashboardService>();
+        services.AddScoped<CustomerService>();
+        services.AddScoped<SalesOrderService>();
 
         return services;
     }
