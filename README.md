@@ -106,6 +106,8 @@ A test fails if the model has changes that no migration covers.
 | `GET /api/products/{id}` · `POST /api/products` · `PUT /api/products/{id}` | Read, create, update a product |
 | `GET /api/products/{id}/bom` · `POST /api/products/{id}/bom` · `DELETE /api/products/{id}/bom/{lineId}` | Direct BOM lines of a product |
 | `GET /api/products/{id}/bom/explosion?qty=N` | Total leaf-component need for N units (multi-level) |
+| `POST /api/stock/movements` | Receipt / Issue (positive quantity) or Adjustment (signed); rejected if stock would go negative |
+| `GET /api/stock/movements?productId=` | Stock ledger, newest first, paged; append-only (no update or delete) |
 
 Errors are RFC 7807 ProblemDetails: 400 validation, 404 not found, 409 conflict (e.g. duplicate code), 422 business rule.
 
