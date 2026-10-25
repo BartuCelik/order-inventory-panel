@@ -126,6 +126,16 @@ export const en = {
   'dashboard.dayTooltip': '{date}: {in} in, {out} out',
   'dashboard.chartFoot': '{in} in and {out} out over two weeks; {today} today.',
   'dashboard.allAboveMinimum': 'Every product is at or above its minimum.',
+  'dashboard.weeklyProduction': 'Production, last 8 weeks',
+  'dashboard.productionChartLabel': {
+    one: '{count} work order completed over the last {weeks} weeks.',
+    other: '{count} work orders completed over the last {weeks} weeks.',
+  },
+  'dashboard.weekOf': 'Week of {date}',
+  'dashboard.completedCount': {
+    one: '{count} work order completed',
+    other: '{count} work orders completed',
+  },
   'dashboard.systemStatus': 'System status',
   'dashboard.api': 'API',
   'dashboard.apiUnreachable': 'unreachable',

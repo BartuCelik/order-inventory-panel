@@ -13,6 +13,7 @@ import { daysUntil, dueLabel } from '../orders/order.models';
 import { stockLevel, unitLabel } from '../products/product.models';
 import { statusClass, statusLabel } from '../work-orders/work-order.models';
 import { DashboardSummary } from './dashboard.models';
+import { ProductionChart } from './production-chart/production-chart';
 import { AuthService } from '../../core/auth/auth.service';
 import { t, TranslatePipe } from '../../core/i18n/i18n';
 
@@ -20,6 +21,7 @@ import { t, TranslatePipe } from '../../core/i18n/i18n';
   selector: 'app-dashboard',
   imports: [
     TranslatePipe,
+    ProductionChart,
     DatePipe,
     DecimalPipe,
     RouterLink,

@@ -35,6 +35,14 @@ export interface ProductionStats {
   doneLast7Days: number;
   shortCount: number;
   queue: WorkOrderSummary[];
+  /** The last eight weeks, oldest first, quiet weeks included. */
+  weekly: ProductionWeek[];
+}
+
+/** Work orders completed in the week (Monday to Sunday, UTC) starting on weekStart. */
+export interface ProductionWeek {
+  weekStart: string;
+  completed: number;
 }
 
 /** Active products per type, and the inactive ones. */

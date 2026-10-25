@@ -129,6 +129,16 @@ export const it: Messages = {
   'dashboard.dayTooltip': '{date}: {in} carichi, {out} scarichi',
   'dashboard.chartFoot': '{in} carichi e {out} scarichi in due settimane; {today} oggi.',
   'dashboard.allAboveMinimum': 'Tutti gli articoli sono al minimo o sopra.',
+  'dashboard.weeklyProduction': 'Produzione, ultime 8 settimane',
+  'dashboard.productionChartLabel': {
+    one: '{count} ordine di produzione completato nelle ultime {weeks} settimane.',
+    other: '{count} ordini di produzione completati nelle ultime {weeks} settimane.',
+  },
+  'dashboard.weekOf': 'Settimana del {date}',
+  'dashboard.completedCount': {
+    one: '{count} ordine di produzione completato',
+    other: '{count} ordini di produzione completati',
+  },
   'dashboard.systemStatus': 'Stato del sistema',
   'dashboard.api': 'API',
   'dashboard.apiUnreachable': 'non raggiungibile',
