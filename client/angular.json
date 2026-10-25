@@ -31,6 +31,11 @@
               }
             ],
             "styles": [
+              "@fontsource/barlow/400.css",
+              "@fontsource/barlow/500.css",
+              "@fontsource/barlow/600.css",
+              "@fontsource/barlow-semi-condensed/500.css",
+              "@fontsource/barlow-semi-condensed/600.css",
               "src/styles.scss"
             ]
           },

@@ -1,25 +1,155 @@
-// KPI tiles that link somewhere lift slightly on hover.
-.tile {
-  color: inherit;
-  text-decoration: none;
-  transition:
-    transform 120ms,
-    box-shadow 120ms;
+// ---------- andon strip ----------
+// One plate per condition, like the andon board above a production line. Normal plates stay grey;
+// a plate turns amber (caution) or red (alarm) only when its reading needs someone to act.
 
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgb(16 24 40 / 8%);
-    text-decoration: none;
+.andon {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  margin-bottom: 16px;
+  padding: 2px;
+  background: var(--hmi-graphite);
+  border-radius: var(--hmi-radius-panel);
+
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  @media (max-width: 560px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  // Five plates: the last one fills the row it ends up on, so no empty slot shows.
+  @media (max-width: 1000px) {
+    > .segment:last-child {
+      grid-column: span 2;
+    }
   }
 }
 
-// ---------- activity chart ----------
+.segment {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  padding: 12px 14px 12px;
+  background: var(--hmi-panel);
+  color: var(--hmi-ink);
+  text-decoration: none;
+
+  &:hover {
+    background: #fff;
+  }
+
+  .reading {
+    font-family: var(--hmi-condensed);
+    font-size: 52px;
+    font-weight: 600;
+    line-height: 0.95;
+  }
+  .label {
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .detail {
+    color: var(--hmi-steel);
+    font-size: 13.5px;
+  }
+
+  &.caution {
+    background: var(--hmi-caution);
+
+    .detail {
+      color: var(--hmi-ink);
+    }
+  }
+
+  &.alarm {
+    background: var(--hmi-alarm);
+    color: #fff;
+
+    .detail {
+      color: rgb(255 255 255 / 85%);
+    }
+  }
+
+  &.caution:hover,
+  &.alarm:hover {
+    filter: brightness(1.06);
+  }
+}
+
+// ---------- shared list rows ----------
+
+.queue,
+.due,
+.levels {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    align-items: center;
+    gap: 4px 14px;
+    min-height: 56px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--hmi-rule-soft);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+// A row in an abnormal state carries a bar on its leading edge.
+.is-short {
+  box-shadow: inset 4px 0 0 var(--hmi-caution);
+}
+.is-late {
+  box-shadow: inset 4px 0 0 var(--hmi-alarm);
+}
+
+.queue > li {
+  grid-template-columns: 14px minmax(0, 1fr) auto 64px;
+}
+
+.qty {
+  color: var(--hmi-steel);
+  font-weight: 500;
+}
+
+.when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 14px;
+}
+
+.flags {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.due > li,
+.levels > li {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.due-when,
+.level {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-size: 14px;
+}
+
+// ---------- chart ----------
 
 .legend {
   display: flex;
-  gap: 16px;
-  color: var(--app-muted);
-  font-size: 13px;
+  gap: 14px;
+  padding-right: 8px;
+  color: var(--hmi-steel);
+  font-size: 13.5px;
 
   span {
     display: inline-flex;
@@ -31,151 +161,106 @@
 .swatch {
   width: 10px;
   height: 10px;
-  border-radius: 3px;
 }
-
 .in-swatch {
-  background: var(--app-success);
+  background: var(--hmi-graphite);
 }
-
 .out-swatch {
-  background: var(--app-danger);
+  background: var(--hmi-slate);
 }
 
 .chart {
   display: grid;
-  grid-template-columns: repeat(14, minmax(0, 1fr));
+  grid-template-columns: 28px repeat(14, minmax(0, 1fr));
   gap: 6px;
-  height: 240px;
-  padding: 20px 20px 16px;
+  height: 200px;
+  padding: 16px 16px 8px;
+  // Grid lines at 0, 50 % and 100 % of the scale, matching the labels.
+  background: linear-gradient(var(--hmi-rule-soft) 1px, transparent 1px) 0 16px / 100%
+    calc((100% - 44px) / 2) repeat-y;
+}
+
+.scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: calc(100% - 20px);
+  margin-top: -7px;
+  color: var(--hmi-slate);
+  font-size: 12px;
+  text-align: right;
 }
 
 .day {
   display: flex;
   flex-direction: column;
-  align-items: center;
   min-width: 0;
-  border-radius: 8px;
-  padding-top: 4px;
-
-  &:hover {
-    background: var(--app-surface-muted);
-  }
-
-  &.today .day-label {
-    color: var(--mat-sys-primary);
-    font-weight: 700;
-  }
 }
 
 .bars {
-  flex: 1;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 3px;
-  width: 100%;
-  // A faint baseline so empty days still read as days.
-  border-bottom: 1px solid var(--app-border);
+  gap: 2px;
+  flex: 1;
 }
 
 .bar {
-  width: min(12px, 35%);
-  min-height: 0;
-  border-radius: 4px 4px 0 0;
-  transition: height 300ms ease;
+  width: min(10px, 40%);
 }
-
 .in-bar {
-  background: var(--app-success);
+  background: var(--hmi-graphite);
 }
-
 .out-bar {
-  background: color-mix(in srgb, var(--app-danger) 85%, white);
+  background: var(--hmi-slate);
 }
 
 .day-label {
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  padding-top: 4px;
+  color: var(--hmi-steel);
+  font-size: 12.5px;
+  text-align: center;
 }
 
-.weekday {
-  color: var(--app-faint);
-  font-size: 11px;
+.today .day-label {
+  color: var(--hmi-ink);
+  font-weight: 700;
 }
 
-// ---------- lists ----------
-
-.status-list,
-.rows {
-  list-style: none;
+.chart-foot {
   margin: 0;
-  padding: 0;
-
-  li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--app-border);
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
+  padding: 4px 16px 14px;
+  font-size: 13.5px;
 }
 
-.status-list {
-  li {
-    padding: 14px 20px;
-    font-weight: 500;
-  }
+// ---------- system status line ----------
 
-  .check-name {
-    text-transform: capitalize;
-  }
-
-  .check-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    font-weight: 400;
-  }
-}
-
-.rows {
-  a.stack:hover {
-    text-decoration: none;
-
-    .primary-line {
-      color: var(--mat-sys-primary);
-    }
-  }
-
-  .secondary-line {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .chip {
-    height: 20px;
-    padding: 0 8px;
-    font-size: 11px;
-  }
-}
-
-.level {
+.system {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 4px 2px;
+  color: var(--hmi-steel);
+  font-size: 13px;
 }
 
-.movement-qty {
-  font-weight: 600;
+.sys-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  i {
+    width: 8px;
+    height: 8px;
+    background: var(--hmi-slate);
+  }
+
+  &.fault {
+    color: var(--hmi-alarm);
+    font-weight: 600;
+
+    i {
+      background: var(--hmi-alarm);
+    }
+  }
 }

@@ -90,6 +90,35 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
         Assert.Equal(before.Activity[^1].Out + 1, activity[^1].Out);
     }
 
+    [Fact]
+    public async Task OrdersAndProduction_CountOpenLateAndShortWork()
+    {
+        var before = await GetAsync();
+        var table = await CreateProductAsync("DB-OP-TABLE", ProductType.Finished);
+        var leg = await CreateProductAsync("DB-OP-LEG", ProductType.SemiFinished);
+        var bom = await _client.PostAsJsonAsync($"/products/{table}/bom-lines",
+            new { componentProductId = leg, qtyPerUnit = 4m }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, bom.StatusCode);
+        var customerResponse = await _client.PostAsJsonAsync("/customers", new { name = "DB-OP Customer" }, ApiFactory.JsonOptions, CancellationToken);
+        var customer = (await customerResponse.Content.ReadFromJsonAsync<IdOnly>(ApiFactory.JsonOptions, CancellationToken))!.Id;
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var late = await CreateOrderAsync(customer, table, today.AddDays(-10), today.AddDays(-2));
+        await CreateOrderAsync(customer, table, today, today.AddDays(3));
+        // Nothing on hand: the work order is short (rule 9).
+        var workOrder = await _client.PostAsJsonAsync("/work-orders", new { productId = table, quantity = 1m }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, workOrder.StatusCode);
+
+        var after = await GetAsync();
+
+        Assert.Equal(before.Orders.Open + 2, after.Orders.Open);
+        Assert.Equal(before.Orders.Late + 1, after.Orders.Late);
+        Assert.Equal(late, after.Orders.DueSoon[0].Id);
+        Assert.True(after.Orders.DueSoon[0].IsLate);
+        Assert.Equal(before.Production.Planned + 1, after.Production.Planned);
+        Assert.Equal(before.Production.ShortCount + 1, after.Production.ShortCount);
+        Assert.Contains(after.Production.Queue, w => w.ProductCode == "DB-OP-TABLE" && w.HasShortage);
+    }
+
     // ---------- helpers ----------
 
     private async Task<DashboardResponse> GetAsync()
@@ -125,13 +154,31 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 
+    private async Task<int> CreateOrderAsync(int customerId, int productId, DateOnly orderDate, DateOnly dueDate)
+    {
+        var response = await _client.PostAsJsonAsync("/sales-orders",
+            new { customerId, orderDate, dueDate, lines = new[] { new { productId, quantity = 1m } } }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<IdOnly>(ApiFactory.JsonOptions, CancellationToken))!.Id;
+    }
+
     private sealed record IdOnly(int Id);
 
     private sealed record DashboardResponse(
         ProductCountsResponse Products,
         IReadOnlyList<BelowMinimumResponse> BelowMinimum,
         IReadOnlyList<MovementResponse> RecentMovements,
-        IReadOnlyList<ActivityDayResponse> Activity);
+        IReadOnlyList<ActivityDayResponse> Activity,
+        OrderStatsResponse Orders,
+        ProductionStatsResponse Production);
+
+    private sealed record OrderStatsResponse(int Open, int Late, IReadOnlyList<DueOrderResponse> DueSoon);
+
+    private sealed record DueOrderResponse(int Id, string Number, bool IsLate);
+
+    private sealed record ProductionStatsResponse(int Planned, int InProgress, int DoneLast7Days, int ShortCount, IReadOnlyList<QueueResponse> Queue);
+
+    private sealed record QueueResponse(int Id, string ProductCode, bool HasShortage);
 
     private sealed record ProductCountsResponse(int RawMaterial, int SemiFinished, int Finished, int Inactive);
 

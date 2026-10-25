@@ -1,5 +1,6 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { Component, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,9 +14,15 @@ interface NavItem {
   route: string;
 }
 
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
 @Component({
   selector: 'app-shell',
   imports: [
+    DatePipe,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -27,17 +34,44 @@ interface NavItem {
   styleUrl: './shell.scss',
 })
 export class Shell {
-  protected readonly navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'space_dashboard', route: '/dashboard' },
-    { label: 'Products', icon: 'category', route: '/products' },
-    { label: 'Stock', icon: 'inventory', route: '/stock' },
+  /** Grouped the way the workshop works: what is being made, what was ordered, what is on the shelves. */
+  protected readonly navGroups: NavGroup[] = [
+    {
+      label: 'Floor',
+      items: [
+        { label: 'Overview', icon: 'space_dashboard', route: '/dashboard' },
+        { label: 'Work orders', icon: 'precision_manufacturing', route: '/work-orders' },
+      ],
+    },
+    {
+      label: 'Orders',
+      items: [
+        { label: 'Sales orders', icon: 'receipt_long', route: '/sales-orders' },
+        { label: 'Customers', icon: 'storefront', route: '/customers' },
+      ],
+    },
+    {
+      label: 'Inventory',
+      items: [
+        { label: 'Products', icon: 'category', route: '/products' },
+        { label: 'Stock ledger', icon: 'inventory', route: '/stock' },
+      ],
+    },
   ];
 
-  /** Below this width the sidebar becomes a drawer opened from a top bar. */
+  /** Below this width the rail becomes a drawer opened from a top bar. */
   protected readonly compact = toSignal(
     inject(BreakpointObserver)
       .observe('(max-width: 900px)')
       .pipe(map((state) => state.matches)),
     { initialValue: false },
   );
+
+  /** Wall clock for the shop floor, refreshed every 20 seconds. */
+  protected readonly now = signal(new Date());
+
+  constructor() {
+    const timer = setInterval(() => this.now.set(new Date()), 20_000);
+    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+  }
 }

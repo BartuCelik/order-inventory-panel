@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { debounceTime } from 'rxjs';
 import { API_BASE_URL } from '../../../core/api';
-import { Paged, Product, typeLabel } from '../product.models';
+import { Paged, Product, ProductType, typeLabel } from '../product.models';
 
 /**
  * Search-as-you-type product field. Two-way bind the chosen product with [(product)];
@@ -23,7 +23,8 @@ import { Paged, Product, typeLabel } from '../product.models';
       <mat-autocomplete #auto="matAutocomplete" [displayWith]="display">
         @for (p of options(); track p.id) {
           <mat-option [value]="p">
-            <span class="code">{{ p.code }}</span> · {{ p.name }}
+            <span class="code">{{ p.code }}</span
+            >&ensp;{{ p.name }}
             <small>{{ typeLabel(p.type) }}</small>
           </mat-option>
         }
@@ -41,7 +42,8 @@ import { Paged, Product, typeLabel } from '../product.models';
       width: 100%;
     }
     .code {
-      font-family: 'Roboto Mono', monospace;
+      font-family: var(--hmi-condensed);
+      font-weight: 600;
     }
     .error {
       color: var(--mat-sys-error);
@@ -57,6 +59,8 @@ export class ProductPicker {
   /** Products that may not be picked, e.g. the parent itself and its existing components. */
   readonly excludeIds = input<readonly number[]>([]);
   readonly error = input<string | null>(null);
+  /** Only offer products of this type, e.g. finished goods on a sales order (rule 13). */
+  readonly type = input<ProductType | null>(null);
   readonly subscriptSizing = input<'fixed' | 'dynamic'>('dynamic');
   readonly product = model<Product | null>(null);
 
@@ -71,7 +75,10 @@ export class ProductPicker {
   private readonly results = httpResource<Paged<Product>>(() => {
     const search = this.search().trim();
     return search
-      ? { url: `${API_BASE_URL}/products`, params: { search, pageSize: 10 } }
+      ? {
+          url: `${API_BASE_URL}/products`,
+          params: { search, pageSize: 10, ...(this.type() ? { type: this.type()! } : {}) },
+        }
       : undefined;
   });
 

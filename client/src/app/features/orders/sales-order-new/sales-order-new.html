@@ -1,0 +1,127 @@
+<div class="page narrow">
+  <a class="breadcrumb" routerLink="/sales-orders"><mat-icon>arrow_back</mat-icon>Sales orders</a>
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">New sales order</h1>
+      <p class="page-subtitle">
+        Finished products only. Plan production from the order once it is saved.
+      </p>
+    </div>
+  </header>
+
+  <form (ngSubmit)="save()">
+    <section class="panel">
+      <header class="panel-header"><h2 class="panel-title">Customer and dates</h2></header>
+      <div class="panel-body head-fields">
+        <div class="customer">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Customer</mat-label>
+            <mat-select
+              [value]="customerId()"
+              (valueChange)="customerId.set($event)"
+              name="customer"
+            >
+              @for (c of customers.hasValue() ? customers.value().items : []; track c.id) {
+                <mat-option [value]="c.id">{{ c.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <button mat-button type="button" (click)="newCustomer()">
+            <mat-icon>add</mat-icon>
+            New customer
+          </button>
+        </div>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Order date</mat-label>
+          <input
+            matInput
+            type="date"
+            name="orderDate"
+            [ngModel]="orderDate()"
+            (ngModelChange)="orderDate.set($event)"
+          />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Due date</mat-label>
+          <input
+            matInput
+            type="date"
+            name="dueDate"
+            [min]="orderDate()"
+            [ngModel]="dueDate()"
+            (ngModelChange)="dueDate.set($event)"
+          />
+        </mat-form-field>
+      </div>
+    </section>
+
+    <section class="panel lines-panel">
+      <header class="panel-header">
+        <h2 class="panel-title">Lines</h2>
+        <button mat-button type="button" (click)="addLine()">
+          <mat-icon>add</mat-icon>
+          Add line
+        </button>
+      </header>
+      <ol class="lines">
+        @for (line of lines(); track line.key; let i = $index) {
+          <li>
+            <span class="line-no" aria-hidden="true">{{ i + 1 }}</span>
+            <app-product-picker
+              class="picker"
+              label="Finished product"
+              type="Finished"
+              [product]="line.product"
+              (productChange)="setProduct(line.key, $event)"
+              [error]="
+                line.product && duplicateIds().includes(line.product.id)
+                  ? 'Already on another line'
+                  : null
+              "
+            />
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qty">
+              <mat-label>Quantity</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0.0001"
+                step="1"
+                [name]="'qty' + line.key"
+                [ngModel]="line.quantity"
+                (ngModelChange)="setQuantity(line.key, $event)"
+              />
+              @if (line.product) {
+                <span matTextSuffix>{{ unitLabel(line.product.unit) }}</span>
+              }
+            </mat-form-field>
+            <button
+              mat-icon-button
+              type="button"
+              [disabled]="lines().length === 1"
+              (click)="removeLine(line.key)"
+              [attr.aria-label]="'Remove line ' + (i + 1)"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </li>
+        }
+      </ol>
+    </section>
+
+    @if (submitted() && problems().length > 0) {
+      <ul class="problems" role="alert">
+        @for (p of problems(); track p) {
+          <li>{{ p }}</li>
+        }
+      </ul>
+    }
+    @if (error(); as message) {
+      <p class="problems" role="alert">{{ message }}</p>
+    }
+
+    <div class="actions">
+      <a mat-button routerLink="/sales-orders">Discard</a>
+      <button mat-flat-button type="submit" [disabled]="saving()">Create sales order</button>
+    </div>
+  </form>
+</div>

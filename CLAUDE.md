@@ -75,6 +75,8 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 ### Stock
 1. **Stock is never stored.** On-hand = `SUM(StockMovement.Quantity)` per product.
 2. The ledger is **append-only**. No update/delete of movements; mistakes are fixed with an `Adjustment`.
+   Enforced twice: `AppDbContext` rejects tracked changes, and a database trigger
+   (`trg_stock_movements_append_only`) rejects any UPDATE/DELETE. TRUNCATE still works (Phase 5 nightly reset).
 3. **Stock can never go negative.** Any operation that would make on-hand < 0 is rejected as a whole.
 4. Every stock-changing operation runs in **one database transaction** and locks the affected
    `Product` rows with `SELECT ... FOR UPDATE`, **ordered by ProductId** (prevents deadlocks).
@@ -108,6 +110,9 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 ### Sales orders
 13. Lines must reference `Finished` products. Work orders can be created from an order line.
 14. **Ship** (Open → Shipped): one transaction, writes `Issue` movements for each line; fails if any finished good is short.
+14a. **Cancel** (Open → Cancelled) also cancels the order's open work orders (Planned/InProgress) in the same
+    transaction, releasing their reservations. Done work orders stay Done. Locks: sales order row, then its
+    work order rows in id order.
 15. **Late** = `Status == Open && DueDate < today` (derived, not stored).
 
 ### Roles
@@ -131,7 +136,19 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 - Controllers stay thin; logic lives in Application services or Domain.
 - Client: one folder per feature, lazy-loaded routes, signals for state, functional interceptors/guards.
 - Client styling: use the shared classes and tokens in `client/src/styles.scss` (`page`, `page-header`, `grid`,
-  `panel`, `kpi`, `chip`, `data-table`, `meter`, `empty-state`) before writing component styles.
+  `panel`, `kpi`, `chip`, `status`, `flag`, `data-table`, `meter`, `empty-state`, `toolbar`) before writing component styles.
+
+### Design rules (industrial HMI look, decided 2026-10-25 — keep consistent)
+
+- Modelled on ISA-101 high-performance HMI screens: **greys for normal, colour only for abnormal**.
+  `--hmi-caution` (amber) = material short (rule 9); `--hmi-alarm` (red) = late, below minimum, failed.
+  Never colour a normal state (no green "OK", no blue accents).
+- Status is shape **and** text: `.status.planned` hollow square, `.in-progress` solid, `.done` tick,
+  `.cancelled` struck through. Abnormal rows get `.is-short` / `.is-late` (a bar on the leading edge).
+- Type: Barlow (UI) and Barlow Semi Condensed (titles, readouts, codes), self-hosted via @fontsource;
+  tabular figures everywhere. Sentence case; no all-caps labels, no monospace.
+- Panels: square (3px), hairline edge, darker title strip, no shadows. Primary buttons are graphite.
+- Copy says what happens ("Ship", "Plan production"); errors state what is wrong and what to do.
 - `TreatWarningsAsErrors` is on — keep the build clean.
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `chore:` …).
 
@@ -166,42 +183,31 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
 - [x] Design refresh and a first dashboard (requested ahead of Phase 4, merged in #10): shared design system,
       dark sidebar shell, restyled screens; `GET /dashboard` with product counts, below-minimum (on-hand, until
       reservations exist), latest movements and 14-day activity, shown as KPI tiles and a CSS chart.
-- [ ] Phase 3 in progress on branch `feat/phase3-orders-v2` (pushed, no PR yet, **not merged**):
+- [ ] Phase 3 — API and screens done on `feat/phase3-orders-v3` (PR #12, **not merged**); auth remains:
   - [x] Work order transitions (rule 12) and availability with reservation (rule 9) — pure domain + unit tests
-  - [x] Customers API; sales orders API: create (finished goods only, rule 13), list with derived late flag
-        (rule 15), ship in one transaction with an order-row lock and Issue movements via StockLedger (rule 14),
-        cancel; SO numbers via `DocumentNumbers` (advisory lock per prefix)
-  - [ ] Work orders API (rules 8, 10, 11)
-  - [ ] JWT auth + roles
-  - [ ] Screens: customers, sales orders, work orders, login
+  - [x] Customers API; sales orders API: create (rule 13), late flag (rule 15), ship (rule 14), cancel
+  - [x] Work orders API (rules 8–12): BOM snapshot, availability per component, start/cancel/complete with
+        row locks, complete through `StockLedger` on physical on-hand; concurrency test for double complete
+  - [x] Owner decisions 2026-10-25: cancelling a sales order cancels its open work orders (rule 14a);
+        append-only ledger enforced by a database trigger (rule 2)
+  - [x] Dashboard: order and production figures (late orders, short work orders, queue)
+  - [x] Industrial redesign (see *Design rules*) and screens: shop-floor dashboard, work orders (list, detail),
+        customers, sales orders (list, new, detail with plan production / ship / cancel)
+  - [ ] JWT auth + roles, login screen, hide actions the role may not perform
 
-### Next session (planned 2026-10-25)
+### Next session
 
-1. **Rebase `feat/phase3-orders-v2` onto `main`.** It branched before #10; expect a small conflict in
-   `Application/DependencyInjection.cs` (keep every registration). Run all tests after the rebase.
-2. **Work orders API, tests first:**
-   - Create: product must be SemiFinished/Finished with BOM lines; snapshot the **direct** BOM into
-     `WorkOrderComponent` (`RequiredQty = QtyPerUnit × Quantity`, rule 8); optional `SalesOrderLineId`
-     (line must exist, its order Open, same product); number `WO-00001` via `DocumentNumbers`.
-   - List and detail with per-component availability from `WorkOrderAvailability` (rule 9).
-   - Start, cancel (rules 11, 12): lock the work order row, invalid transition → 409.
-   - Complete (rule 10): lock the work order row, then post `ProductionConsumption` per component and one
-     `ProductionOutput` through `StockLedger` in the same transaction; set `ConsumedQty`, `CompletedAt`.
-     "Short" = physical on-hand (see rule 10). Tests: shortage writes nothing; two simultaneous completes
-     consume once; later BOM edits do not change an existing work order.
-3. **Open the Phase 3 API PR** (sales orders + work orders) against `main`.
-4. **JWT auth + roles** (owner reviews line by line — explain every decision in the PR):
+1. Owner reviews and merges PR #12. `feat/phase3-orders-v2` is superseded by `-v3` (a rebase onto main) and can
+   be deleted.
+2. **JWT auth + roles** on a new branch (owner reviews line by line — explain every decision in the PR):
    login endpoint, password hashing, demo users in the seed (one per role), `[Authorize]` per the roles table,
    `CreatedBy` from the token (`ICurrentUser` is already in place), signing key from configuration
    (Render: `generateValue: true` in `render.yaml`, never committed). Existing integration tests need an
    authenticated client.
-5. **Screens:** login page + functional auth interceptor/guard, customers, sales orders (late badge, ship,
-   cancel, create work order from a line), work orders (availability/shortage per component,
-   start/complete/cancel); hide actions the role may not perform.
-
-Open questions for the owner:
-- Cancelling a sales order that has open work orders: leave them, cancel them, or refuse?
-- Enforce the append-only ledger in the database too (trigger), at the cost of `TRUNCATE` for the Phase 5 nightly reset?
+3. **Client auth:** login page in the HMI style, functional interceptor and guard, current user and role in the
+   rail, hide actions the role may not perform (ship/complete = Admin, Warehouse; plan/start/cancel = Admin, Planner).
+4. Then Phase 4: critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
+   design rules), PDF work order, Excel export/import.
 
 Local dev note: the local database holds two leftover test products (`UI-TEST-…`, `UIV2-…`) from manual checks;
 `docker compose down -v` resets it to the seed.

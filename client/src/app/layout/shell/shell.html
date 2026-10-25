@@ -1,38 +1,46 @@
 <mat-sidenav-container class="container">
   <mat-sidenav
     #drawer
-    class="sidebar"
+    class="rail"
     [mode]="compact() ? 'over' : 'side'"
     [opened]="!compact()"
     [fixedInViewport]="compact()"
   >
-    <div class="brand">
-      <span class="logo" aria-hidden="true"><mat-icon>inventory_2</mat-icon></span>
-      <span class="brand-text">
-        <strong>Order &amp; Inventory</strong>
-        <small>Workshop panel</small>
-      </span>
-    </div>
+    <a class="brand" routerLink="/dashboard" (click)="compact() && drawer.close()">
+      <span class="mark" aria-hidden="true"><i></i><i></i></span>
+      <span class="brand-name">Workshop panel</span>
+    </a>
 
-    <nav class="nav" aria-label="Main">
-      <span class="nav-section">Overview</span>
-      @for (item of navItems; track item.route) {
-        <a
-          class="nav-item"
-          [routerLink]="item.route"
-          routerLinkActive="active"
-          ariaCurrentWhenActive="page"
-          (click)="compact() && drawer.close()"
-        >
-          <mat-icon>{{ item.icon }}</mat-icon>
-          <span>{{ item.label }}</span>
-        </a>
+    <nav aria-label="Main">
+      @for (group of navGroups; track group.label) {
+        <div class="group">
+          <span class="group-label" [id]="'nav-' + group.label">{{ group.label }}</span>
+          <ul [attr.aria-labelledby]="'nav-' + group.label">
+            @for (item of group.items; track item.route) {
+              <li>
+                <a
+                  class="nav-item"
+                  [routerLink]="item.route"
+                  routerLinkActive="active"
+                  ariaCurrentWhenActive="page"
+                  (click)="compact() && drawer.close()"
+                >
+                  <mat-icon>{{ item.icon }}</mat-icon>
+                  <span>{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
       }
     </nav>
 
-    <div class="sidebar-foot">
-      <mat-icon>chair</mat-icon>
-      <span>Demo data: an invented furniture workshop</span>
+    <div class="rail-foot">
+      <time class="clock" [attr.datetime]="now().toISOString()">
+        <span class="clock-time">{{ now() | date: 'HH:mm' }}</span>
+        <span class="clock-date">{{ now() | date: 'EEE d MMM' }}</span>
+      </time>
+      <span class="demo-note">Demo data from an invented furniture workshop</span>
     </div>
   </mat-sidenav>
 
@@ -42,7 +50,8 @@
         <button mat-icon-button (click)="drawer.toggle()" aria-label="Open navigation">
           <mat-icon>menu</mat-icon>
         </button>
-        <strong>Order &amp; Inventory</strong>
+        <span class="mark" aria-hidden="true"><i></i><i></i></span>
+        <strong>Workshop panel</strong>
       </header>
     }
     <router-outlet />
