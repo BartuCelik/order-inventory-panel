@@ -31,11 +31,7 @@
               }
             ],
             "styles": [
-              "@fontsource/barlow/400.css",
-              "@fontsource/barlow/500.css",
-              "@fontsource/barlow/600.css",
-              "@fontsource/barlow-semi-condensed/500.css",
-              "@fontsource/barlow-semi-condensed/600.css",
+              "@fontsource-variable/inter/opsz.css",
               "src/styles.scss"
             ]
           },
@@ -49,7 +45,7 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
+                  "maximumWarning": "6kB",
                   "maximumError": "8kB"
                 }
               ],

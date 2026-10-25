@@ -44,19 +44,18 @@
 }
 
 .line-no {
-  color: var(--hmi-slate);
-  font-family: var(--hmi-condensed);
+  color: var(--text-3);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .problems {
   margin: 16px 0 0;
-  padding: 12px 16px 12px 32px;
-  border-left: 4px solid var(--hmi-alarm);
-  background: var(--hmi-alarm-tint);
-  color: #7c1019;
-  font-weight: 500;
+  padding: 14px 18px 14px 34px;
+  border-radius: var(--radius);
+  background: var(--alarm-soft);
+  color: var(--alarm-ink);
+  font-weight: 550;
 }
 
 p.problems {

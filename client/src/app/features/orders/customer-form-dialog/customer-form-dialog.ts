@@ -73,7 +73,7 @@ export interface CustomerFormDialogData {
     }
     .form-error {
       margin: 0;
-      color: var(--hmi-alarm);
+      color: var(--alarm);
       font-weight: 500;
     }
   `,

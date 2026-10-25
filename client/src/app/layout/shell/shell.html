@@ -7,8 +7,8 @@
     [fixedInViewport]="compact()"
   >
     <a class="brand" routerLink="/dashboard" (click)="compact() && drawer.close()">
-      <span class="mark" aria-hidden="true"><i></i><i></i></span>
-      <span class="brand-name">Workshop panel</span>
+      <span class="app-icon" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
+      <span class="brand-name">Workshop</span>
     </a>
 
     <nav aria-label="Main">
@@ -36,20 +36,33 @@
     </nav>
 
     <div class="rail-foot">
+      <button
+        type="button"
+        class="theme-toggle"
+        (click)="theme.cycle()"
+        [attr.aria-label]="'Theme: ' + themeLabel() + '. Change theme'"
+      >
+        <mat-icon>{{ themeIcon() }}</mat-icon>
+        <span>{{ themeLabel() }}</span>
+      </button>
+
       @if (auth.user(); as user) {
         <div class="user">
-          <span class="user-name">{{ user.displayName }}</span>
-          <span class="user-role">{{ user.role }}</span>
+          <span class="avatar" aria-hidden="true">{{ initials(user.displayName) }}</span>
+          <span class="user-text">
+            <span class="user-name">{{ user.displayName }}</span>
+            <span class="user-role">{{ user.role }}</span>
+          </span>
           <button mat-icon-button (click)="auth.logout()" aria-label="Sign out" title="Sign out">
             <mat-icon>logout</mat-icon>
           </button>
         </div>
       }
-      <time class="clock" [attr.datetime]="now().toISOString()">
-        <span class="clock-time">{{ now() | date: 'HH:mm' }}</span>
-        <span class="clock-date">{{ now() | date: 'EEE d MMM' }}</span>
-      </time>
-      <span class="demo-note">Demo data from an invented furniture workshop</span>
+
+      <p class="demo-note">
+        <time [attr.datetime]="now().toISOString()">{{ now() | date: 'EEE d MMM, HH:mm' }}</time>
+        · demo data from an invented furniture workshop
+      </p>
     </div>
   </mat-sidenav>
 
@@ -59,8 +72,8 @@
         <button mat-icon-button (click)="drawer.toggle()" aria-label="Open navigation">
           <mat-icon>menu</mat-icon>
         </button>
-        <span class="mark" aria-hidden="true"><i></i><i></i></span>
-        <strong>Workshop panel</strong>
+        <span class="app-icon small" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
+        <strong>Workshop</strong>
       </header>
     }
     <router-outlet />

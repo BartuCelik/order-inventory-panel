@@ -2,6 +2,7 @@ import { Component, inject, input, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -9,27 +10,34 @@ import { errorMessage } from '../../core/problem';
 
 /** The seeded demo accounts (DemoDataSeeder); the password is public on purpose. */
 const DEMO_ACCOUNTS = [
-  { role: 'Admin', email: 'admin@workshop.example.com' },
-  { role: 'Planner', email: 'planner@workshop.example.com' },
-  { role: 'Warehouse', email: 'warehouse@workshop.example.com' },
+  { role: 'Admin', icon: 'shield_person', email: 'admin@workshop.example.com' },
+  { role: 'Planner', icon: 'event_note', email: 'planner@workshop.example.com' },
+  { role: 'Warehouse', icon: 'inventory_2', email: 'warehouse@workshop.example.com' },
 ];
 const DEMO_PASSWORD = 'workshop-demo';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+  ],
   template: `
     <main class="login">
-      <section class="panel card">
-        <header class="panel-header">
-          <h1 class="panel-title">Sign in to Workshop panel</h1>
-        </header>
-        <form class="panel-body" [formGroup]="form" (ngSubmit)="submit()">
-          <mat-form-field>
+      <section class="card">
+        <span class="app-icon" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
+        <h1>Sign in to Workshop</h1>
+        <p class="lead">Orders, stock and production for a small furniture workshop.</p>
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <mat-form-field appearance="outline">
             <mat-label>Email</mat-label>
             <input matInput type="email" formControlName="email" autocomplete="username" />
           </mat-form-field>
-          <mat-form-field>
+          <mat-form-field appearance="outline">
             <mat-label>Password</mat-label>
             <input
               matInput
@@ -41,21 +49,26 @@ const DEMO_PASSWORD = 'workshop-demo';
           @if (error()) {
             <p class="error-text" role="alert">{{ error() }}</p>
           }
-          <button mat-flat-button type="submit" [disabled]="busy()">Sign in</button>
+          <button mat-flat-button type="submit" class="submit" [disabled]="busy()">Sign in</button>
         </form>
-        <footer class="demo">
-          <p class="muted">Demo accounts, password <span class="code">${DEMO_PASSWORD}</span>:</p>
-          <ul>
+
+        <div class="demo">
+          <p class="muted">Try the demo as</p>
+          <div class="roles">
             @for (account of demoAccounts; track account.email) {
-              <li>
-                <button type="button" class="link" (click)="fill(account.email)">
-                  {{ account.role }}
-                </button>
-                <span class="code">{{ account.email }}</span>
-              </li>
+              <button
+                type="button"
+                class="role"
+                (click)="fill(account.email)"
+                [attr.aria-label]="'Fill in the ' + account.role + ' demo account'"
+              >
+                <mat-icon>{{ account.icon }}</mat-icon>
+                {{ account.role }}
+              </button>
             }
-          </ul>
-        </footer>
+          </div>
+          <p class="hint">Password <span class="code">${DEMO_PASSWORD}</span></p>
+        </div>
       </section>
     </main>
   `,
@@ -64,38 +77,109 @@ const DEMO_PASSWORD = 'workshop-demo';
       min-height: 100dvh;
       display: grid;
       place-items: center;
-      padding: 16px;
-      background: var(--app-bg);
+      padding: 24px 16px;
     }
     .card {
-      width: min(400px, 100%);
+      width: min(420px, 100%);
+      box-sizing: border-box;
+      padding: 40px 32px 28px;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: var(--surface);
+      -webkit-backdrop-filter: var(--glass);
+      backdrop-filter: var(--glass);
+      box-shadow:
+        inset 0 1px 0 var(--highlight),
+        var(--shadow-lift);
+      text-align: center;
+      animation: rise 0.5s var(--ease) both;
+    }
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+    }
+    .app-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #0a84ff, #5e5ce6 55%, #bf5af2);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 35%),
+        0 10px 24px -6px rgb(10 132 255 / 50%);
+      color: #fff;
+    }
+    .app-icon mat-icon {
+      font-size: 34px;
+      width: 34px;
+      height: 34px;
+    }
+    h1 {
+      margin: 20px 0 6px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.028em;
+    }
+    .lead {
+      margin: 0 0 28px;
+      color: var(--text-2);
     }
     form {
       display: grid;
-      gap: 4px;
+      gap: 2px;
+      text-align: left;
+    }
+    .submit {
+      height: 44px;
+      font-size: 16px;
+    }
+    .error-text {
+      margin: 0 0 10px;
     }
     .demo {
-      padding: 0 16px 16px;
-      font-size: 13px;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-soft);
+      font-size: 13.5px;
     }
-    .demo ul {
-      list-style: none;
+    .demo p {
       margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 4px;
     }
-    .link {
-      min-width: 80px;
-      padding: 0;
+    .roles {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .role {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 34px;
+      padding: 0 14px;
       border: 0;
-      background: none;
-      color: var(--app-text);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
       font: inherit;
       font-weight: 600;
-      text-align: left;
-      text-decoration: underline;
       cursor: pointer;
+      transition: transform 0.15s var(--ease);
+    }
+    .role:hover {
+      transform: translateY(-1px);
+    }
+    .role mat-icon {
+      font-size: 17px;
+      width: 17px;
+      height: 17px;
+    }
+    .hint {
+      color: var(--text-3);
     }
   `,
 })
