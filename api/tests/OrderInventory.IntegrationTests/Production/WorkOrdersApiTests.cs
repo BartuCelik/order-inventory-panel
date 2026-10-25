@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
 using OrderInventory.Domain.Stock;
+using OrderInventory.Domain.Users;
 using OrderInventory.IntegrationTests.Infrastructure;
 
 namespace OrderInventory.IntegrationTests.Production;
@@ -182,6 +183,31 @@ public sealed class WorkOrdersApiTests(ApiFactory api) : IClassFixture<ApiFactor
     {
         await (await ActAsync(999999, "start")).AssertProblemAsync(HttpStatusCode.NotFound, "999999");
         Assert.Equal(HttpStatusCode.NotFound, (await _client.GetAsync("/work-orders/999999", CancellationToken)).StatusCode);
+    }
+
+    // ---------- PDF ----------
+
+    [Fact]
+    public async Task Pdf_ReturnsAPrintableDocumentNamedAfterTheWorkOrder()
+    {
+        var (table, _, _) = await CreateTableAsync("WOP");
+        var workOrder = await CreateAsync(table, 2m);
+
+        var response = await api.CreateClientAs(UserRole.Warehouse).GetAsync($"/work-orders/{workOrder.Id}/pdf", CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/pdf", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal($"{workOrder.Number}.pdf", response.Content.Headers.ContentDisposition?.FileName);
+        var bytes = await response.Content.ReadAsByteArrayAsync(CancellationToken);
+        Assert.Equal("%PDF"u8.ToArray(), bytes[..4]);
+    }
+
+    [Fact]
+    public async Task Pdf_UnknownWorkOrder_Returns404_AndNeedsSignIn()
+    {
+        await (await _client.GetAsync("/work-orders/999999/pdf", CancellationToken)).AssertProblemAsync(HttpStatusCode.NotFound, "999999");
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await api.CreateAnonymousClient().GetAsync("/work-orders/999999/pdf", CancellationToken)).StatusCode);
     }
 
     // ---------- complete (rule 10) ----------

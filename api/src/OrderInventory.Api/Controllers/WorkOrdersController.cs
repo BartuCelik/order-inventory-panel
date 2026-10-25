@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OrderInventory.Api.Auth;
 using OrderInventory.Application.Common;
 using OrderInventory.Application.Production;
+using OrderInventory.Infrastructure.Documents;
 
 namespace OrderInventory.Api.Controllers;
 
@@ -17,6 +18,13 @@ public sealed class WorkOrdersController(WorkOrderService workOrders) : Controll
     [HttpGet("{id:int}")]
     public Task<WorkOrderDto> Get(int id, CancellationToken cancellationToken) =>
         workOrders.GetAsync(id, cancellationToken);
+
+    [HttpGet("{id:int}/pdf")]
+    public async Task<FileContentResult> Pdf(int id, [FromServices] WorkOrderPdf pdf, CancellationToken cancellationToken)
+    {
+        var workOrder = await workOrders.GetAsync(id, cancellationToken);
+        return File(pdf.Render(workOrder), "application/pdf", $"{workOrder.Number}.pdf");
+    }
 
     [Authorize(Roles = Roles.Planning)]
     [HttpPost]
