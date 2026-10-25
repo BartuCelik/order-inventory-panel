@@ -42,7 +42,15 @@ export interface PlanWorkOrderDialogData {
         <div class="fields">
           <mat-form-field appearance="outline">
             <mat-label>Quantity</mat-label>
-            <input matInput type="number" min="0.0001" formControlName="quantity" cdkFocusInitial />
+            <!-- min 0, not 0.0001: the arrows step from min, so 0.0001 made 8 → 9.0001. "Above zero" is the validator's job. -->
+            <input
+              matInput
+              type="number"
+              min="0"
+              step="1"
+              formControlName="quantity"
+              cdkFocusInitial
+            />
             <span matTextSuffix>{{ data.unitLabel }}</span>
             @if (form.controls.quantity.hasError('server')) {
               <mat-error>{{ form.controls.quantity.getError('server') }}</mat-error>
