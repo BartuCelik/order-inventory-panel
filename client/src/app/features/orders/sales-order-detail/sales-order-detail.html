@@ -21,11 +21,19 @@
       </div>
       @if (o.status === 'Open') {
         <div class="page-actions">
-          <button mat-stroked-button (click)="cancel(o)" [disabled]="busy()">Cancel order</button>
-          <button mat-flat-button (click)="ship(o)" [disabled]="busy() || shortLines().length > 0">
-            <mat-icon>local_shipping</mat-icon>
-            Ship
-          </button>
+          @if (auth.canPlan()) {
+            <button mat-stroked-button (click)="cancel(o)" [disabled]="busy()">Cancel order</button>
+          }
+          @if (auth.canHandleStock()) {
+            <button
+              mat-flat-button
+              (click)="ship(o)"
+              [disabled]="busy() || shortLines().length > 0"
+            >
+              <mat-icon>local_shipping</mat-icon>
+              Ship
+            </button>
+          }
         </div>
       }
     </header>
@@ -126,10 +134,12 @@
           <ng-container matColumnDef="plan">
             <th mat-header-cell *matHeaderCellDef><span class="visually-hidden">Actions</span></th>
             <td mat-cell *matCellDef="let l" class="num">
-              <button mat-stroked-button (click)="plan(o, l)" [disabled]="busy()">
-                <mat-icon>precision_manufacturing</mat-icon>
-                Plan production
-              </button>
+              @if (auth.canPlan()) {
+                <button mat-stroked-button (click)="plan(o, l)" [disabled]="busy()">
+                  <mat-icon>precision_manufacturing</mat-icon>
+                  Plan production
+                </button>
+              }
             </td>
           </ng-container>
 

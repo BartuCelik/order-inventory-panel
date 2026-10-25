@@ -173,3 +173,28 @@ nav {
     font-weight: 600;
   }
 }
+
+.user {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  margin-bottom: 14px;
+  color: #fff;
+
+  .user-name {
+    grid-column: 1;
+    font-weight: 600;
+  }
+
+  .user-role {
+    grid-column: 1;
+    color: var(--app-sidebar-text);
+    font-size: 12px;
+  }
+
+  button {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    color: var(--app-sidebar-text);
+  }
+}

@@ -7,12 +7,14 @@
         adjustment.
       </p>
     </div>
-    <div class="page-actions">
-      <button mat-flat-button (click)="record()">
-        <mat-icon>add</mat-icon>
-        Record movement
-      </button>
-    </div>
+    @if (auth.canHandleStock()) {
+      <div class="page-actions">
+        <button mat-flat-button (click)="record()">
+          <mat-icon>add</mat-icon>
+          Record movement
+        </button>
+      </div>
+    }
   </header>
 
   <section class="panel">

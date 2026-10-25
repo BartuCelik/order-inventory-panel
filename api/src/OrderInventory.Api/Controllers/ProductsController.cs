@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderInventory.Api.Auth;
 using OrderInventory.Application.Common;
 using OrderInventory.Application.Products;
 
@@ -25,6 +27,7 @@ public sealed class ProductsController(ProductService products, BomService bom) 
     public Task<ProductDetails> Get(int id, CancellationToken cancellationToken) =>
         products.GetAsync(id, cancellationToken);
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpPost]
     public async Task<ActionResult<ProductDetails>> Create(CreateProductRequest request, CancellationToken cancellationToken)
     {
@@ -32,6 +35,7 @@ public sealed class ProductsController(ProductService products, BomService bom) 
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpPut("{id:int}")]
     public Task<ProductDetails> Update(int id, UpdateProductRequest request, CancellationToken cancellationToken) =>
         products.UpdateAsync(id, request, cancellationToken);
@@ -41,6 +45,7 @@ public sealed class ProductsController(ProductService products, BomService bom) 
     public Task<IReadOnlyList<MaterialNeed>> Explode(int id, [FromQuery] decimal quantity = 1, CancellationToken cancellationToken = default) =>
         products.ExplodeAsync(id, quantity, cancellationToken);
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpPost("{id:int}/bom-lines")]
     public async Task<ActionResult<BomLineDto>> AddBomLine(int id, AddBomLineRequest request, CancellationToken cancellationToken)
     {
@@ -50,10 +55,12 @@ public sealed class ProductsController(ProductService products, BomService bom) 
     }
 
     /// <summary>Changes only the quantity. To use a different component, delete the line and add a new one.</summary>
+    [Authorize(Roles = Roles.Planning)]
     [HttpPut("{id:int}/bom-lines/{lineId:int}")]
     public Task<BomLineDto> UpdateBomLine(int id, int lineId, UpdateBomLineRequest request, CancellationToken cancellationToken) =>
         bom.UpdateLineAsync(id, lineId, request, cancellationToken);
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpDelete("{id:int}/bom-lines/{lineId:int}")]
     public async Task<IActionResult> DeleteBomLine(int id, int lineId, CancellationToken cancellationToken)
     {

@@ -1,10 +1,17 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
 import { Shell } from './layout/shell/shell';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    title: 'Sign in · Workshop panel',
+    loadComponent: () => import('./features/login/login').then((m) => m.Login),
+  },
+  {
     path: '',
     component: Shell,
+    canActivate: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {

@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderInventory.Api.Auth;
 using OrderInventory.Application.Common;
 using OrderInventory.Application.Stock;
 
@@ -15,6 +17,7 @@ public sealed class StockMovementsController(StockService stock) : ControllerBas
     public Task<PagedResult<StockMovementDto>> List([FromQuery] StockMovementQuery query, CancellationToken cancellationToken) =>
         stock.ListAsync(query, cancellationToken);
 
+    [Authorize(Roles = Roles.Warehouse)]
     [HttpPost]
     public async Task<ActionResult<StockMovementDto>> Record(RecordStockMovementRequest request, CancellationToken cancellationToken)
     {

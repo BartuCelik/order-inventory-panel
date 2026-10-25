@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderInventory.Api.Auth;
 using OrderInventory.Application.Common;
 using OrderInventory.Application.Sales;
 
@@ -16,6 +18,7 @@ public sealed class CustomersController(CustomerService customers) : ControllerB
     public Task<CustomerDto> Get(int id, CancellationToken cancellationToken) =>
         customers.GetAsync(id, cancellationToken);
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpPost]
     public async Task<ActionResult<CustomerDto>> Create(CustomerRequest request, CancellationToken cancellationToken)
     {
@@ -23,6 +26,7 @@ public sealed class CustomersController(CustomerService customers) : ControllerB
         return CreatedAtAction(nameof(Get), new { id = customer.Id }, customer);
     }
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpPut("{id:int}")]
     public Task<CustomerDto> Update(int id, CustomerRequest request, CancellationToken cancellationToken) =>
         customers.UpdateAsync(id, request, cancellationToken);

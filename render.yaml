@@ -23,6 +23,9 @@ services:
         value: "true"
       - key: Database__SeedDemoData
         value: "true"
+      # Signs the access tokens. Render generates a random value once and keeps it; it is never committed.
+      - key: Jwt__SigningKey
+        generateValue: true
 
   - type: web
     name: order-inventory-client

@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
 using OrderInventory.Domain.Stock;
+using OrderInventory.Domain.Users;
 using OrderInventory.Infrastructure.Persistence.Seeding;
 using OrderInventory.IntegrationTests.Infrastructure;
 
@@ -106,5 +108,23 @@ public sealed class DemoDataSeederTests(PostgresFixture postgres) : IClassFixtur
         // The demo scenario the dashboard relies on; the real availability logic arrives in Phase 3.
         Assert.Equal(6m, onHand);
         Assert.Equal(3.2m, reservedByInProgress);
+    }
+
+    [Fact]
+    public async Task SeedUsers_AddsOneUserPerRole_EvenWhenProductsExist()
+    {
+        // The live demo database was seeded before users existed; users must still arrive there.
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await EnsureSeededAsync(cancellationToken);
+        await using var dbContext = postgres.CreateDbContext();
+
+        await DemoDataSeeder.SeedUsersAsync(dbContext, cancellationToken);
+        var seededAgain = await DemoDataSeeder.SeedUsersAsync(dbContext, cancellationToken);
+
+        var users = await dbContext.Users.OrderBy(u => u.Role).ToListAsync(cancellationToken);
+        Assert.False(seededAgain);
+        Assert.Equal(Enum.GetValues<UserRole>(), users.Select(u => u.Role));
+        Assert.All(users, user => Assert.NotEqual(PasswordVerificationResult.Failed,
+            new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, DemoDataSeeder.DemoPassword)));
     }
 }

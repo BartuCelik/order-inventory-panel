@@ -14,14 +14,14 @@ public static class HealthCheckEndpoints
         app.MapHealthChecks("/health", new HealthCheckOptions
         {
             ResponseWriter = WriteResponseAsync,
-        });
+        }).AllowAnonymous();
 
         // Only confirms the app is running; external dependencies are not checked.
         app.MapHealthChecks("/health/live", new HealthCheckOptions
         {
             Predicate = _ => false,
             ResponseWriter = WriteResponseAsync,
-        });
+        }).AllowAnonymous();
 
         return app;
     }
