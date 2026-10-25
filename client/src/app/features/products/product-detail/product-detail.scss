@@ -7,11 +7,10 @@
 }
 
 .code-badge {
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  color: var(--app-muted);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-2);
 }
 
 .kpi-value.small {
@@ -29,7 +28,7 @@
   gap: 12px;
   margin-bottom: 20px;
   padding: 16px 20px;
-  color: var(--app-muted);
+  color: var(--text-2);
 
   mat-icon {
     color: var(--mat-sys-primary);
@@ -41,10 +40,10 @@
   text-align: right;
 
   button {
-    color: var(--app-faint);
+    color: var(--text-3);
 
     &:hover {
-      color: var(--app-danger);
+      color: var(--alarm);
     }
   }
 }
@@ -55,8 +54,8 @@
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  border-top: 1px solid var(--app-border);
-  background: var(--app-surface-muted);
+  border-top: 1px solid var(--border-soft);
+  background: var(--surface-muted);
 
   .component {
     flex: 1 1 240px;
@@ -70,7 +69,7 @@
 .form-error {
   flex-basis: 100%;
   margin: 0;
-  color: var(--app-danger-fg);
+  color: var(--alarm-ink);
 }
 
 .qty {
@@ -88,7 +87,7 @@
     justify-content: space-between;
     gap: 12px;
     padding: 12px 20px;
-    border-bottom: 1px solid var(--app-border);
+    border-bottom: 1px solid var(--border);
 
     &:last-child {
       border-bottom: none;

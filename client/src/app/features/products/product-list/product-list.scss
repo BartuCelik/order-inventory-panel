@@ -4,7 +4,7 @@
   align-items: center;
   gap: 12px 16px;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--border);
 
   .search {
     flex: 1 1 260px;
@@ -34,11 +34,11 @@
 }
 
 .unit {
-  color: var(--app-muted);
+  color: var(--text-2);
 }
 
 .low-value {
-  color: var(--app-danger-fg);
+  color: var(--alarm-ink);
   font-weight: 600;
 }
 

@@ -42,7 +42,7 @@ import { Paged, Product, ProductType, typeLabel } from '../product.models';
       width: 100%;
     }
     .code {
-      font-family: var(--hmi-condensed);
+      font-family: var(--font);
       font-weight: 600;
     }
     .error {

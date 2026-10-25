@@ -1,11 +1,118 @@
-// The app's design system, modelled on high-performance HMI screens (ISA-101) used to run real plants:
-// normal operation is drawn in neutral greys, and colour is reserved for conditions that need someone to act —
-// amber when material is short, red when something is late or out. Status is also carried by shape, never by
-// colour alone, so the board still reads on a washed-out shop-floor monitor or for colour-blind staff.
+// The app's design system: frosted-glass surfaces over a soft colour field, large confident type and generous
+// spacing, in a light and a dark theme. Every colour is a token defined twice (light, dark); components use the
+// tokens only, so a theme switch needs no component changes.
 //
-// Shared classes (page, panel, grid, chip, status, andon, data-table, meter, empty-state) live here; features
-// add component styles only for layout specific to them.
+// Colour has meaning: blue is the one accent (primary actions, running work, the current page), green is done,
+// amber is material short (rule 9), red is late / below minimum / failed. State is also carried by shape and
+// text, never by colour alone.
+//
+// Shared classes (page, panel, grid, kpi, chip, status, flag, data-table, meter, empty-state, toolbar) live here;
+// features add component styles only for layout specific to them.
 @use '@angular/material' as mat;
+
+// ---------- tokens ----------
+
+@mixin light-tokens {
+  color-scheme: light;
+
+  --bg: #f2f2f7;
+  // The colour field behind the glass: soft, out-of-focus washes of the accent colours.
+  --bg-field:
+    radial-gradient(60rem 40rem at 0% -10%, rgb(0 113 227 / 13%), transparent 60%),
+    radial-gradient(50rem 36rem at 100% 0%, rgb(175 82 222 / 11%), transparent 60%),
+    radial-gradient(60rem 40rem at 60% 110%, rgb(52 199 89 / 8%), transparent 60%);
+
+  --surface: rgb(255 255 255 / 72%); // glass
+  --surface-strong: rgb(
+    255 255 255 / 88%
+  ); // glass that carries text over busy content (dialogs, menus)
+  --surface-muted: rgb(120 120 128 / 8%); // wells, hovered rows, table heads
+  --border: rgb(0 0 0 / 8%);
+  --border-soft: rgb(0 0 0 / 5.5%);
+  --highlight: rgb(255 255 255 / 70%); // the lit top edge of a glass pane
+
+  --text: #1d1d1f;
+  --text-2: #6e6e73;
+  --text-3: #8e8e93;
+
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --accent-soft: rgb(0 113 227 / 11%);
+  --on-accent: #ffffff;
+
+  --success: #248a3d;
+  --success-soft: rgb(52 199 89 / 15%);
+  --caution: #ff9f0a;
+  --caution-soft: rgb(255 159 10 / 16%);
+  --caution-ink: #9a5b00;
+  --alarm: #e5332a;
+  --alarm-soft: rgb(255 59 48 / 12%);
+  --alarm-ink: #c4231b;
+
+  --shadow: 0 1px 1px rgb(0 0 0 / 3%), 0 8px 24px -6px rgb(0 0 0 / 8%);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 4%), 0 18px 40px -10px rgb(0 0 0 / 16%);
+}
+
+@mixin dark-tokens {
+  color-scheme: dark;
+
+  --bg: #000000;
+  --bg-field:
+    radial-gradient(60rem 40rem at 0% -10%, rgb(10 132 255 / 22%), transparent 60%),
+    radial-gradient(50rem 36rem at 100% 0%, rgb(191 90 242 / 18%), transparent 60%),
+    radial-gradient(60rem 40rem at 60% 110%, rgb(48 209 88 / 10%), transparent 60%);
+
+  --surface: rgb(28 28 30 / 66%);
+  --surface-strong: rgb(36 36 38 / 92%);
+  --surface-muted: rgb(120 120 128 / 16%);
+  --border: rgb(255 255 255 / 10%);
+  --border-soft: rgb(255 255 255 / 7%);
+  --highlight: rgb(255 255 255 / 8%);
+
+  --text: #f5f5f7;
+  --text-2: #a1a1a6;
+  --text-3: #7c7c80;
+
+  --accent: #0a84ff;
+  --accent-hover: #409cff;
+  --accent-soft: rgb(10 132 255 / 20%);
+  --on-accent: #ffffff;
+
+  --success: #30d158;
+  --success-soft: rgb(48 209 88 / 18%);
+  --caution: #ff9f0a;
+  --caution-soft: rgb(255 159 10 / 20%);
+  --caution-ink: #ffb340;
+  --alarm: #ff453a;
+  --alarm-soft: rgb(255 69 58 / 20%);
+  --alarm-ink: #ff6961;
+
+  --shadow: 0 1px 1px rgb(0 0 0 / 30%), 0 10px 30px -8px rgb(0 0 0 / 60%);
+  --shadow-lift: 0 2px 6px rgb(0 0 0 / 40%), 0 20px 48px -12px rgb(0 0 0 / 70%);
+}
+
+:root {
+  --font:
+    'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', system-ui, sans-serif;
+  --radius-lg: 20px; // panels
+  --radius: 14px; // tiles, alerts, dialogs' inner blocks
+  --radius-sm: 10px; // controls
+  --glass: saturate(180%) blur(24px);
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  @include light-tokens;
+}
+
+// Dark follows the system unless the user picked a theme (ThemeService sets data-theme on <html>).
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}
 
 html {
   height: 100%;
@@ -13,126 +120,83 @@ html {
     (
       color: (
         primary: mat.$azure-palette,
-        theme-type: light,
+        // Follows the CSS color-scheme set by the tokens above, so Material switches with the app.
+        theme-type: color-scheme,
       ),
       typography: (
-        plain-family: "'Barlow', system-ui, sans-serif",
-        brand-family: "'Barlow Semi Condensed', 'Barlow', sans-serif",
-        bold-weight: 600,
-        medium-weight: 500,
+        plain-family: "'Inter Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+        brand-family: "'Inter Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+        bold-weight: 650,
+        medium-weight: 550,
         regular-weight: 400,
       ),
       density: -1,
     )
   );
 
-  // Material's coloured accents replaced by the panel's graphite and greys: buttons, focus rings,
-  // selected tabs and form fields all read as part of the same instrument panel.
+  // Material reads the same tokens: buttons, focus, form fields and dialogs change with the theme.
   @include mat.theme-overrides(
     (
-      primary: #2f353c,
-      on-primary: #ffffff,
-      primary-container: #d3d7db,
-      on-primary-container: #1d2125,
-      secondary-container: #d3d7db,
-      on-secondary-container: #1d2125,
-      surface: #f4f5f6,
-      surface-container: #eceef0,
-      surface-container-low: #f4f5f6,
-      surface-container-high: #e4e6e9,
-      surface-container-highest: #d9dce0,
-      on-surface: #1d2125,
-      on-surface-variant: #4f565e,
-      outline: #8c949c,
-      outline-variant: #bcc2c8,
-      error: #c41e2a,
-      corner-extra-small: 2px,
-      corner-small: 3px,
-      corner-medium: 4px,
-      corner-large: 6px,
-      corner-extra-large: 6px,
-      corner-full: 4px,
+      primary: var(--accent),
+      on-primary: var(--on-accent),
+      primary-container: var(--accent-soft),
+      on-primary-container: var(--text),
+      secondary-container: var(--accent-soft),
+      on-secondary-container: var(--text),
+      surface: var(--surface-strong),
+      surface-container: var(--surface-strong),
+      surface-container-low: var(--surface-strong),
+      surface-container-high: var(--surface-strong),
+      surface-container-highest: var(--surface-muted),
+      on-surface: var(--text),
+      on-surface-variant: var(--text-2),
+      outline: var(--text-3),
+      outline-variant: var(--border),
+      error: var(--alarm),
+      corner-extra-small: 8px,
+      corner-small: 10px,
+      corner-medium: 14px,
+      corner-large: 20px,
+      corner-extra-large: 24px,
+      corner-full: 999px,
     )
   );
 }
 
-:root {
-  // ---------- base palette ----------
-  --hmi-ground: #e4e6e9; // the screen behind everything
-  --hmi-panel: #f4f5f6; // a panel's face
-  --hmi-panel-head: #d3d7db; // a panel's title strip
-  --hmi-rule: #bcc2c8; // panel edges and table rules
-  --hmi-rule-soft: #d9dce0;
-  --hmi-ink: #1d2125;
-  --hmi-graphite: #2f353c; // primary controls, the rail, "running" indicators
-  --hmi-steel: #4f565e; // secondary text
-  --hmi-slate: #79818a; // tertiary text, quiet indicators
-  --hmi-caution: #e8a400; // material short (rule 9) — act soon
-  --hmi-caution-tint: #fbefcc;
-  --hmi-alarm: #c41e2a; // late, out of stock, failed — act now
-  --hmi-alarm-tint: #f6d9db;
-
-  --hmi-sans: 'Barlow', system-ui, sans-serif;
-  --hmi-condensed: 'Barlow Semi Condensed', 'Barlow', sans-serif;
-
-  // Panels are machined plates: square-ish, one hairline edge, no shadow. Controls are slightly softer.
-  --hmi-radius-panel: 3px;
-  --hmi-radius-control: 4px;
-
-  // ---------- legacy aliases (older component styles) ----------
-  --app-bg: var(--hmi-ground);
-  --app-surface: var(--hmi-panel);
-  --app-surface-muted: #eceef0;
-  --app-border: var(--hmi-rule);
-  --app-text: var(--hmi-ink);
-  --app-muted: var(--hmi-steel);
-  --app-faint: var(--hmi-slate);
-  --app-radius: var(--hmi-radius-panel);
-  --app-radius-sm: var(--hmi-radius-control);
-  --app-shadow: none;
-  --app-mono: var(--hmi-condensed);
-  --app-sidebar-bg: var(--hmi-graphite);
-  --app-sidebar-text: #c9ced3;
-  --app-sidebar-active: rgb(255 255 255 / 10%);
-  --app-neutral-bg: #e4e6e9;
-  --app-neutral-fg: var(--hmi-steel);
-  --app-success: var(--hmi-graphite);
-  --app-success-bg: #e4e6e9;
-  --app-success-fg: var(--hmi-steel);
-  --app-danger: var(--hmi-alarm);
-  --app-danger-bg: var(--hmi-alarm-tint);
-  --app-danger-fg: #9e1520;
-  --app-warning-bg: var(--hmi-caution-tint);
-  --app-warning-fg: #6b4b00;
-}
-
 body {
-  color-scheme: light;
   margin: 0;
   height: 100%;
-  background: var(--hmi-ground);
-  color: var(--hmi-ink);
-  font-family: var(--hmi-sans);
+  background: var(--bg-field), var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--font);
   font-size: 15px;
-  line-height: 1.45;
+  line-height: 1.47;
+  letter-spacing: -0.006em;
   -webkit-font-smoothing: antialiased;
-  // Quantities line up in columns everywhere, not just in tables.
+}
+
+// Quantities line up in columns. Not set on body: Inter's tabular figures also widen hyphens in codes.
+.num,
+.data-table .mat-mdc-cell,
+.kpi-value,
+.plate-value,
+.reading {
   font-variant-numeric: tabular-nums;
 }
 
 a {
-  color: var(--hmi-ink);
-  text-decoration: underline;
-  text-decoration-color: var(--hmi-slate);
-  text-underline-offset: 3px;
+  color: var(--accent);
+  text-decoration: none;
 
   &:hover {
-    text-decoration-color: var(--hmi-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 }
 
 :focus-visible {
-  outline: 3px solid var(--hmi-caution);
+  outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
   outline-offset: 2px;
 }
 
@@ -145,15 +209,35 @@ a {
   }
 }
 
+// Buttons: pill shaped (corner-full above), a touch of weight.
+.mat-mdc-button-base {
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-outlined-label-text-weight: 550;
+  --mat-button-text-label-text-weight: 550;
+  --mat-button-outlined-outline-color: var(--border);
+}
+
+.mat-mdc-outlined-button:not(:disabled) {
+  background: var(--surface);
+}
+
 // ---------- page layout ----------
 
 .page {
   max-width: 1360px;
   margin: 0 auto;
-  padding: 24px 28px 48px;
+  padding: 36px 36px 56px;
+  animation: page-in 0.35s var(--ease) both;
 
   @media (max-width: 720px) {
-    padding: 16px 16px 40px;
+    padding: 20px 16px 40px;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
 }
 
@@ -163,47 +247,42 @@ a {
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid var(--hmi-graphite);
+  margin-bottom: 28px;
 }
 
+// Apple's "large title": big, bold and tightly tracked.
 .page-title {
   margin: 0;
-  font-family: var(--hmi-condensed);
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1.05;
+  font-size: clamp(30px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.028em;
+  line-height: 1.08;
 }
 
 .page-subtitle {
-  margin: 4px 0 0;
-  color: var(--hmi-steel);
+  margin: 6px 0 0;
+  color: var(--text-2);
+  font-size: 17px;
 }
 
 .page-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .breadcrumb {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 10px;
-  color: var(--hmi-steel);
+  margin-bottom: 12px;
+  color: var(--accent);
   font-weight: 500;
-  text-decoration: none;
 
   mat-icon {
     font-size: 18px;
     width: 18px;
     height: 18px;
-  }
-
-  &:hover {
-    color: var(--hmi-ink);
   }
 }
 
@@ -212,8 +291,8 @@ a {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   align-items: start;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 20px;
+  margin-bottom: 20px;
 
   &.kpis {
     align-items: stretch;
@@ -253,43 +332,49 @@ a {
   }
 }
 
-// ---------- panels ----------
+// ---------- panels (frosted glass) ----------
+
+@mixin glass {
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--border);
+  box-shadow:
+    inset 0 1px 0 var(--highlight),
+    var(--shadow);
+}
 
 .panel {
-  background: var(--hmi-panel);
-  border: 1px solid var(--hmi-rule);
-  border-radius: var(--hmi-radius-panel);
+  @include glass;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
-// The title strip: a darker band, like the label plate above a group of instruments.
 .panel-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px 12px;
-  min-height: 44px;
-  padding: 6px 8px 6px 16px;
-  background: var(--hmi-panel-head);
-  border-bottom: 1px solid var(--hmi-rule);
+  min-height: 56px;
+  padding: 10px 12px 6px 20px;
 }
 
 .panel-title {
   margin: 0;
-  font-family: var(--hmi-condensed);
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.018em;
 }
 
 .panel-subtitle {
   margin: 0;
-  color: var(--hmi-steel);
-  font-size: 13.5px;
+  color: var(--text-2);
+  font-size: 14px;
 }
 
 .panel-body {
-  padding: 16px;
+  padding: 20px;
 }
 
 .panel-progress {
@@ -307,47 +392,52 @@ a {
 .kpi {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
+  gap: 6px;
+  padding: 18px 20px;
 }
 
 .kpi-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--hmi-steel);
+  color: var(--text-2);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
 }
 
 .kpi-icon {
   display: grid;
   place-items: center;
-  color: var(--hmi-slate);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
 
   mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
   }
 
   &.danger {
-    color: var(--hmi-alarm);
+    background: var(--alarm-soft);
+    color: var(--alarm);
   }
 }
 
 .kpi-value {
-  font-family: var(--hmi-condensed);
   font-size: 40px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1;
 
   small {
     margin-left: 6px;
-    color: var(--hmi-steel);
-    font-family: var(--hmi-sans);
+    color: var(--text-2);
     font-size: 15px;
     font-weight: 500;
+    letter-spacing: 0;
   }
 }
 
@@ -356,26 +446,24 @@ a {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  color: var(--hmi-steel);
+  color: var(--text-2);
   font-size: 13.5px;
 }
 
 // ---------- chips ----------
-// Neutral by default. Only .warning (caution) and .danger (alarm) carry colour.
-// Product types differ by the shape of their marker: raw = hollow, semi-finished = half, finished = solid.
+// Soft tinted pills. Product types differ by the shape of their dot: raw = ring, semi-finished = half, finished = solid.
 
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 24px;
-  padding: 0 8px;
-  border: 1px solid var(--hmi-rule);
-  border-radius: 2px;
-  background: var(--hmi-panel);
-  color: var(--hmi-steel);
-  font-size: 13px;
-  font-weight: 500;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 550;
   line-height: 1;
   white-space: nowrap;
 
@@ -385,6 +473,7 @@ a {
     height: 8px;
     box-sizing: border-box;
     border: 1.5px solid currentColor;
+    border-radius: 50%;
     background: currentColor;
   }
 
@@ -396,32 +485,30 @@ a {
     background: transparent;
   }
   &.semi::before {
-    background: linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background: linear-gradient(90deg, currentColor 50%, transparent 50%);
   }
 
   &.warning {
-    border-color: var(--hmi-caution);
-    background: var(--hmi-caution-tint);
-    color: var(--app-warning-fg);
+    background: var(--caution-soft);
+    color: var(--caution-ink);
   }
   &.danger {
-    border-color: var(--hmi-alarm);
-    background: var(--hmi-alarm);
-    color: #fff;
+    background: var(--alarm-soft);
+    color: var(--alarm-ink);
   }
 }
 
 // ---------- document status (work orders, sales orders) ----------
-// Shape encodes state: planned = hollow square, running = solid graphite, done = tick, cancelled = struck through.
+// planned = ring, running = blue dot, done = green tick, cancelled = struck through.
 
 .status {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
   white-space: nowrap;
-  color: var(--hmi-ink);
+  color: var(--text);
 
   &::before {
     content: '';
@@ -429,75 +516,78 @@ a {
     width: 10px;
     height: 10px;
     box-sizing: border-box;
-    border: 2px solid var(--hmi-graphite);
+    border: 2px solid var(--text-3);
+    border-radius: 50%;
   }
 
   &.in-progress::before {
-    background: var(--hmi-graphite);
+    border-color: var(--accent);
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
   }
 
   &.done::before {
     width: 10px;
     height: 6px;
     border-width: 0 0 2.5px 2.5px;
+    border-color: var(--success);
+    border-radius: 0;
     transform: translateY(-2px) rotate(-45deg);
   }
 
   &.cancelled {
-    color: var(--hmi-slate);
+    color: var(--text-3);
     text-decoration: line-through;
 
     &::before {
-      border-color: var(--hmi-slate);
+      border-color: var(--text-3);
       background: linear-gradient(
         to top right,
         transparent calc(50% - 1px),
-        var(--hmi-slate) calc(50% - 1px) calc(50% + 1px),
+        var(--text-3) calc(50% - 1px) calc(50% + 1px),
         transparent calc(50% + 1px)
       );
     }
   }
 }
 
-// An abnormal flag next to a status: amber block for short, red for late.
+// An abnormal flag next to a status: amber pill for short, red for late.
 .flag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 1px 6px;
-  border-radius: 2px;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 650;
   white-space: nowrap;
 
   mat-icon {
-    font-size: 15px;
-    width: 15px;
-    height: 15px;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
   }
 
   &.short {
-    background: var(--hmi-caution);
-    color: var(--hmi-ink);
+    background: var(--caution-soft);
+    color: var(--caution-ink);
   }
   &.late {
-    background: var(--hmi-alarm);
-    color: #fff;
+    background: var(--alarm-soft);
+    color: var(--alarm-ink);
   }
 }
 
 // ---------- text helpers ----------
 
-.code {
-  font-family: var(--hmi-condensed);
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
-// Kept for older templates: product and document codes.
+// Product and document codes: slightly smaller, spaced, quiet.
+.code,
 .mono {
-  font-family: var(--hmi-condensed);
-  font-weight: 500;
+  font-size: 0.92em;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  font-variant-numeric: normal;
 }
 
 .num {
@@ -507,41 +597,43 @@ a {
 }
 
 .muted {
-  color: var(--hmi-steel);
+  color: var(--text-2);
 }
 
-// Stock in is normal (ink); stock out is still normal, just marked with its sign — not alarm red.
 .in {
-  color: var(--hmi-ink);
+  color: var(--success);
 }
 
 .out {
-  color: var(--hmi-steel);
+  color: var(--text-2);
 }
 
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   text-decoration: none;
 
   .primary-line {
-    font-weight: 500;
-    color: var(--hmi-ink);
+    font-weight: 550;
+    color: var(--text);
   }
   .secondary-line {
-    color: var(--hmi-steel);
+    color: var(--text-2);
     font-size: 13px;
   }
 }
 
-a.stack:hover .primary-line {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+a.stack:hover {
+  text-decoration: none;
+
+  .primary-line {
+    color: var(--accent);
+  }
 }
 
 .error-text {
-  color: var(--hmi-alarm);
+  color: var(--alarm-ink);
 }
 
 // ---------- empty / message states ----------
@@ -550,55 +642,51 @@ a.stack:hover .primary-line {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 32px 20px;
-  color: var(--hmi-steel);
+  gap: 10px;
+  padding: 40px 20px;
+  color: var(--text-2);
   text-align: center;
 
   mat-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 32px;
-    color: var(--hmi-slate);
+    width: 36px;
+    height: 36px;
+    font-size: 36px;
+    color: var(--text-3);
   }
 
   &.error {
-    color: var(--hmi-alarm);
+    color: var(--alarm-ink);
 
     mat-icon {
-      color: var(--hmi-alarm);
+      color: var(--alarm);
     }
   }
 }
 
 // ---------- level meter (on hand against a minimum or a need) ----------
-// A segmented bar gauge. Normal fill is graphite; below the line it turns alarm red.
 
 .meter {
   display: block;
   width: 96px;
-  height: 8px;
-  background:
-    repeating-linear-gradient(
-      to right,
-      transparent 0 calc(10% - 1px),
-      var(--hmi-panel) calc(10% - 1px) 10%
-    ),
-    var(--hmi-rule-soft);
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-muted);
   overflow: hidden;
 
   > span {
     display: block;
     height: 100%;
-    background: var(--hmi-graphite);
+    border-radius: inherit;
+    background: var(--accent);
+    transition: width 0.5s var(--ease);
   }
 
   &.low > span {
-    background: var(--hmi-alarm);
+    background: var(--alarm);
   }
 
   &.short > span {
-    background: var(--hmi-caution);
+    background: var(--caution);
   }
 
   &.wide {
@@ -613,31 +701,32 @@ a.stack:hover .primary-line {
   background: transparent !important;
 
   .mat-mdc-header-row {
-    height: 38px;
-    background: #eceef0;
+    height: 40px;
+    background: transparent;
   }
 
   .mat-mdc-header-cell {
-    color: var(--hmi-steel);
-    font-size: 13px;
+    color: var(--text-2);
+    font-size: 12.5px;
     font-weight: 600;
   }
 
   .mat-mdc-cell,
   .mat-mdc-header-cell {
-    border-bottom-color: var(--hmi-rule-soft);
+    border-bottom-color: var(--border-soft);
     padding: 0 10px;
 
     &:first-child {
-      padding-left: 16px;
+      padding-left: 20px;
     }
     &:last-child {
-      padding-right: 16px;
+      padding-right: 20px;
     }
   }
 
   .mat-mdc-row {
-    height: 48px;
+    height: 52px;
+    transition: background-color 0.15s var(--ease);
   }
 
   .mat-mdc-header-cell.num,
@@ -649,25 +738,25 @@ a.stack:hover .primary-line {
     cursor: pointer;
 
     &:hover {
-      background: #eceef0;
+      background: var(--surface-muted);
     }
 
     &:focus-visible {
-      background: #eceef0;
-      outline: 3px solid var(--hmi-caution);
+      background: var(--surface-muted);
+      outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
       outline-offset: -3px;
     }
   }
 
   // A row in an abnormal state gets a bar on its leading edge, not a coloured background.
   .mat-mdc-row.is-short .mat-mdc-cell:first-child {
-    box-shadow: inset 4px 0 0 var(--hmi-caution);
+    box-shadow: inset 3px 0 0 var(--caution);
   }
   .mat-mdc-row.is-late .mat-mdc-cell:first-child {
-    box-shadow: inset 4px 0 0 var(--hmi-alarm);
+    box-shadow: inset 3px 0 0 var(--alarm);
   }
   .mat-mdc-row.is-closed {
-    color: var(--hmi-steel);
+    color: var(--text-2);
   }
 
   .mat-mdc-row:last-child .mat-mdc-cell {
@@ -685,7 +774,7 @@ a.stack:hover .primary-line {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
-  padding: 10px 16px 0;
+  padding: 16px 20px 0;
 
   .search {
     flex: 1 1 260px;
@@ -695,17 +784,29 @@ a.stack:hover .primary-line {
 
 .mat-mdc-paginator {
   background: transparent !important;
-  border-top: 1px solid var(--hmi-rule-soft);
+  border-top: 1px solid var(--border-soft);
 }
 
-.mat-mdc-dialog-surface {
-  border-radius: var(--hmi-radius-panel) !important;
+// Dialogs and menus: denser glass, so text stays readable over whatever is behind them.
+.mat-mdc-dialog-surface,
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel,
+.mat-mdc-menu-panel {
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lift) !important;
 }
 
-// Dialog titles share the panel heading face.
 .mat-mdc-dialog-title {
-  font-family: var(--hmi-condensed) !important;
-  font-weight: 600 !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.018em !important;
+}
+
+.cdk-overlay-dark-backdrop {
+  background: rgb(0 0 0 / 28%);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 .visually-hidden {

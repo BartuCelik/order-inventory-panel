@@ -13,6 +13,7 @@ import { daysUntil, dueLabel } from '../orders/order.models';
 import { stockLevel, unitLabel } from '../products/product.models';
 import { statusClass, statusLabel } from '../work-orders/work-order.models';
 import { DashboardSummary } from './dashboard.models';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,6 +34,15 @@ export class Dashboard {
   private readonly healthService = inject(HealthService);
 
   protected readonly today = new Date();
+  private readonly auth = inject(AuthService);
+
+  /** "Good morning, Mira": the large title greets whoever is signed in. */
+  protected readonly greeting = computed(() => {
+    const hour = this.today.getHours();
+    const part = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    const firstName = this.auth.user()?.displayName.split(' ')[0];
+    return firstName ? `${part}, ${firstName}` : part;
+  });
   protected readonly unitLabel = unitLabel;
   protected readonly stockLevel = stockLevel;
   protected readonly statusClass = statusClass;

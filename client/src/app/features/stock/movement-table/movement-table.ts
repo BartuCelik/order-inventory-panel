@@ -99,7 +99,7 @@ import { StockMovement, movementTypeChip, movementTypeLabel } from '../stock.mod
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      color: var(--app-muted);
+      color: var(--text-2);
     }
     .avatar {
       display: grid;
@@ -107,8 +107,8 @@ import { StockMovement, movementTypeChip, movementTypeLabel } from '../stock.mod
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      background: var(--app-neutral-bg);
-      color: var(--app-neutral-fg);
+      background: var(--surface-muted);
+      color: var(--text-2);
       font-size: 11px;
       font-weight: 600;
     }

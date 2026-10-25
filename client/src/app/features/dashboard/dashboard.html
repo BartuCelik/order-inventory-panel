@@ -1,8 +1,8 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <h1 class="page-title">Shop floor</h1>
-      <p class="page-subtitle">{{ today | date: 'EEEE d MMMM' }}</p>
+      <h1 class="page-title">{{ greeting() }}</h1>
+      <p class="page-subtitle">Shop floor · {{ today | date: 'EEEE d MMMM' }}</p>
     </div>
     <div class="page-actions">
       <button mat-stroked-button (click)="refresh()" [disabled]="summary.isLoading()">
@@ -22,39 +22,44 @@
   } @else if (summary.hasValue()) {
     @let s = summary.value();
 
-    <!-- Andon strip: one segment per condition. Grey is normal; colour means someone should act. -->
-    <section class="andon" aria-label="Workshop conditions">
+    <!-- Status tiles: neutral when all is well; tinted only when someone should act. -->
+    <section class="tiles" aria-label="Workshop conditions">
       <a
-        class="segment"
+        class="tile"
         routerLink="/sales-orders"
         [queryParams]="{ late: true }"
         [class.alarm]="s.orders.late > 0"
       >
+        <span class="tile-icon"><mat-icon>schedule</mat-icon></span>
         <span class="reading">{{ s.orders.late }}</span>
         <span class="label">{{ s.orders.late === 1 ? 'Order late' : 'Orders late' }}</span>
         <span class="detail">of {{ s.orders.open }} open</span>
       </a>
       <a
-        class="segment"
+        class="tile"
         routerLink="/work-orders"
         [queryParams]="{ open: true }"
         [class.caution]="s.production.shortCount > 0"
       >
+        <span class="tile-icon"><mat-icon>inventory_2</mat-icon></span>
         <span class="reading">{{ s.production.shortCount }}</span>
         <span class="label">Short of material</span>
         <span class="detail">open work orders</span>
       </a>
-      <a class="segment" routerLink="/products" [class.alarm]="s.belowMinimum.length > 0">
+      <a class="tile" routerLink="/products" [class.alarm]="s.belowMinimum.length > 0">
+        <span class="tile-icon"><mat-icon>trending_down</mat-icon></span>
         <span class="reading">{{ s.belowMinimum.length }}</span>
         <span class="label">Below minimum</span>
         <span class="detail">products to reorder</span>
       </a>
-      <a class="segment" routerLink="/work-orders" [queryParams]="{ status: 'InProgress' }">
+      <a class="tile running" routerLink="/work-orders" [queryParams]="{ status: 'InProgress' }">
+        <span class="tile-icon"><mat-icon>precision_manufacturing</mat-icon></span>
         <span class="reading">{{ s.production.inProgress }}</span>
         <span class="label">Running</span>
         <span class="detail">{{ s.production.planned }} planned</span>
       </a>
-      <a class="segment" routerLink="/work-orders" [queryParams]="{ status: 'Done' }">
+      <a class="tile done" routerLink="/work-orders" [queryParams]="{ status: 'Done' }">
+        <span class="tile-icon"><mat-icon>task_alt</mat-icon></span>
         <span class="reading">{{ s.production.doneLast7Days }}</span>
         <span class="label">Completed</span>
         <span class="detail">last 7 days</span>

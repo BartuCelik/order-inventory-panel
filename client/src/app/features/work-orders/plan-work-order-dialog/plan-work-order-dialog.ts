@@ -94,7 +94,7 @@ export interface PlanWorkOrderDialogData {
     }
     .form-error {
       margin: 8px 0 0;
-      color: var(--hmi-alarm);
+      color: var(--alarm);
       font-weight: 500;
     }
   `,
