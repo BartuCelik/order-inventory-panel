@@ -1,0 +1,147 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Work orders</h1>
+      <p class="page-subtitle">
+        What the workshop is making, in plan order. Create work orders from a sales order line.
+      </p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="toolbar">
+      <mat-form-field appearance="outline" class="search" subscriptSizing="dynamic">
+        <mat-icon matPrefix>search</mat-icon>
+        <input
+          matInput
+          placeholder="Work order, product code or name"
+          aria-label="Search work orders"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </mat-form-field>
+
+      <mat-button-toggle-group
+        hideSingleSelectionIndicator
+        aria-label="Status"
+        [value]="filter()"
+        (change)="setFilter($event.value)"
+      >
+        <mat-button-toggle value="open">Open</mat-button-toggle>
+        @for (s of statuses; track s.value) {
+          <mat-button-toggle [value]="s.value">{{ s.label }}</mat-button-toggle>
+        }
+        <mat-button-toggle value="all">All</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      @if (page(); as page) {
+        <span class="count muted">{{ page.totalCount }} work orders</span>
+      }
+    </div>
+
+    <div class="panel-progress">
+      @if (workOrders.isLoading()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+    </div>
+
+    @if (workOrders.error(); as error) {
+      <div class="empty-state error">
+        <mat-icon>error</mat-icon>
+        {{ errorMessage(error) }}
+      </div>
+    } @else if (page(); as page) {
+      @if (page.items.length === 0) {
+        <div class="empty-state">
+          <mat-icon>precision_manufacturing</mat-icon>
+          No work orders match. Open a sales order and plan production from one of its lines.
+        </div>
+      } @else {
+        <div class="table-scroll">
+          <table mat-table class="data-table" [dataSource]="page.items">
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let w">
+                <span class="status" [class]="statusClass(w.status)">{{
+                  statusLabel(w.status)
+                }}</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="workOrder">
+              <th mat-header-cell *matHeaderCellDef>Work order</th>
+              <td mat-cell *matCellDef="let w">
+                <div class="stack">
+                  <span class="primary-line">{{ w.productName }}</span>
+                  <span class="secondary-line code">{{ w.number }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="quantity">
+              <th mat-header-cell *matHeaderCellDef class="num">Quantity</th>
+              <td mat-cell *matCellDef="let w" class="num">
+                {{ w.quantity | number: '1.0-4' }}
+                <span class="muted">{{ unitLabel(w.unit) }}</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="for">
+              <th mat-header-cell *matHeaderCellDef>For</th>
+              <td mat-cell *matCellDef="let w">
+                @if (w.salesOrderNumber) {
+                  <div class="stack">
+                    <span>{{ w.customerName }}</span>
+                    <span class="secondary-line code">{{ w.salesOrderNumber }}</span>
+                  </div>
+                } @else {
+                  <span class="muted">Stock</span>
+                }
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="planned">
+              <th mat-header-cell *matHeaderCellDef>Planned</th>
+              <td mat-cell *matCellDef="let w">
+                @if (w.completedAt) {
+                  <span class="muted">Done {{ w.completedAt | date: 'd MMM' }}</span>
+                } @else {
+                  {{ w.plannedDate | date: 'EEE d MMM' }}
+                }
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="flags">
+              <th mat-header-cell *matHeaderCellDef><span class="visually-hidden">Flags</span></th>
+              <td mat-cell *matCellDef="let w" class="num">
+                @if (w.hasShortage) {
+                  <span class="flag short"><mat-icon>inventory_2</mat-icon>Short</span>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columns"></tr>
+            <tr
+              mat-row
+              *matRowDef="let w; columns: columns"
+              class="clickable"
+              tabindex="0"
+              [class.is-short]="w.hasShortage"
+              [class.is-closed]="!isOpen(w.status)"
+              (click)="open(w)"
+              (keydown.enter)="open(w)"
+            ></tr>
+          </table>
+        </div>
+        <mat-paginator
+          [length]="page.totalCount"
+          [pageIndex]="pageIndex()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="[10, 20, 50, 100]"
+          (page)="changePage($event)"
+          aria-label="Work order pages"
+        />
+      }
+    }
+  </section>
+</div>

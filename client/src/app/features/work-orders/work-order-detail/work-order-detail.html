@@ -1,0 +1,194 @@
+<div class="page">
+  <a class="breadcrumb" routerLink="/work-orders"><mat-icon>arrow_back</mat-icon>Work orders</a>
+
+  @if (workOrder.error(); as error) {
+    <section class="panel">
+      <div class="empty-state error">
+        <mat-icon>error</mat-icon>
+        {{ errorMessage(error) }}
+      </div>
+    </section>
+  } @else if (workOrder.hasValue()) {
+    @let w = workOrder.value();
+
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">{{ w.productName }} × {{ w.quantity | number: '1.0-4' }}</h1>
+        <p class="page-subtitle">
+          <span class="code">{{ w.number }}</span>
+          @if (w.salesOrderId) {
+            for
+            <a [routerLink]="['/sales-orders', w.salesOrderId]"
+              >{{ w.customerName }}, {{ w.salesOrderNumber }}</a
+            >
+          } @else {
+            for stock
+          }
+        </p>
+      </div>
+      <div class="page-actions">
+        @if (w.status === 'Planned') {
+          <button mat-stroked-button (click)="cancel(w)" [disabled]="busy()">Cancel</button>
+          <button mat-flat-button (click)="start(w)" [disabled]="busy()">
+            <mat-icon>play_arrow</mat-icon>
+            Start
+          </button>
+        } @else if (w.status === 'InProgress') {
+          <button mat-stroked-button (click)="cancel(w)" [disabled]="busy()">Cancel</button>
+          <button mat-flat-button (click)="complete(w)" [disabled]="busy()">
+            <mat-icon>check</mat-icon>
+            Complete
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (actionError(); as message) {
+      <div class="alert" role="alert">
+        <mat-icon>error</mat-icon>
+        <span>{{ message }}</span>
+      </div>
+    }
+
+    <div class="grid">
+      <!-- The traveler: where this work order is on its route, and its key figures. -->
+      <section class="panel span-4 traveler">
+        <header class="panel-header"><h2 class="panel-title">Route</h2></header>
+        @if (w.status === 'Cancelled') {
+          <p class="cancelled-note">
+            <span class="status cancelled">Cancelled</span>
+            Its reservation was released; nothing was consumed.
+          </p>
+        } @else {
+          <ol class="route" aria-label="Work order progress">
+            @for (step of steps; track step.status) {
+              <li
+                [class]="stepState(step.status, w.status)"
+                [attr.aria-current]="stepState(step.status, w.status) === 'current' ? 'step' : null"
+              >
+                <span class="node" aria-hidden="true"></span>
+                <span class="step-label">{{ step.label }}</span>
+                @if (step.status === 'Planned') {
+                  <span class="step-detail">{{ w.plannedDate | date: 'EEE d MMM' }}</span>
+                } @else if (step.status === 'Done' && w.completedAt) {
+                  <span class="step-detail">{{ w.completedAt | date: 'EEE d MMM, HH:mm' }}</span>
+                }
+              </li>
+            }
+          </ol>
+        }
+        <dl class="facts">
+          <div>
+            <dt>Product</dt>
+            <dd>
+              <a [routerLink]="['/products', w.productId]">{{ w.productCode }}</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Quantity</dt>
+            <dd>{{ w.quantity | number: '1.0-4' }} {{ unitLabel(w.unit) }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="panel span-8">
+        <header class="panel-header">
+          <h2 class="panel-title">Materials</h2>
+          @if (isOpen(w.status)) {
+            @if (physicallyShort().length > 0) {
+              <span class="flag late"
+                >Cannot complete: {{ physicallyShort().length }} not in stock</span
+              >
+            } @else if (w.hasShortage) {
+              <span class="flag short"
+                ><mat-icon>inventory_2</mat-icon>Short after reservations</span
+              >
+            } @else {
+              <span class="muted head-note">Covered</span>
+            }
+          }
+        </header>
+        <div class="table-scroll">
+          <table mat-table class="data-table" [dataSource]="w.components">
+            <ng-container matColumnDef="component">
+              <th mat-header-cell *matHeaderCellDef>Component</th>
+              <td mat-cell *matCellDef="let c">
+                <a class="stack" [routerLink]="['/products', c.productId]">
+                  <span class="primary-line">{{ c.productName }}</span>
+                  <span class="secondary-line">
+                    <span class="chip plain-chip" [class]="typeChip(c.type)">{{
+                      typeLabel(c.type)
+                    }}</span>
+                    <span class="code">{{ c.productCode }}</span>
+                  </span>
+                </a>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="required">
+              <th mat-header-cell *matHeaderCellDef class="num">Needed</th>
+              <td mat-cell *matCellDef="let c" class="num">
+                <strong>{{ c.requiredQty | number: '1.0-4' }}</strong>
+                <span class="muted"> {{ unitLabel(c.unit) }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="consumed">
+              <th mat-header-cell *matHeaderCellDef class="num">Consumed</th>
+              <td mat-cell *matCellDef="let c" class="num">
+                {{ c.consumedQty | number: '1.0-4' }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="onHand">
+              <th mat-header-cell *matHeaderCellDef class="num">On hand</th>
+              <td
+                mat-cell
+                *matCellDef="let c"
+                class="num"
+                [class.error-text]="isOpen(w.status) && c.onHand < c.requiredQty"
+              >
+                {{ c.onHand | number: '1.0-4' }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="reserved">
+              <th mat-header-cell *matHeaderCellDef class="num">Reserved elsewhere</th>
+              <td mat-cell *matCellDef="let c" class="num muted">
+                {{ c.reserved | number: '1.0-4' }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="available">
+              <th mat-header-cell *matHeaderCellDef class="num">Available</th>
+              <td mat-cell *matCellDef="let c" class="num">{{ c.available | number: '1.0-4' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="level">
+              <th mat-header-cell *matHeaderCellDef>
+                <span class="visually-hidden">Coverage</span>
+              </th>
+              <td mat-cell *matCellDef="let c" class="level-cell">
+                <span class="meter" [class.short]="c.shortage > 0"
+                  ><span [style.width.%]="coverage(c)"></span
+                ></span>
+                @if (c.shortage > 0) {
+                  <span class="short-by">{{ c.shortage | number: '1.0-4' }} short</span>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columns()"></tr>
+            <tr
+              mat-row
+              *matRowDef="let c; columns: columns()"
+              [class.is-short]="isOpen(w.status) && c.shortage > 0"
+            ></tr>
+          </table>
+        </div>
+        @if (isOpen(w.status)) {
+          <p class="explain muted">
+            Available is what is left after the other open work orders take their share. Short here
+            is a planning signal; completing only needs the material physically on hand.
+          </p>
+        }
+      </section>
+    </div>
+  } @else {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
