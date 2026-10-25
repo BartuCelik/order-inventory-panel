@@ -85,11 +85,13 @@ export class ProductionChart {
       options: {
         maintainAspectRatio: false,
         animation: false,
+        // The whole week column answers the hover, not only the bar (an empty week has no bar).
+        interaction: { mode: 'index', intersect: false },
         scales: {
           x: {
             grid: { display: false },
             border: { display: false },
-            ticks: { color: token('--text-3'), font },
+            ticks: { color: token('--text-3'), font, maxRotation: 0 },
           },
           y: {
             beginAtZero: true,
