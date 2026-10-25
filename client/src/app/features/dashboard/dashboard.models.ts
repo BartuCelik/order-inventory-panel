@@ -51,6 +51,8 @@ export interface BelowMinimum {
   name: string;
   unit: UnitOfMeasure;
   onHand: number;
+  /** On-hand minus what open work orders still reserve; this is what is compared with the minimum. */
+  available: number;
   minStock: number;
 }
 

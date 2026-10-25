@@ -89,10 +89,10 @@ public sealed class DashboardService(IAppDbContext db, WorkOrderService workOrde
             counts.Where(c => !c.IsActive).Sum(c => c.Count));
     }
 
-    /// <remarks>
-    /// Compares on-hand with the minimum. Phase 4 defines critical stock on <em>available</em> stock
-    /// (on-hand minus work order reservations), which needs the work orders of Phase 3.
-    /// </remarks>
+    /// <summary>
+    /// Critical stock: available (on-hand minus what open work orders still reserve, rule 9) below the minimum.
+    /// On-hand alone would hide material that is already promised to planned production.
+    /// </summary>
     private async Task<IReadOnlyList<BelowMinimumDto>> FindBelowMinimumAsync(CancellationToken cancellationToken) =>
         await db.Products.AsNoTracking()
             .Where(p => p.IsActive && p.MinStock > 0)
@@ -105,12 +105,17 @@ public sealed class DashboardService(IAppDbContext db, WorkOrderService workOrde
                 p.MinStock,
                 // Rule 1: on-hand is always the sum of the ledger.
                 OnHand = db.StockMovements.Where(m => m.ProductId == p.Id).Sum(m => m.Quantity),
+                Reserved = db.WorkOrderComponents
+                    .Where(c => c.ComponentProductId == p.Id
+                        && (c.WorkOrder!.Status == WorkOrderStatus.Planned || c.WorkOrder.Status == WorkOrderStatus.InProgress))
+                    .Sum(c => c.RequiredQty - c.ConsumedQty),
             })
-            .Where(p => p.OnHand < p.MinStock)
-            // Most critical first: the smallest share of the minimum still on hand.
-            .OrderBy(p => p.OnHand / p.MinStock)
+            .Select(p => new { p.Id, p.Code, p.Name, p.Unit, p.MinStock, p.OnHand, Available = p.OnHand - p.Reserved })
+            .Where(p => p.Available < p.MinStock)
+            // Most critical first: the smallest share of the minimum still available.
+            .OrderBy(p => p.Available / p.MinStock)
             .ThenBy(p => p.Code)
-            .Select(p => new BelowMinimumDto(p.Id, p.Code, p.Name, p.Unit, p.OnHand, p.MinStock))
+            .Select(p => new BelowMinimumDto(p.Id, p.Code, p.Name, p.Unit, p.OnHand, p.Available, p.MinStock))
             .ToListAsync(cancellationToken);
 
     private async Task<IReadOnlyList<ActivityDayDto>> GetActivityAsync(CancellationToken cancellationToken)
