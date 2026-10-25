@@ -9,8 +9,23 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
-        title: 'Dashboard · Order & Inventory',
+        title: 'Shop floor · Workshop panel',
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'work-orders',
+        loadChildren: () =>
+          import('./features/work-orders/work-orders.routes').then((m) => m.WORK_ORDER_ROUTES),
+      },
+      {
+        path: 'sales-orders',
+        loadChildren: () =>
+          import('./features/orders/orders.routes').then((m) => m.SALES_ORDER_ROUTES),
+      },
+      {
+        path: 'customers',
+        loadChildren: () =>
+          import('./features/orders/orders.routes').then((m) => m.CUSTOMER_ROUTES),
       },
       {
         path: 'products',
