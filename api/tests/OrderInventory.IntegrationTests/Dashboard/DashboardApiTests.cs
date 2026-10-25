@@ -115,7 +115,7 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
         Assert.Equal(late, after.Orders.DueSoon[0].Id);
         Assert.True(after.Orders.DueSoon[0].IsLate);
         Assert.Equal(before.Production.Planned + 1, after.Production.Planned);
-        Assert.Equal(before.Production.Short + 1, after.Production.Short);
+        Assert.Equal(before.Production.ShortCount + 1, after.Production.Short);
         Assert.Contains(after.Production.Queue, w => w.ProductCode == "DB-OP-TABLE" && w.HasShortage);
     }
 
@@ -176,7 +176,7 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
 
     private sealed record DueOrderResponse(int Id, string Number, bool IsLate);
 
-    private sealed record ProductionStatsResponse(int Planned, int InProgress, int DoneLast7Days, int Short, IReadOnlyList<QueueResponse> Queue);
+    private sealed record ProductionStatsResponse(int Planned, int InProgress, int DoneLast7Days, int ShortCount, IReadOnlyList<QueueResponse> Queue);
 
     private sealed record QueueResponse(int Id, string ProductCode, bool HasShortage);
 

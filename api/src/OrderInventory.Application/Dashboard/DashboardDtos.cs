@@ -32,4 +32,4 @@ public sealed record DueOrderDto(int Id, string Number, string CustomerName, Dat
 /// (rule 9, reserved shortage) and the production queue: open work orders in plan order.
 /// </summary>
 public sealed record ProductionStatsDto(
-    int Planned, int InProgress, int DoneLast7Days, int Short, IReadOnlyList<WorkOrderSummaryDto> Queue);
+    int Planned, int InProgress, int DoneLast7Days, int ShortCount, IReadOnlyList<WorkOrderSummaryDto> Queue);
