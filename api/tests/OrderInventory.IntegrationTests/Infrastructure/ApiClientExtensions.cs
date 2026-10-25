@@ -21,7 +21,7 @@ internal static class ApiClientExtensions
 
     public static async Task AddBomLineAsync(this HttpClient client, int parentId, int componentId, decimal qtyPerUnit)
     {
-        var response = await client.PostAsJsonAsync($"/products/{parentId}/bom",
+        var response = await client.PostAsJsonAsync($"/products/{parentId}/bom-lines",
             new { componentProductId = componentId, qtyPerUnit }, ApiFactory.JsonOptions, CancellationToken);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
