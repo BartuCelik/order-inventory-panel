@@ -18,13 +18,21 @@ import {
   PlanWorkOrderDialogData,
 } from '../../work-orders/plan-work-order-dialog/plan-work-order-dialog';
 import { WorkOrder, isOpen, statusClass, statusLabel } from '../../work-orders/work-order.models';
-import { SalesOrder, SalesOrderLine, dueLabel, orderStatusClass } from '../order.models';
+import {
+  SalesOrder,
+  SalesOrderLine,
+  dueLabel,
+  orderStatusClass,
+  orderStatusLabel,
+} from '../order.models';
 import { OrdersApi } from '../orders.api';
 import { AuthService } from '../../../core/auth/auth.service';
+import { t, TranslatePipe } from '../../../core/i18n/i18n';
 
 @Component({
   selector: 'app-sales-order-detail',
   imports: [
+    TranslatePipe,
     DatePipe,
     DecimalPipe,
     RouterLink,
@@ -49,6 +57,7 @@ export class SalesOrderDetail {
   protected readonly unitLabel = unitLabel;
   protected readonly dueLabel = dueLabel;
   protected readonly orderStatusClass = orderStatusClass;
+  protected readonly orderStatusLabel = orderStatusLabel;
   protected readonly statusClass = statusClass;
   protected readonly statusLabel = statusLabel;
   protected readonly isOpen = isOpen;
@@ -98,14 +107,23 @@ export class SalesOrderDetail {
           unitLabel: unitLabel(line.unit),
           quantity: this.stillNeeded(line) || line.quantity,
           salesOrderLineId: line.id,
-          context: `For ${order.customerName}, ${order.number}`,
+          context: t('salesOrder.planContext', {
+            customer: order.customerName,
+            number: order.number,
+          }),
         },
       })
       .afterClosed()
       .subscribe((workOrder) => {
         if (workOrder) {
           this.snackBar
-            .open(`Created ${workOrder.number}.`, 'Open', { duration: 5000 })
+            .open(
+              t('salesOrder.workOrderCreated', { number: workOrder.number }),
+              t('common.open'),
+              {
+                duration: 5000,
+              },
+            )
             .onAction()
             .subscribe(() => this.router.navigate(['/work-orders', workOrder.id]));
           this.order.reload();
@@ -115,27 +133,31 @@ export class SalesOrderDetail {
 
   protected ship(order: SalesOrder): void {
     confirm(this.dialog, {
-      title: `Ship ${order.number}?`,
-      message:
-        'This takes every line out of stock and marks the order shipped. It cannot be undone.',
-      confirmLabel: 'Ship order',
+      title: t('salesOrder.shipTitle', { number: order.number }),
+      message: t('salesOrder.shipMessage'),
+      confirmLabel: t('salesOrder.shipConfirm'),
     })
       .pipe(filter(Boolean))
-      .subscribe(() => this.run(this.api.ship(order.id), `Shipped ${order.number}.`));
+      .subscribe(() =>
+        this.run(this.api.ship(order.id), t('salesOrder.shippedDone', { number: order.number })),
+      );
   }
 
   protected cancel(order: SalesOrder): void {
     const open = this.openWorkOrderCount();
     confirm(this.dialog, {
-      title: `Cancel ${order.number}?`,
+      title: t('salesOrder.cancelTitle', { number: order.number }),
       message:
-        open > 0
-          ? `Its ${open} open work order${open === 1 ? '' : 's'} will be cancelled too, releasing the reserved material. Finished work orders are kept.`
-          : 'The order will no longer appear as open. Nothing leaves stock.',
-      confirmLabel: 'Cancel order',
+        open > 0 ? t('salesOrder.cancelWithWork', { count: open }) : t('salesOrder.cancelPlain'),
+      confirmLabel: t('salesOrder.cancelOrder'),
     })
       .pipe(filter(Boolean))
-      .subscribe(() => this.run(this.api.cancel(order.id), `Cancelled ${order.number}.`));
+      .subscribe(() =>
+        this.run(
+          this.api.cancel(order.id),
+          t('salesOrder.cancelledDone', { number: order.number }),
+        ),
+      );
   }
 
   private run(action$: ReturnType<OrdersApi['ship']>, done: string): void {

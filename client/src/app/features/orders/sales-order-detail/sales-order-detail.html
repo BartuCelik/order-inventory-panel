@@ -1,5 +1,7 @@
 <div class="page">
-  <a class="breadcrumb" routerLink="/sales-orders"><mat-icon>arrow_back</mat-icon>Sales orders</a>
+  <a class="breadcrumb" routerLink="/sales-orders"
+    ><mat-icon>arrow_back</mat-icon>{{ 'nav.salesOrders' | t }}</a
+  >
 
   @if (order.error(); as error) {
     <section class="panel">
@@ -16,13 +18,15 @@
         <h1 class="page-title">{{ o.customerName }}</h1>
         <p class="page-subtitle">
           <span class="code">{{ o.number }}</span
-          >, ordered {{ o.orderDate | date: 'd MMM y' }}
+          >, {{ 'salesOrder.orderedOn' | t: { date: (o.orderDate | date: 'd MMM y') ?? '' } }}
         </p>
       </div>
       @if (o.status === 'Open') {
         <div class="page-actions">
           @if (auth.canPlan()) {
-            <button mat-stroked-button (click)="cancel(o)" [disabled]="busy()">Cancel order</button>
+            <button mat-stroked-button (click)="cancel(o)" [disabled]="busy()">
+              {{ 'salesOrder.cancelOrder' | t }}
+            </button>
           }
           @if (auth.canHandleStock()) {
             <button
@@ -31,7 +35,7 @@
               [disabled]="busy() || shortLines().length > 0"
             >
               <mat-icon>local_shipping</mat-icon>
-              Ship
+              {{ 'salesOrder.ship' | t }}
             </button>
           }
         </div>
@@ -48,11 +52,13 @@
     <!-- Order state plate: status, due date and whether it can go out today. -->
     <section class="state-plate" [class.late]="o.isLate">
       <div>
-        <span class="plate-label">Status</span>
-        <span class="status" [class]="orderStatusClass(o.status)">{{ o.status }}</span>
+        <span class="plate-label">{{ 'common.status' | t }}</span>
+        <span class="status" [class]="orderStatusClass(o.status)">{{
+          orderStatusLabel(o.status)
+        }}</span>
       </div>
       <div>
-        <span class="plate-label">Due</span>
+        <span class="plate-label">{{ 'salesOrders.due' | t }}</span>
         <span class="plate-value">{{ o.dueDate | date: 'EEE d MMM' }}</span>
         @if (o.status === 'Open') {
           <span class="plate-detail">{{ dueLabel(o.dueDate) }}</span>
@@ -60,20 +66,21 @@
       </div>
       @if (o.status === 'Open') {
         <div>
-          <span class="plate-label">Ready to ship</span>
+          <span class="plate-label">{{ 'salesOrder.readyToShip' | t }}</span>
           @if (shortLines().length === 0) {
-            <span class="plate-value">Yes</span>
-            <span class="plate-detail">Every line is on the shelf</span>
+            <span class="plate-value">{{ 'common.yes' | t }}</span>
+            <span class="plate-detail">{{ 'salesOrder.allOnShelf' | t }}</span>
           } @else {
-            <span class="plate-value">No</span>
-            <span class="plate-detail"
-              >{{ shortLines().length }} of {{ o.lines.length }} lines not in stock</span
-            >
+            <span class="plate-value">{{ 'common.no' | t }}</span>
+            <span class="plate-detail">{{
+              'salesOrder.linesNotInStock'
+                | t: { short: shortLines().length, total: o.lines.length }
+            }}</span>
           }
         </div>
       } @else if (o.shippedAt) {
         <div>
-          <span class="plate-label">Shipped</span>
+          <span class="plate-label">{{ 'salesOrder.shipped' | t }}</span>
           <span class="plate-value">{{ o.shippedAt | date: 'EEE d MMM' }}</span>
           <span class="plate-detail">{{ o.shippedAt | date: 'HH:mm' }}</span>
         </div>
@@ -81,11 +88,13 @@
     </section>
 
     <section class="panel">
-      <header class="panel-header"><h2 class="panel-title">Lines</h2></header>
+      <header class="panel-header">
+        <h2 class="panel-title">{{ 'salesOrder.lines' | t }}</h2>
+      </header>
       <div class="table-scroll">
         <table mat-table class="data-table" [dataSource]="o.lines">
           <ng-container matColumnDef="product">
-            <th mat-header-cell *matHeaderCellDef>Product</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.product' | t }}</th>
             <td mat-cell *matCellDef="let l">
               <a class="stack" [routerLink]="['/products', l.productId]">
                 <span class="primary-line">{{ l.productName }}</span>
@@ -94,28 +103,31 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="quantity">
-            <th mat-header-cell *matHeaderCellDef class="num">Ordered</th>
+            <th mat-header-cell *matHeaderCellDef class="num">{{ 'salesOrders.ordered' | t }}</th>
             <td mat-cell *matCellDef="let l" class="num">
               <strong>{{ l.quantity | number: '1.0-4' }}</strong>
               <span class="muted"> {{ unitLabel(l.unit) }}</span>
             </td>
           </ng-container>
           <ng-container matColumnDef="onHand">
-            <th mat-header-cell *matHeaderCellDef class="num">On the shelf</th>
+            <th mat-header-cell *matHeaderCellDef class="num">{{ 'salesOrder.onShelf' | t }}</th>
             <td mat-cell *matCellDef="let l" class="num">
               <span [class.error-text]="l.onHand < l.quantity">{{
                 l.onHand | number: '1.0-4'
               }}</span>
               @if (l.onHand < l.quantity) {
-                <span class="missing">{{ l.quantity - l.onHand | number: '1.0-4' }} missing</span>
+                <span class="missing">{{
+                  'salesOrder.missing'
+                    | t: { quantity: (l.quantity - l.onHand | number: '1.0-4') ?? '' }
+                }}</span>
               }
             </td>
           </ng-container>
           <ng-container matColumnDef="production">
-            <th mat-header-cell *matHeaderCellDef>Production</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'salesOrder.production' | t }}</th>
             <td mat-cell *matCellDef="let l">
               @if (l.workOrders.length === 0) {
-                <span class="muted">None planned</span>
+                <span class="muted">{{ 'salesOrder.nonePlanned' | t }}</span>
               } @else {
                 <ul class="wo-list">
                   @for (w of l.workOrders; track w.id) {
@@ -132,12 +144,14 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="plan">
-            <th mat-header-cell *matHeaderCellDef><span class="visually-hidden">Actions</span></th>
+            <th mat-header-cell *matHeaderCellDef>
+              <span class="visually-hidden">{{ 'common.actions' | t }}</span>
+            </th>
             <td mat-cell *matCellDef="let l" class="num">
               @if (auth.canPlan()) {
                 <button mat-stroked-button (click)="plan(o, l)" [disabled]="busy()">
                   <mat-icon>precision_manufacturing</mat-icon>
-                  Plan production
+                  {{ 'plan.title' | t }}
                 </button>
               }
             </td>
@@ -154,8 +168,7 @@
       </div>
       @if (o.status === 'Open' && shortLines().length > 0) {
         <p class="explain muted">
-          Shipping takes every line out of stock at once, so it waits until each finished product is
-          on the shelf. Plan production for the missing quantities, then complete those work orders.
+          {{ 'salesOrder.explain' | t }}
         </p>
       }
     </section>

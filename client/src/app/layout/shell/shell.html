@@ -8,14 +8,14 @@
   >
     <a class="brand" routerLink="/dashboard" (click)="compact() && drawer.close()">
       <span class="app-icon" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
-      <span class="brand-name">Workshop</span>
+      <span class="brand-name">{{ 'app.name' | t }}</span>
     </a>
 
-    <nav aria-label="Main">
+    <nav [attr.aria-label]="'nav.main' | t">
       @for (group of navGroups; track group.label) {
         <div class="group">
-          <span class="group-label" [id]="'nav-' + group.label">{{ group.label }}</span>
-          <ul [attr.aria-labelledby]="'nav-' + group.label">
+          <span class="group-label" [id]="'nav-' + group.id">{{ group.label }}</span>
+          <ul [attr.aria-labelledby]="'nav-' + group.id">
             @for (item of group.items; track item.route) {
               <li>
                 <a
@@ -40,20 +40,26 @@
         type="button"
         class="theme-toggle"
         (click)="theme.cycle()"
-        [attr.aria-label]="'Theme: ' + themeLabel() + '. Change theme'"
+        [attr.aria-label]="'theme.change' | t: { theme: themeLabel() }"
       >
         <mat-icon>{{ themeIcon() }}</mat-icon>
         <span>{{ themeLabel() }}</span>
       </button>
+      <app-language-picker />
 
       @if (auth.user(); as user) {
         <div class="user">
           <span class="avatar" aria-hidden="true">{{ initials(user.displayName) }}</span>
           <span class="user-text">
             <span class="user-name">{{ user.displayName }}</span>
-            <span class="user-role">{{ user.role }}</span>
+            <span class="user-role">{{ roleLabel(user.role) }}</span>
           </span>
-          <button mat-icon-button (click)="auth.logout()" aria-label="Sign out" title="Sign out">
+          <button
+            mat-icon-button
+            (click)="auth.logout()"
+            [attr.aria-label]="'auth.signOut' | t"
+            [title]="'auth.signOut' | t"
+          >
             <mat-icon>logout</mat-icon>
           </button>
         </div>
@@ -61,7 +67,7 @@
 
       <p class="demo-note">
         <time [attr.datetime]="now().toISOString()">{{ now() | date: 'EEE d MMM, HH:mm' }}</time>
-        · demo data from an invented furniture workshop
+        · {{ 'shell.demoNote' | t }}
       </p>
     </div>
   </mat-sidenav>
@@ -69,11 +75,11 @@
   <mat-sidenav-content class="content">
     @if (compact()) {
       <header class="topbar">
-        <button mat-icon-button (click)="drawer.toggle()" aria-label="Open navigation">
+        <button mat-icon-button (click)="drawer.toggle()" [attr.aria-label]="'nav.open' | t">
           <mat-icon>menu</mat-icon>
         </button>
         <span class="app-icon small" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
-        <strong>Workshop</strong>
+        <strong>{{ 'app.name' | t }}</strong>
       </header>
     }
     <router-outlet />

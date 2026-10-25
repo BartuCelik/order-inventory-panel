@@ -5,16 +5,17 @@ import { MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
 import { unitLabel } from '../../products/product.models';
 import { StockMovement, movementTypeChip, movementTypeLabel } from '../stock.models';
+import { TranslatePipe } from '../../../core/i18n/i18n';
 
 /** Read-only ledger rows. The ledger is append-only, so there are no row actions. */
 @Component({
   selector: 'app-movement-table',
-  imports: [DatePipe, DecimalPipe, MatIconModule, MatTableModule, RouterLink],
+  imports: [DatePipe, DecimalPipe, MatIconModule, MatTableModule, RouterLink, TranslatePipe],
   template: `
     <div class="table-scroll">
       <table mat-table class="data-table" [dataSource]="movements()">
         <ng-container matColumnDef="createdAt">
-          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <th mat-header-cell *matHeaderCellDef>{{ 'movements.date' | t }}</th>
           <td mat-cell *matCellDef="let m">
             <div class="stack">
               <span class="primary-line">{{ m.createdAt | date: 'd MMM yyyy' }}</span>
@@ -23,7 +24,7 @@ import { StockMovement, movementTypeChip, movementTypeLabel } from '../stock.mod
           </td>
         </ng-container>
         <ng-container matColumnDef="product">
-          <th mat-header-cell *matHeaderCellDef>Product</th>
+          <th mat-header-cell *matHeaderCellDef>{{ 'common.product' | t }}</th>
           <td mat-cell *matCellDef="let m">
             <a class="stack product" [routerLink]="['/products', m.productId]">
               <span class="primary-line">{{ m.productName }}</span>
@@ -32,7 +33,7 @@ import { StockMovement, movementTypeChip, movementTypeLabel } from '../stock.mod
           </td>
         </ng-container>
         <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <th mat-header-cell *matHeaderCellDef>{{ 'common.type' | t }}</th>
           <td mat-cell *matCellDef="let m">
             <span class="chip" [class]="movementTypeChip(m.type)">{{
               movementTypeLabel(m.type)
@@ -40,7 +41,7 @@ import { StockMovement, movementTypeChip, movementTypeLabel } from '../stock.mod
           </td>
         </ng-container>
         <ng-container matColumnDef="quantity">
-          <th mat-header-cell *matHeaderCellDef class="num">Quantity</th>
+          <th mat-header-cell *matHeaderCellDef class="num">{{ 'common.quantity' | t }}</th>
           <td
             mat-cell
             *matCellDef="let m"
@@ -53,11 +54,11 @@ import { StockMovement, movementTypeChip, movementTypeLabel } from '../stock.mod
           </td>
         </ng-container>
         <ng-container matColumnDef="note">
-          <th mat-header-cell *matHeaderCellDef>Note</th>
+          <th mat-header-cell *matHeaderCellDef>{{ 'record.note' | t }}</th>
           <td mat-cell *matCellDef="let m" class="muted note">{{ m.note ?? '—' }}</td>
         </ng-container>
         <ng-container matColumnDef="createdBy">
-          <th mat-header-cell *matHeaderCellDef>By</th>
+          <th mat-header-cell *matHeaderCellDef>{{ 'movements.by' | t }}</th>
           <td mat-cell *matCellDef="let m">
             <span class="who"
               ><span class="avatar">{{ m.createdBy.charAt(0).toUpperCase() }}</span
@@ -72,7 +73,7 @@ import { StockMovement, movementTypeChip, movementTypeLabel } from '../stock.mod
           <td class="mat-mdc-cell" [attr.colspan]="columns().length">
             <div class="empty-state">
               <mat-icon>receipt_long</mat-icon>
-              No stock movements yet.
+              {{ 'movements.none' | t }}
             </div>
           </td>
         </tr>

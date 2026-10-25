@@ -15,12 +15,14 @@ import {
   RecordMovementDialogData,
 } from '../record-movement-dialog/record-movement-dialog';
 import { STOCK_MOVEMENTS_URL } from '../stock.api';
-import { StockMovement } from '../stock.models';
+import { StockMovement, movementTypeLabel } from '../stock.models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { t, TranslatePipe } from '../../../core/i18n/i18n';
 
 @Component({
   selector: 'app-stock-ledger',
   imports: [
+    TranslatePipe,
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
@@ -78,7 +80,10 @@ export class StockLedger {
       .subscribe((movement) => {
         if (movement) {
           this.snackBar.open(
-            `Recorded ${movement.type.toLowerCase()} for ${movement.productCode}.`,
+            t('stock.recordedFor', {
+              type: movementTypeLabel(movement.type),
+              code: movement.productCode,
+            }),
             undefined,
             {
               duration: 3000,

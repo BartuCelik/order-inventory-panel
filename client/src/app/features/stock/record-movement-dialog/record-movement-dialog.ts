@@ -18,6 +18,7 @@ import { ProductPicker } from '../../products/product-picker/product-picker';
 import { Product, unitLabel } from '../../products/product.models';
 import { StockApi } from '../stock.api';
 import { MANUAL_MOVEMENT_TYPES, ManualMovementType, StockMovement } from '../stock.models';
+import { t, TranslatePipe } from '../../../core/i18n/i18n';
 
 export interface RecordMovementDialogData {
   /** Fixes the product, e.g. when opened from its detail page; otherwise the user picks one. */
@@ -27,6 +28,7 @@ export interface RecordMovementDialogData {
 @Component({
   selector: 'app-record-movement-dialog',
   imports: [
+    TranslatePipe,
     DecimalPipe,
     ReactiveFormsModule,
     MatButtonModule,
@@ -70,7 +72,7 @@ export class RecordMovementDialog {
 
   protected save(): void {
     const product = this.product();
-    this.productError.set(product ? null : 'Pick a product.');
+    this.productError.set(product ? null : t('record.pickProduct'));
     if (!product || this.form.invalid) {
       this.form.markAllAsTouched();
       return;

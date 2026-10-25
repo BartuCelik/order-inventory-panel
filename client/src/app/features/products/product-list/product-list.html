@@ -1,16 +1,14 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <h1 class="page-title">Products</h1>
-      <p class="page-subtitle">
-        Raw materials, semi-finished parts and finished goods, with stock from the ledger.
-      </p>
+      <h1 class="page-title">{{ 'nav.products' | t }}</h1>
+      <p class="page-subtitle">{{ 'products.subtitle' | t }}</p>
     </div>
     @if (auth.canPlan()) {
       <div class="page-actions">
         <button mat-flat-button (click)="create()">
           <mat-icon>add</mat-icon>
-          New product
+          {{ 'products.new' | t }}
         </button>
       </div>
     }
@@ -22,8 +20,8 @@
         <mat-icon matPrefix>search</mat-icon>
         <input
           matInput
-          placeholder="Search code or name"
-          aria-label="Search code or name"
+          [placeholder]="'products.search' | t"
+          [attr.aria-label]="'products.search' | t"
           [value]="search()"
           (input)="search.set($any($event.target).value)"
         />
@@ -32,13 +30,13 @@
       <mat-button-toggle-group
         class="types"
         hideSingleSelectionIndicator
-        aria-label="Product type"
+        [attr.aria-label]="'products.type' | t"
         [value]="type()"
         (change)="setType($event.value)"
       >
-        <mat-button-toggle [value]="null">All</mat-button-toggle>
-        @for (t of types; track t.value) {
-          <mat-button-toggle [value]="t.value">{{ t.label }}</mat-button-toggle>
+        <mat-button-toggle [value]="null">{{ 'common.all' | t }}</mat-button-toggle>
+        @for (type of types; track type.value) {
+          <mat-button-toggle [value]="type.value">{{ type.label }}</mat-button-toggle>
         }
       </mat-button-toggle-group>
 
@@ -46,11 +44,11 @@
         class="inactive"
         [checked]="includeInactive()"
         (change)="setIncludeInactive($event.checked)"
-        >Show inactive</mat-slide-toggle
+        >{{ 'products.showInactive' | t }}</mat-slide-toggle
       >
 
       @if (page(); as page) {
-        <span class="count muted">{{ page.totalCount }} products</span>
+        <span class="count muted">{{ 'products.count' | t: { count: page.totalCount } }}</span>
       }
     </div>
 
@@ -69,7 +67,7 @@
       <div class="table-scroll">
         <table mat-table class="data-table" [dataSource]="page.items">
           <ng-container matColumnDef="product">
-            <th mat-header-cell *matHeaderCellDef>Product</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.product' | t }}</th>
             <td mat-cell *matCellDef="let p">
               <div class="stack">
                 <span class="primary-line">{{ p.name }}</span>
@@ -79,14 +77,14 @@
           </ng-container>
 
           <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.type' | t }}</th>
             <td mat-cell *matCellDef="let p">
               <span class="chip" [class]="typeChip(p.type)">{{ typeLabel(p.type) }}</span>
             </td>
           </ng-container>
 
           <ng-container matColumnDef="onHand">
-            <th mat-header-cell *matHeaderCellDef class="num">On hand</th>
+            <th mat-header-cell *matHeaderCellDef class="num">{{ 'common.onHand' | t }}</th>
             <td mat-cell *matCellDef="let p" class="num">
               <div class="on-hand">
                 <span [class.low-value]="isBelowMinimum(p)">
@@ -104,7 +102,7 @@
           </ng-container>
 
           <ng-container matColumnDef="minStock">
-            <th mat-header-cell *matHeaderCellDef class="num">Minimum</th>
+            <th mat-header-cell *matHeaderCellDef class="num">{{ 'products.minimum' | t }}</th>
             <td mat-cell *matCellDef="let p" class="num muted">
               @if (p.minStock > 0) {
                 {{ p.minStock | number: '1.0-4' }} {{ unitLabel(p.unit) }}
@@ -115,16 +113,16 @@
           </ng-container>
 
           <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.status' | t }}</th>
             <td mat-cell *matCellDef="let p">
               @if (!p.isActive) {
-                <span class="chip">Inactive</span>
+                <span class="chip">{{ 'products.inactive' | t }}</span>
               } @else if (isBelowMinimum(p)) {
-                <span class="chip danger">Below min</span>
+                <span class="chip danger">{{ 'products.belowMin' | t }}</span>
               } @else if (p.onHand <= 0) {
-                <span class="chip warning">Out of stock</span>
+                <span class="chip warning">{{ 'products.outOfStock' | t }}</span>
               } @else {
-                <span class="chip success">In stock</span>
+                <span class="chip success">{{ 'products.inStock' | t }}</span>
               }
             </td>
           </ng-container>
@@ -143,7 +141,7 @@
             <td class="mat-mdc-cell" [attr.colspan]="columns.length">
               <div class="empty-state">
                 <mat-icon>search_off</mat-icon>
-                No products match the filters.
+                {{ 'products.noneMatch' | t }}
               </div>
             </td>
           </tr>
@@ -156,7 +154,7 @@
         [pageSize]="pageSize()"
         [pageSizeOptions]="pageSizeOptions"
         (page)="changePage($event)"
-        aria-label="Product pages"
+        [attr.aria-label]="'products.pages' | t"
       />
     }
   </section>

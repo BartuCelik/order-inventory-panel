@@ -21,8 +21,10 @@ import {
   SalesOrderSummary,
   dueLabel,
   orderStatusClass,
+  orderStatusLabel,
 } from '../order.models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { TranslatePipe } from '../../../core/i18n/i18n';
 
 /** A single status, only the late ones, or everything. */
 type OrderFilter = SalesOrderStatus | 'late' | 'all';
@@ -30,6 +32,7 @@ type OrderFilter = SalesOrderStatus | 'late' | 'all';
 @Component({
   selector: 'app-sales-order-list',
   imports: [
+    TranslatePipe,
     DatePipe,
     RouterLink,
     MatButtonModule,
@@ -59,6 +62,7 @@ export class SalesOrderList {
   protected readonly statuses = SALES_ORDER_STATUSES;
   protected readonly columns = ['status', 'order', 'due', 'ordered'];
   protected readonly orderStatusClass = orderStatusClass;
+  protected readonly orderStatusLabel = orderStatusLabel;
   protected readonly dueLabel = dueLabel;
   protected readonly errorMessage = errorMessage;
 

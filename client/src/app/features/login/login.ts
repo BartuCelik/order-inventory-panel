@@ -5,11 +5,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/auth/auth.service';
+import { AuthService, UserRole, roleLabel } from '../../core/auth/auth.service';
 import { errorMessage } from '../../core/problem';
+import { TranslatePipe } from '../../core/i18n/i18n';
+import { LanguagePicker } from '../../shared/language-picker/language-picker';
 
 /** The seeded demo accounts (DemoDataSeeder); the password is public on purpose. */
-const DEMO_ACCOUNTS = [
+const DEMO_ACCOUNTS: { role: UserRole; icon: string; email: string }[] = [
   { role: 'Admin', icon: 'shield_person', email: 'admin@workshop.example.com' },
   { role: 'Planner', icon: 'event_note', email: 'planner@workshop.example.com' },
   { role: 'Warehouse', icon: 'inventory_2', email: 'warehouse@workshop.example.com' },
@@ -19,6 +21,8 @@ const DEMO_PASSWORD = 'workshop-demo';
 @Component({
   selector: 'app-login',
   imports: [
+    TranslatePipe,
+    LanguagePicker,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -29,16 +33,16 @@ const DEMO_PASSWORD = 'workshop-demo';
     <main class="login">
       <section class="card">
         <span class="app-icon" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
-        <h1>Sign in to Workshop</h1>
-        <p class="lead">Orders, stock and production for a small furniture workshop.</p>
+        <h1>{{ 'login.title' | t }}</h1>
+        <p class="lead">{{ 'login.lead' | t }}</p>
 
         <form [formGroup]="form" (ngSubmit)="submit()">
           <mat-form-field appearance="outline">
-            <mat-label>Email</mat-label>
+            <mat-label>{{ 'login.email' | t }}</mat-label>
             <input matInput type="email" formControlName="email" autocomplete="username" />
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>Password</mat-label>
+            <mat-label>{{ 'login.password' | t }}</mat-label>
             <input
               matInput
               type="password"
@@ -49,26 +53,31 @@ const DEMO_PASSWORD = 'workshop-demo';
           @if (error()) {
             <p class="error-text" role="alert">{{ error() }}</p>
           }
-          <button mat-flat-button type="submit" class="submit" [disabled]="busy()">Sign in</button>
+          <button mat-flat-button type="submit" class="submit" [disabled]="busy()">
+            {{ 'login.submit' | t }}
+          </button>
         </form>
 
         <div class="demo">
-          <p class="muted">Try the demo as</p>
+          <p class="muted">{{ 'login.tryDemo' | t }}</p>
           <div class="roles">
             @for (account of demoAccounts; track account.email) {
               <button
                 type="button"
                 class="role"
                 (click)="fill(account.email)"
-                [attr.aria-label]="'Fill in the ' + account.role + ' demo account'"
+                [attr.aria-label]="'login.fillDemo' | t: { role: roleLabel(account.role) }"
               >
                 <mat-icon>{{ account.icon }}</mat-icon>
-                {{ account.role }}
+                {{ roleLabel(account.role) }}
               </button>
             }
           </div>
-          <p class="hint">Password <span class="code">${DEMO_PASSWORD}</span></p>
+          <p class="hint">
+            {{ 'login.demoPassword' | t }} <span class="code">${DEMO_PASSWORD}</span>
+          </p>
         </div>
+        <app-language-picker class="language" />
       </section>
     </main>
   `,
@@ -181,6 +190,10 @@ const DEMO_PASSWORD = 'workshop-demo';
     .hint {
       color: var(--text-3);
     }
+    .language {
+      max-width: 200px;
+      margin: 20px auto 0;
+    }
   `,
 })
 export class Login {
@@ -191,6 +204,7 @@ export class Login {
   readonly returnUrl = input<string>();
 
   protected readonly demoAccounts = DEMO_ACCOUNTS;
+  protected readonly roleLabel = roleLabel;
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
 

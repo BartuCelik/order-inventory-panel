@@ -1,4 +1,5 @@
 import { UnitOfMeasure } from '../products/product.models';
+import { t } from '../../core/i18n/i18n';
 
 export type StockMovementType =
   'Receipt' | 'Issue' | 'Adjustment' | 'ProductionConsumption' | 'ProductionOutput';
@@ -34,26 +35,14 @@ export const MANUAL_MOVEMENT_TYPES: readonly {
   value: ManualMovementType;
   label: string;
   hint: string;
-}[] = [
-  { value: 'Receipt', label: 'Receipt', hint: 'Goods received. Stock goes up.' },
-  { value: 'Issue', label: 'Issue', hint: 'Goods taken out of stock. Stock goes down.' },
-  {
-    value: 'Adjustment',
-    label: 'Adjustment',
-    hint: 'Correction after a count or a mistake. Positive adds, negative removes.',
-  },
-];
-
-const TYPE_LABELS: Record<StockMovementType, string> = {
-  Receipt: 'Receipt',
-  Issue: 'Issue',
-  Adjustment: 'Adjustment',
-  ProductionConsumption: 'Production use',
-  ProductionOutput: 'Production output',
-};
+}[] = (['Receipt', 'Issue', 'Adjustment'] as const).map((value) => ({
+  value,
+  label: t(`movementType.${value}`),
+  hint: t(`movementHint.${value}`),
+}));
 
 export function movementTypeLabel(type: StockMovementType): string {
-  return TYPE_LABELS[type];
+  return t(`movementType.${type}`);
 }
 
 /** CSS chip modifier for a movement type (see .chip in styles.scss). */

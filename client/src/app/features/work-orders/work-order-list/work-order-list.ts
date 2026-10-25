@@ -22,6 +22,7 @@ import {
   statusClass,
   statusLabel,
 } from '../work-order.models';
+import { TranslatePipe } from '../../../core/i18n/i18n';
 
 /** The status filter: a single status, all open ones, or everything. */
 type StatusFilter = WorkOrderStatus | 'open' | 'all';
@@ -29,6 +30,7 @@ type StatusFilter = WorkOrderStatus | 'open' | 'all';
 @Component({
   selector: 'app-work-order-list',
   imports: [
+    TranslatePipe,
     DatePipe,
     DecimalPipe,
     MatButtonToggleModule,

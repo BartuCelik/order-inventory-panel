@@ -2,12 +2,14 @@
   <header class="page-header">
     <div>
       <h1 class="page-title">{{ greeting() }}</h1>
-      <p class="page-subtitle">Shop floor · {{ today | date: 'EEEE d MMMM' }}</p>
+      <p class="page-subtitle">
+        {{ 'dashboard.subtitle' | t: { date: (today | date: 'EEEE d MMMM') ?? '' } }}
+      </p>
     </div>
     <div class="page-actions">
       <button mat-stroked-button (click)="refresh()" [disabled]="summary.isLoading()">
         <mat-icon>refresh</mat-icon>
-        Refresh
+        {{ 'common.refresh' | t }}
       </button>
     </div>
   </header>
@@ -23,7 +25,7 @@
     @let s = summary.value();
 
     <!-- Status tiles: neutral when all is well; tinted only when someone should act. -->
-    <section class="tiles" aria-label="Workshop conditions">
+    <section class="tiles" [attr.aria-label]="'dashboard.conditions' | t">
       <a
         class="tile"
         routerLink="/sales-orders"
@@ -32,8 +34,8 @@
       >
         <span class="tile-icon"><mat-icon>schedule</mat-icon></span>
         <span class="reading">{{ s.orders.late }}</span>
-        <span class="label">{{ s.orders.late === 1 ? 'Order late' : 'Orders late' }}</span>
-        <span class="detail">of {{ s.orders.open }} open</span>
+        <span class="label">{{ 'dashboard.ordersLate' | t: { count: s.orders.late } }}</span>
+        <span class="detail">{{ 'dashboard.ofOpen' | t: { count: s.orders.open } }}</span>
       </a>
       <a
         class="tile"
@@ -43,39 +45,41 @@
       >
         <span class="tile-icon"><mat-icon>inventory_2</mat-icon></span>
         <span class="reading">{{ s.production.shortCount }}</span>
-        <span class="label">Short of material</span>
-        <span class="detail">open work orders</span>
+        <span class="label">{{ 'dashboard.shortOfMaterial' | t }}</span>
+        <span class="detail">{{ 'dashboard.openWorkOrders' | t }}</span>
       </a>
       <a class="tile" routerLink="/products" [class.alarm]="s.belowMinimum.length > 0">
         <span class="tile-icon"><mat-icon>trending_down</mat-icon></span>
         <span class="reading">{{ s.belowMinimum.length }}</span>
-        <span class="label">Below minimum</span>
-        <span class="detail">products to reorder</span>
+        <span class="label">{{ 'dashboard.belowMinimum' | t }}</span>
+        <span class="detail">{{ 'dashboard.productsToReorder' | t }}</span>
       </a>
       <a class="tile running" routerLink="/work-orders" [queryParams]="{ status: 'InProgress' }">
         <span class="tile-icon"><mat-icon>precision_manufacturing</mat-icon></span>
         <span class="reading">{{ s.production.inProgress }}</span>
-        <span class="label">Running</span>
-        <span class="detail">{{ s.production.planned }} planned</span>
+        <span class="label">{{ 'dashboard.running' | t }}</span>
+        <span class="detail">{{ 'dashboard.planned' | t: { count: s.production.planned } }}</span>
       </a>
       <a class="tile done" routerLink="/work-orders" [queryParams]="{ status: 'Done' }">
         <span class="tile-icon"><mat-icon>task_alt</mat-icon></span>
         <span class="reading">{{ s.production.doneLast7Days }}</span>
-        <span class="label">Completed</span>
-        <span class="detail">last 7 days</span>
+        <span class="label">{{ 'dashboard.completed' | t }}</span>
+        <span class="detail">{{ 'dashboard.last7Days' | t }}</span>
       </a>
     </section>
 
     <div class="grid">
       <section class="panel span-8">
         <header class="panel-header">
-          <h2 class="panel-title">Production queue</h2>
-          <a mat-button routerLink="/work-orders" [queryParams]="{ open: true }">All open work</a>
+          <h2 class="panel-title">{{ 'dashboard.productionQueue' | t }}</h2>
+          <a mat-button routerLink="/work-orders" [queryParams]="{ open: true }">{{
+            'dashboard.allOpenWork' | t
+          }}</a>
         </header>
         @if (s.production.queue.length === 0) {
           <div class="empty-state">
             <mat-icon>precision_manufacturing</mat-icon>
-            Nothing planned. Create a work order from a sales order line.
+            {{ 'dashboard.nothingPlanned' | t }}
           </div>
         } @else {
           <ol class="queue">
@@ -92,9 +96,9 @@
                   <span class="secondary-line">
                     <span class="code">{{ w.number }}</span>
                     @if (w.customerName) {
-                      for {{ w.customerName }}
+                      {{ 'common.forCustomer' | t: { customer: w.customerName } }}
                     } @else {
-                      for stock
+                      {{ 'common.forStock' | t }}
                     }
                   </span>
                 </a>
@@ -104,7 +108,9 @@
                 </span>
                 <span class="flags">
                   @if (w.hasShortage) {
-                    <span class="flag short"><mat-icon>inventory_2</mat-icon>Short</span>
+                    <span class="flag short"
+                      ><mat-icon>inventory_2</mat-icon>{{ 'common.short' | t }}</span
+                    >
                   }
                 </span>
               </li>
@@ -115,13 +121,15 @@
 
       <section class="panel span-4">
         <header class="panel-header">
-          <h2 class="panel-title">Orders due</h2>
-          <a mat-button routerLink="/sales-orders" [queryParams]="{ status: 'Open' }">All open</a>
+          <h2 class="panel-title">{{ 'dashboard.ordersDue' | t }}</h2>
+          <a mat-button routerLink="/sales-orders" [queryParams]="{ status: 'Open' }">{{
+            'dashboard.allOpen' | t
+          }}</a>
         </header>
         @if (s.orders.dueSoon.length === 0) {
           <div class="empty-state">
             <mat-icon>task_alt</mat-icon>
-            No open sales orders.
+            {{ 'dashboard.noOpenOrders' | t }}
           </div>
         } @else {
           <ul class="due">
@@ -149,10 +157,10 @@
     <div class="grid">
       <section class="panel span-8">
         <header class="panel-header">
-          <h2 class="panel-title">Stock movements, last 14 days</h2>
+          <h2 class="panel-title">{{ 'dashboard.stockMovements' | t }}</h2>
           <div class="legend" aria-hidden="true">
-            <span><i class="swatch in-swatch"></i>In</span>
-            <span><i class="swatch out-swatch"></i>Out</span>
+            <span><i class="swatch in-swatch"></i>{{ 'common.in' | t }}</span>
+            <span><i class="swatch out-swatch"></i>{{ 'common.out' | t }}</span>
           </div>
         </header>
         <div class="chart" role="img" [attr.aria-label]="chartLabel()">
@@ -166,7 +174,8 @@
               class="day"
               [class.today]="last"
               [matTooltip]="
-                (day.date | date: 'EEE d MMM') + ': ' + day.in + ' in, ' + day.out + ' out'
+                'dashboard.dayTooltip'
+                  | t: { date: (day.date | date: 'EEE d MMM') ?? '', in: day.in, out: day.out }
               "
             >
               <div class="bars">
@@ -178,20 +187,27 @@
           }
         </div>
         <p class="chart-foot muted">
-          {{ periodTotals().in }} in and {{ periodTotals().out }} out over two weeks;
-          {{ todayActivity().in + todayActivity().out }} today.
+          {{
+            'dashboard.chartFoot'
+              | t
+                : {
+                    in: periodTotals().in,
+                    out: periodTotals().out,
+                    today: todayActivity().in + todayActivity().out,
+                  }
+          }}
         </p>
       </section>
 
       <section class="panel span-4">
         <header class="panel-header">
-          <h2 class="panel-title">Below minimum</h2>
-          <a mat-button routerLink="/products">Products</a>
+          <h2 class="panel-title">{{ 'dashboard.belowMinimum' | t }}</h2>
+          <a mat-button routerLink="/products">{{ 'nav.products' | t }}</a>
         </header>
         @if (s.belowMinimum.length === 0) {
           <div class="empty-state">
             <mat-icon>task_alt</mat-icon>
-            Every product is at or above its minimum.
+            {{ 'dashboard.allAboveMinimum' | t }}
           </div>
         } @else {
           <ul class="levels">
@@ -217,16 +233,23 @@
       </section>
     </div>
 
-    <footer class="system" aria-label="System status">
+    <footer class="system" [attr.aria-label]="'dashboard.systemStatus' | t">
       <span class="sys-item" [class.fault]="apiReachable() === false">
         <i aria-hidden="true"></i>
-        API
-        {{ apiReachable() === false ? 'unreachable' : apiReachable() ? 'reachable' : 'checking' }}
+        {{ 'dashboard.api' | t }}
+        {{
+          (apiReachable() === false
+            ? 'dashboard.apiUnreachable'
+            : apiReachable()
+              ? 'dashboard.apiReachable'
+              : 'dashboard.apiChecking'
+          ) | t
+        }}
       </span>
       @for (check of report()?.checks ?? []; track check.name) {
         <span class="sys-item" [class.fault]="check.status !== 'Healthy'">
           <i aria-hidden="true"></i>
-          {{ check.name }} {{ check.status | lowercase }},
+          {{ check.name }} {{ healthLabel(check.status) }},
           {{ check.durationMs | number: '1.0-0' }} ms
         </span>
       }

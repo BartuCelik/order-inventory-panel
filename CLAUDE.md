@@ -130,13 +130,24 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 
 ## Conventions
 
-- Code, identifiers, commits and UI text in **English**.
+- Code, identifiers and commits in **English**. UI text is English by default and translated (see *Translations*).
 - Errors: RFC 7807 `ProblemDetails`. Business-rule violations → 409/422 with a clear `detail`, validation → 400.
 - Paging: `?page=&pageSize=` returning `{ items, page, pageSize, totalCount }`.
 - Controllers stay thin; logic lives in Application services or Domain.
 - Client: one folder per feature, lazy-loaded routes, signals for state, functional interceptors/guards.
 - Client styling: use the shared classes and tokens in `client/src/styles.scss` (`page`, `page-header`, `grid`,
   `panel`, `kpi`, `chip`, `status`, `flag`, `data-table`, `meter`, `empty-state`, `toolbar`) before writing component styles.
+
+### Translations (decided 2026-10-25)
+
+- Languages: English (default), Turkish, German, French, Spanish, Italian, Russian. Own small module, no library:
+  `client/src/app/core/i18n/` — `t('key', params)` in TypeScript, `{{ 'key' | t: params }}` in templates.
+- **Every UI string is a key.** Add it to `messages/en.ts` first, then to every other `messages/*.ts`; they are typed
+  against English, so a missing or misspelt key fails the build. `{name}` placeholders; plurals are objects keyed by
+  `Intl.PluralRules` category (`one`/`other`, Russian also `few`/`many`), chosen by `params.count`.
+- The language is fixed per page load (`main.ts` loads it before the app; switching reloads). Labels built at module
+  load (status lists, nav) are therefore safe. Dates and numbers follow `LOCALE_ID` = the chosen language.
+- Not translated: API error `detail` texts (English from the server) and data (product, customer names).
 
 ### Design rules (Apple-like glass look, decided 2026-10-25 — keep consistent)
 
@@ -206,12 +217,14 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
   - [x] Client: login page (demo accounts listed), bearer interceptor (signs out on 401), guard, user in the rail,
         actions hidden by role (`AuthService.canPlan` / `canHandleStock`)
   - [ ] Users screen (Admin) — the roles table lists it; no API yet
-- [ ] Redesign requested by the owner (branch `feat/redesign-glass`, **not merged**): Apple-like glass look,
-      light/dark themes with a toggle, Inter, restyled shell, dashboard tiles and login (see *Design rules*)
+- [x] Redesign requested by the owner (#16): Apple-like glass look, light/dark themes with a toggle, Inter,
+      restyled shell, dashboard tiles and login (see *Design rules*)
+- [ ] Translations requested by the owner (branch `feat/i18n`, **not merged**): seven languages, picker in the rail
+      and on the login page (see *Translations*)
 
 ### Next session
 
-1. Owner reviews and merges the redesign PR (`feat/redesign-glass`).
+1. Owner reviews and merges the translations PR (`feat/i18n`).
 2. Then Phase 4: critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
    design rules), PDF work order, Excel export/import.
 

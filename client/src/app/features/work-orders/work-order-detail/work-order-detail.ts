@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, formatNumber } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,17 +23,19 @@ import {
 } from '../work-order.models';
 import { WorkOrderAction, WorkOrdersApi } from '../work-orders.api';
 import { AuthService } from '../../../core/auth/auth.service';
+import { TranslatePipe, currentLanguage, t } from '../../../core/i18n/i18n';
 
 /** The normal route through a work order (rule 12); Cancelled leaves it from either open step. */
 const STEPS: { status: WorkOrderStatus; label: string }[] = [
-  { status: 'Planned', label: 'Planned' },
-  { status: 'InProgress', label: 'In progress' },
-  { status: 'Done', label: 'Done' },
+  { status: 'Planned', label: t('workStatus.Planned') },
+  { status: 'InProgress', label: t('workStatus.InProgress') },
+  { status: 'Done', label: t('workStatus.Done') },
 ];
 
 @Component({
   selector: 'app-work-order-detail',
   imports: [
+    TranslatePipe,
     DatePipe,
     DecimalPipe,
     RouterLink,
@@ -101,28 +103,30 @@ export class WorkOrderDetail {
   }
 
   protected start(w: WorkOrder): void {
-    this.run(w, 'start', `Started ${w.number}.`);
+    this.run(w, 'start', t('workOrder.started', { number: w.number }));
   }
 
   protected complete(w: WorkOrder): void {
     confirm(this.dialog, {
-      title: `Complete ${w.number}?`,
-      message: `This consumes the components from stock and adds ${w.quantity} × ${w.productName} to stock. It cannot be undone.`,
-      confirmLabel: 'Complete',
+      title: t('workOrder.completeTitle', { number: w.number }),
+      message: t('workOrder.completeMessage', {
+        quantity: formatNumber(w.quantity, currentLanguage(), '1.0-4'),
+        product: w.productName,
+      }),
+      confirmLabel: t('workOrder.complete'),
     })
       .pipe(filter(Boolean))
-      .subscribe(() => this.run(w, 'complete', `Completed ${w.number}.`));
+      .subscribe(() => this.run(w, 'complete', t('workOrder.completed', { number: w.number })));
   }
 
   protected cancel(w: WorkOrder): void {
     confirm(this.dialog, {
-      title: `Cancel ${w.number}?`,
-      message:
-        'Nothing has been consumed. Cancelling releases the material this work order reserves.',
-      confirmLabel: 'Cancel work order',
+      title: t('workOrder.cancelTitle', { number: w.number }),
+      message: t('workOrder.cancelMessage'),
+      confirmLabel: t('workOrder.cancelConfirm'),
     })
       .pipe(filter(Boolean))
-      .subscribe(() => this.run(w, 'cancel', `Cancelled ${w.number}.`));
+      .subscribe(() => this.run(w, 'cancel', t('workOrder.cancelled', { number: w.number })));
   }
 
   private run(w: WorkOrder, action: WorkOrderAction, done: string): void {

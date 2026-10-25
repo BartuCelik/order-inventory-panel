@@ -8,6 +8,7 @@ import { applyServerErrors, errorMessage } from '../../../core/problem';
 import { isoDate } from '../../orders/order.models';
 import { WorkOrder } from '../work-order.models';
 import { WorkOrdersApi } from '../work-orders.api';
+import { TranslatePipe } from '../../../core/i18n/i18n';
 
 export interface PlanWorkOrderDialogData {
   productId: number;
@@ -23,6 +24,7 @@ export interface PlanWorkOrderDialogData {
 @Component({
   selector: 'app-plan-work-order-dialog',
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatDialogModule,
@@ -30,7 +32,7 @@ export interface PlanWorkOrderDialogData {
     MatInputModule,
   ],
   template: `
-    <h2 mat-dialog-title>Plan production</h2>
+    <h2 mat-dialog-title>{{ 'plan.title' | t }}</h2>
     <form [formGroup]="form" (ngSubmit)="save()">
       <mat-dialog-content>
         <p class="what">
@@ -41,7 +43,7 @@ export interface PlanWorkOrderDialogData {
         </p>
         <div class="fields">
           <mat-form-field appearance="outline">
-            <mat-label>Quantity</mat-label>
+            <mat-label>{{ 'common.quantity' | t }}</mat-label>
             <!-- min 0, not 0.0001: the arrows step from min, so 0.0001 made 8 → 9.0001. "Above zero" is the validator's job. -->
             <input
               matInput
@@ -55,25 +57,24 @@ export interface PlanWorkOrderDialogData {
             @if (form.controls.quantity.hasError('server')) {
               <mat-error>{{ form.controls.quantity.getError('server') }}</mat-error>
             } @else if (form.controls.quantity.invalid) {
-              <mat-error>Enter a quantity above zero.</mat-error>
+              <mat-error>{{ 'plan.quantityError' | t }}</mat-error>
             }
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>Planned for</mat-label>
+            <mat-label>{{ 'plan.plannedFor' | t }}</mat-label>
             <input matInput type="date" formControlName="plannedDate" />
           </mat-form-field>
         </div>
-        <p class="muted note">
-          The components are copied from the current bill of materials and reserved for this work
-          order.
-        </p>
+        <p class="muted note">{{ 'plan.note' | t }}</p>
         @if (error(); as message) {
           <p class="form-error" role="alert">{{ message }}</p>
         }
       </mat-dialog-content>
       <mat-dialog-actions align="end">
-        <button mat-button type="button" mat-dialog-close>Close</button>
-        <button mat-flat-button type="submit" [disabled]="saving()">Create work order</button>
+        <button mat-button type="button" mat-dialog-close>{{ 'common.close' | t }}</button>
+        <button mat-flat-button type="submit" [disabled]="saving()">
+          {{ 'plan.create' | t }}
+        </button>
       </mat-dialog-actions>
     </form>
   `,

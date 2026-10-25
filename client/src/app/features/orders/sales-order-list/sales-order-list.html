@@ -1,14 +1,14 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <h1 class="page-title">Sales orders</h1>
-      <p class="page-subtitle">Orders from customers, soonest due first.</p>
+      <h1 class="page-title">{{ 'nav.salesOrders' | t }}</h1>
+      <p class="page-subtitle">{{ 'salesOrders.subtitle' | t }}</p>
     </div>
     @if (auth.canPlan()) {
       <div class="page-actions">
         <a mat-flat-button routerLink="/sales-orders/new">
           <mat-icon>add</mat-icon>
-          New sales order
+          {{ 'salesOrders.new' | t }}
         </a>
       </div>
     }
@@ -20,8 +20,8 @@
         <mat-icon matPrefix>search</mat-icon>
         <input
           matInput
-          placeholder="Order number or customer"
-          aria-label="Search sales orders"
+          [placeholder]="'salesOrders.searchPlaceholder' | t"
+          [attr.aria-label]="'salesOrders.searchLabel' | t"
           [value]="search()"
           (input)="search.set($any($event.target).value)"
         />
@@ -29,19 +29,19 @@
 
       <mat-button-toggle-group
         hideSingleSelectionIndicator
-        aria-label="Status"
+        [attr.aria-label]="'common.status' | t"
         [value]="filter()"
         (change)="setFilter($event.value)"
       >
         @for (s of statuses; track s.value) {
           <mat-button-toggle [value]="s.value">{{ s.label }}</mat-button-toggle>
         }
-        <mat-button-toggle value="late">Late</mat-button-toggle>
-        <mat-button-toggle value="all">All</mat-button-toggle>
+        <mat-button-toggle value="late">{{ 'salesOrders.late' | t }}</mat-button-toggle>
+        <mat-button-toggle value="all">{{ 'common.all' | t }}</mat-button-toggle>
       </mat-button-toggle-group>
 
       @if (page(); as page) {
-        <span class="count muted">{{ page.totalCount }} orders</span>
+        <span class="count muted">{{ 'salesOrders.count' | t: { count: page.totalCount } }}</span>
       }
     </div>
 
@@ -60,22 +60,24 @@
       @if (page.items.length === 0) {
         <div class="empty-state">
           <mat-icon>receipt_long</mat-icon>
-          No orders match.
+          {{ 'salesOrders.noneMatch' | t }}
           @if (auth.canPlan()) {
-            <a mat-stroked-button routerLink="/sales-orders/new">New sales order</a>
+            <a mat-stroked-button routerLink="/sales-orders/new">{{ 'salesOrders.new' | t }}</a>
           }
         </div>
       } @else {
         <div class="table-scroll">
           <table mat-table class="data-table" [dataSource]="page.items">
             <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <th mat-header-cell *matHeaderCellDef>{{ 'common.status' | t }}</th>
               <td mat-cell *matCellDef="let o">
-                <span class="status" [class]="orderStatusClass(o.status)">{{ o.status }}</span>
+                <span class="status" [class]="orderStatusClass(o.status)">{{
+                  orderStatusLabel(o.status)
+                }}</span>
               </td>
             </ng-container>
             <ng-container matColumnDef="order">
-              <th mat-header-cell *matHeaderCellDef>Order</th>
+              <th mat-header-cell *matHeaderCellDef>{{ 'salesOrders.order' | t }}</th>
               <td mat-cell *matCellDef="let o">
                 <div class="stack">
                   <span class="primary-line">{{ o.customerName }}</span>
@@ -84,7 +86,7 @@
               </td>
             </ng-container>
             <ng-container matColumnDef="due">
-              <th mat-header-cell *matHeaderCellDef>Due</th>
+              <th mat-header-cell *matHeaderCellDef>{{ 'salesOrders.due' | t }}</th>
               <td mat-cell *matCellDef="let o">
                 <div class="stack">
                   <span>{{ o.dueDate | date: 'EEE d MMM' }}</span>
@@ -95,13 +97,15 @@
                   } @else if (o.status === 'Open') {
                     <span class="secondary-line">{{ dueLabel(o.dueDate) }}</span>
                   } @else if (o.shippedAt) {
-                    <span class="secondary-line">Shipped {{ o.shippedAt | date: 'd MMM' }}</span>
+                    <span class="secondary-line">{{
+                      'salesOrders.shippedOn' | t: { date: (o.shippedAt | date: 'd MMM') ?? '' }
+                    }}</span>
                   }
                 </div>
               </td>
             </ng-container>
             <ng-container matColumnDef="ordered">
-              <th mat-header-cell *matHeaderCellDef>Ordered</th>
+              <th mat-header-cell *matHeaderCellDef>{{ 'salesOrders.ordered' | t }}</th>
               <td mat-cell *matCellDef="let o" class="muted">
                 {{ o.orderDate | date: 'd MMM y' }}
               </td>
@@ -126,7 +130,7 @@
           [pageSize]="pageSize()"
           [pageSizeOptions]="[10, 20, 50, 100]"
           (page)="changePage($event)"
-          aria-label="Sales order pages"
+          [attr.aria-label]="'salesOrders.pages' | t"
         />
       }
     }

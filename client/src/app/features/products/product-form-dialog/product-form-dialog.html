@@ -1,25 +1,27 @@
-<h2 mat-dialog-title>{{ product ? 'Edit ' + product.code : 'New product' }}</h2>
+<h2 mat-dialog-title>
+  {{ product ? ('productForm.edit' | t: { code: product.code }) : ('products.new' | t) }}
+</h2>
 
 <form [formGroup]="form" (ngSubmit)="save()" id="product-form">
   <mat-dialog-content class="fields">
     <mat-form-field appearance="outline">
-      <mat-label>Code</mat-label>
+      <mat-label>{{ 'productForm.code' | t }}</mat-label>
       <input matInput formControlName="code" maxlength="32" />
       @if (!product) {
-        <mat-hint>Stored in capitals. Code, type and unit cannot change later.</mat-hint>
+        <mat-hint>{{ 'productForm.codeHint' | t }}</mat-hint>
       }
       @if (form.controls.code.hasError('required')) {
-        <mat-error>Code is required.</mat-error>
+        <mat-error>{{ 'productForm.codeRequired' | t }}</mat-error>
       } @else if (form.controls.code.hasError('server')) {
         <mat-error>{{ form.controls.code.getError('server') }}</mat-error>
       }
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Name</mat-label>
+      <mat-label>{{ 'productForm.name' | t }}</mat-label>
       <input matInput formControlName="name" maxlength="200" />
       @if (form.controls.name.hasError('required')) {
-        <mat-error>Name is required.</mat-error>
+        <mat-error>{{ 'productForm.nameRequired' | t }}</mat-error>
       } @else if (form.controls.name.hasError('server')) {
         <mat-error>{{ form.controls.name.getError('server') }}</mat-error>
       }
@@ -27,10 +29,10 @@
 
     <div class="row">
       <mat-form-field appearance="outline">
-        <mat-label>Type</mat-label>
+        <mat-label>{{ 'common.type' | t }}</mat-label>
         <mat-select formControlName="type">
-          @for (t of types; track t.value) {
-            <mat-option [value]="t.value">{{ t.label }}</mat-option>
+          @for (type of types; track type.value) {
+            <mat-option [value]="type.value">{{ type.label }}</mat-option>
           }
         </mat-select>
         @if (form.controls.type.hasError('server')) {
@@ -39,7 +41,7 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Unit</mat-label>
+        <mat-label>{{ 'productForm.unit' | t }}</mat-label>
         <mat-select formControlName="unit">
           @for (u of units; track u.value) {
             <mat-option [value]="u.value">{{ u.label }}</mat-option>
@@ -49,18 +51,18 @@
     </div>
 
     <mat-form-field appearance="outline">
-      <mat-label>Minimum stock</mat-label>
+      <mat-label>{{ 'product.minimumStock' | t }}</mat-label>
       <input matInput type="number" min="0" step="any" formControlName="minStock" />
-      <mat-hint>The lowest stock you want to keep on hand.</mat-hint>
+      <mat-hint>{{ 'productForm.minStockHint' | t }}</mat-hint>
       @if (form.controls.minStock.hasError('required') || form.controls.minStock.hasError('min')) {
-        <mat-error>Enter zero or more.</mat-error>
+        <mat-error>{{ 'productForm.zeroOrMore' | t }}</mat-error>
       } @else if (form.controls.minStock.hasError('server')) {
         <mat-error>{{ form.controls.minStock.getError('server') }}</mat-error>
       }
     </mat-form-field>
 
     @if (product) {
-      <mat-checkbox formControlName="isActive">Active</mat-checkbox>
+      <mat-checkbox formControlName="isActive">{{ 'productForm.active' | t }}</mat-checkbox>
     }
 
     @if (error(); as error) {
@@ -69,9 +71,11 @@
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
-    <button mat-button type="button" mat-dialog-close [disabled]="saving()">Cancel</button>
+    <button mat-button type="button" mat-dialog-close [disabled]="saving()">
+      {{ 'common.cancel' | t }}
+    </button>
     <button mat-flat-button type="submit" [disabled]="saving()">
-      {{ product ? 'Save' : 'Create' }}
+      {{ (product ? 'common.save' : 'common.create') | t }}
     </button>
   </mat-dialog-actions>
 </form>
