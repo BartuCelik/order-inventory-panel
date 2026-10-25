@@ -172,7 +172,7 @@ public sealed class WorkOrderPdf(TimeProvider timeProvider)
         UnitOfMeasure.Meter => "m",
         UnitOfMeasure.SquareMeter => "m²",
         UnitOfMeasure.Kilogram => "kg",
-        UnitOfMeasure.Liter => "l",
+        UnitOfMeasure.Liter => "L",
         _ => unit.ToString(),
     };
 }
