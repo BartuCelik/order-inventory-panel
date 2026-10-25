@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
 using OrderInventory.Domain.Sales;
 
@@ -15,7 +16,11 @@ public sealed record SalesOrderDto(
 
 /// <summary>A line with the finished good's current on-hand, so the user sees whether it can ship (rule 14).</summary>
 public sealed record SalesOrderLineDto(
-    int Id, int ProductId, string ProductCode, string ProductName, UnitOfMeasure Unit, decimal Quantity, decimal OnHand);
+    int Id, int ProductId, string ProductCode, string ProductName, UnitOfMeasure Unit, decimal Quantity, decimal OnHand,
+    IReadOnlyList<LineWorkOrderDto> WorkOrders);
+
+/// <summary>A work order created for a sales order line (rule 13).</summary>
+public sealed record LineWorkOrderDto(int Id, string Number, decimal Quantity, WorkOrderStatus Status);
 
 public sealed record CreateSalesOrderRequest(
     int CustomerId,

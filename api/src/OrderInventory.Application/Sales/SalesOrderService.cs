@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderInventory.Application.Abstractions;
 using OrderInventory.Application.Common;
 using OrderInventory.Application.Stock;
+using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
 using OrderInventory.Domain.Sales;
 using OrderInventory.Domain.Stock;
@@ -63,7 +64,12 @@ public sealed class SalesOrderService(IAppDbContext db, StockLedger ledger, Time
                     .OrderBy(l => l.Product!.Code)
                     .Select(l => new SalesOrderLineDto(
                         l.Id, l.ProductId, l.Product!.Code, l.Product.Name, l.Product.Unit, l.Quantity,
-                        db.StockMovements.Where(m => m.ProductId == l.ProductId).Sum(m => m.Quantity)))
+                        db.StockMovements.Where(m => m.ProductId == l.ProductId).Sum(m => m.Quantity),
+                        db.WorkOrders
+                            .Where(w => w.SalesOrderLineId == l.Id)
+                            .OrderBy(w => w.Number)
+                            .Select(w => new LineWorkOrderDto(w.Id, w.Number, w.Quantity, w.Status))
+                            .ToList()))
                     .ToList()))
             .SingleOrDefaultAsync(cancellationToken)
             ?? throw NotFound(id);
@@ -148,10 +154,36 @@ public sealed class SalesOrderService(IAppDbContext db, StockLedger ledger, Time
         return await GetAsync(id, cancellationToken);
     }
 
+    /// <summary>
+    /// Open → Cancelled. The order's open work orders (Planned/InProgress) are cancelled with it, which releases
+    /// their reservations (owner decision 2026-10-25). Done work orders produced real stock and stay Done.
+    /// </summary>
     public async Task<SalesOrderDto> CancelAsync(int id, CancellationToken cancellationToken)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var order = await LoadLockedOpenOrderAsync(id, "cancelled", cancellationToken);
+
+        // Lock order: sales order row (above), then its work order rows in id order. Completing a work order
+        // locks the work order row, then product rows, so the two never wait on each other in a cycle.
+        // If a complete holds a row here, FOR UPDATE waits for it and then re-checks the status, so a work
+        // order that just became Done is skipped rather than cancelled.
+        await db.Database.ExecuteSqlAsync(
+            $"""
+            SELECT 1 FROM work_orders
+            WHERE sales_order_line_id IN (SELECT id FROM sales_order_lines WHERE sales_order_id = {id})
+              AND status IN ('Planned', 'InProgress')
+            ORDER BY id
+            FOR UPDATE
+            """,
+            cancellationToken);
+        var openWorkOrders = await db.WorkOrders
+            .Where(w => w.SalesOrderLine!.SalesOrderId == id
+                && (w.Status == WorkOrderStatus.Planned || w.Status == WorkOrderStatus.InProgress))
+            .ToListAsync(cancellationToken);
+        foreach (var workOrder in openWorkOrders)
+        {
+            workOrder.Status = WorkOrderStatus.Cancelled;
+        }
 
         order.Status = SalesOrderStatus.Cancelled;
         await db.SaveChangesAsync(cancellationToken);
