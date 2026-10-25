@@ -208,8 +208,8 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
   - [x] Owner decisions 2026-10-25: cancelling a sales order cancels its open work orders (rule 14a);
         append-only ledger enforced by a database trigger (rule 2)
   - [x] Dashboard: order and production figures (late orders, short work orders, queue)
-  - [x] Industrial redesign (see *Design rules*) and screens: shop-floor dashboard, work orders (list, detail),
-        customers, sales orders (list, new, detail with plan production / ship / cancel)
+  - [x] Screens: shop-floor dashboard, work orders (list, detail), customers, sales orders (list, new, detail with
+        plan production / ship / cancel); first built in an industrial HMI style, replaced by the glass look in #16
   - [x] JWT auth + roles: `POST /auth/login` (Identity `PasswordHasher`, same 401 for unknown email and wrong
         password), HS256 token for 8 h, fallback policy = signed in, `[Authorize(Roles = Roles.Planning|Warehouse)]`
         per the roles table, `CreatedBy` = email claim; demo users seeded even into an already seeded database
@@ -219,13 +219,12 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
   - [ ] Users screen (Admin) — the roles table lists it; no API yet
 - [x] Redesign requested by the owner (#16): Apple-like glass look, light/dark themes with a toggle, Inter,
       restyled shell, dashboard tiles and login (see *Design rules*)
-- [ ] Translations requested by the owner (branch `feat/i18n`, **not merged**): seven languages, picker in the rail
-      and on the login page (see *Translations*)
+- [x] Translations requested by the owner (#17): seven languages, picker in the rail and on the login page
+      (see *Translations*)
 
 ### Next session
 
-1. Owner reviews and merges the translations PR (`feat/i18n`).
-2. Then Phase 4: critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
+1. Phase 4 (not started; the owner decides when): critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
    design rules), PDF work order, Excel export/import.
 
 Local dev note: the local database holds two leftover test products (`UI-TEST-…`, `UIV2-…`) from manual checks;
