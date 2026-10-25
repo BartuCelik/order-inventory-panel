@@ -20,10 +20,12 @@ import {
 } from '../customer-form-dialog/customer-form-dialog';
 import { Customer } from '../order.models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { TranslatePipe } from '../../../core/i18n/i18n';
 
 @Component({
   selector: 'app-customer-list',
   imports: [
+    TranslatePipe,
     RouterLink,
     MatButtonModule,
     MatFormFieldModule,
@@ -37,15 +39,15 @@ import { AuthService } from '../../../core/auth/auth.service';
     <div class="page">
       <header class="page-header">
         <div>
-          <h1 class="page-title">Customers</h1>
-          <p class="page-subtitle">Who the workshop sells to.</p>
+          <h1 class="page-title">{{ 'nav.customers' | t }}</h1>
+          <p class="page-subtitle">{{ 'customers.subtitle' | t }}</p>
         </div>
         @if (auth.canPlan()) {
           <div class="page-actions">
-            <a mat-stroked-button routerLink="/sales-orders/new">New sales order</a>
+            <a mat-stroked-button routerLink="/sales-orders/new">{{ 'salesOrders.new' | t }}</a>
             <button mat-flat-button (click)="edit()">
               <mat-icon>add</mat-icon>
-              New customer
+              {{ 'customers.new' | t }}
             </button>
           </div>
         }
@@ -57,8 +59,8 @@ import { AuthService } from '../../../core/auth/auth.service';
             <mat-icon matPrefix>search</mat-icon>
             <input
               matInput
-              placeholder="Name or contact person"
-              aria-label="Search customers"
+              [placeholder]="'customers.searchPlaceholder' | t"
+              [attr.aria-label]="'customers.searchLabel' | t"
               [value]="search()"
               (input)="search.set($any($event.target).value)"
             />
@@ -79,23 +81,23 @@ import { AuthService } from '../../../core/auth/auth.service';
           @if (page.items.length === 0) {
             <div class="empty-state">
               <mat-icon>storefront</mat-icon>
-              No customers match. Add one to start taking orders.
+              {{ 'customers.noneMatch' | t }}
             </div>
           } @else {
             <div class="table-scroll">
               <table mat-table class="data-table" [dataSource]="page.items">
                 <ng-container matColumnDef="name">
-                  <th mat-header-cell *matHeaderCellDef>Customer</th>
+                  <th mat-header-cell *matHeaderCellDef>{{ 'salesOrderNew.customer' | t }}</th>
                   <td mat-cell *matCellDef="let c">
                     <strong>{{ c.name }}</strong>
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="contact">
-                  <th mat-header-cell *matHeaderCellDef>Contact person</th>
+                  <th mat-header-cell *matHeaderCellDef>{{ 'customers.contactPerson' | t }}</th>
                   <td mat-cell *matCellDef="let c">{{ c.contactName ?? '—' }}</td>
                 </ng-container>
                 <ng-container matColumnDef="email">
-                  <th mat-header-cell *matHeaderCellDef>Email</th>
+                  <th mat-header-cell *matHeaderCellDef>{{ 'customers.email' | t }}</th>
                   <td mat-cell *matCellDef="let c">
                     @if (c.email) {
                       <a [href]="'mailto:' + c.email" (click)="$event.stopPropagation()">{{
@@ -107,7 +109,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="phone">
-                  <th mat-header-cell *matHeaderCellDef>Phone</th>
+                  <th mat-header-cell *matHeaderCellDef>{{ 'customers.phone' | t }}</th>
                   <td mat-cell *matCellDef="let c">{{ c.phone ?? '—' }}</td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="columns"></tr>
@@ -127,7 +129,7 @@ import { AuthService } from '../../../core/auth/auth.service';
               [pageSize]="pageSize()"
               [pageSizeOptions]="[10, 20, 50, 100]"
               (page)="changePage($event)"
-              aria-label="Customer pages"
+              [attr.aria-label]="'customers.pages' | t"
             />
           }
         }

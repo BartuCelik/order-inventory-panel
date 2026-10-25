@@ -1,13 +1,11 @@
 import { ProductType, UnitOfMeasure } from '../products/product.models';
+import { t } from '../../core/i18n/i18n';
 
 export type WorkOrderStatus = 'Planned' | 'InProgress' | 'Done' | 'Cancelled';
 
-export const WORK_ORDER_STATUSES: { value: WorkOrderStatus; label: string }[] = [
-  { value: 'Planned', label: 'Planned' },
-  { value: 'InProgress', label: 'In progress' },
-  { value: 'Done', label: 'Done' },
-  { value: 'Cancelled', label: 'Cancelled' },
-];
+export const WORK_ORDER_STATUSES: { value: WorkOrderStatus; label: string }[] = (
+  ['Planned', 'InProgress', 'Done', 'Cancelled'] as const
+).map((value) => ({ value, label: t(`workStatus.${value}`) }));
 
 /** A row of GET /work-orders. hasShortage is the rule 9 planning signal; always false when closed. */
 export interface WorkOrderSummary {

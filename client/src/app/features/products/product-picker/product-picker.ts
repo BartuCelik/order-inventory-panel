@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { debounceTime } from 'rxjs';
 import { API_BASE_URL } from '../../../core/api';
 import { Paged, Product, ProductType, typeLabel } from '../product.models';
+import { TranslatePipe, t } from '../../../core/i18n/i18n';
 
 /**
  * Search-as-you-type product field. Two-way bind the chosen product with [(product)];
@@ -15,7 +16,13 @@ import { Paged, Product, ProductType, typeLabel } from '../product.models';
  */
 @Component({
   selector: 'app-product-picker',
-  imports: [ReactiveFormsModule, MatAutocompleteModule, MatFormFieldModule, MatInputModule],
+  imports: [
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatFormFieldModule,
+    MatInputModule,
+    TranslatePipe,
+  ],
   template: `
     <mat-form-field appearance="outline" class="field" [subscriptSizing]="subscriptSizing()">
       <mat-label>{{ label() }}</mat-label>
@@ -29,7 +36,7 @@ import { Paged, Product, ProductType, typeLabel } from '../product.models';
           </mat-option>
         }
         @if (noMatch()) {
-          <mat-option disabled>No matching products.</mat-option>
+          <mat-option disabled>{{ 'picker.noMatch' | t }}</mat-option>
         }
       </mat-autocomplete>
       @if (error()) {
@@ -55,7 +62,7 @@ import { Paged, Product, ProductType, typeLabel } from '../product.models';
   `,
 })
 export class ProductPicker {
-  readonly label = input('Product');
+  readonly label = input(t('common.product'));
   /** Products that may not be picked, e.g. the parent itself and its existing components. */
   readonly excludeIds = input<readonly number[]>([]);
   readonly error = input<string | null>(null);

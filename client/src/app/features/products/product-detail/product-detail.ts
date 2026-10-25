@@ -23,7 +23,7 @@ import {
   RecordMovementDialogData,
 } from '../../stock/record-movement-dialog/record-movement-dialog';
 import { STOCK_MOVEMENTS_URL } from '../../stock/stock.api';
-import { StockMovement } from '../../stock/stock.models';
+import { StockMovement, movementTypeLabel } from '../../stock/stock.models';
 import {
   BomLine,
   MaterialNeed,
@@ -43,6 +43,7 @@ import {
 import { ProductPicker } from '../product-picker/product-picker';
 import { ProductsApi } from '../products.api';
 import { AuthService } from '../../../core/auth/auth.service';
+import { t, TranslatePipe } from '../../../core/i18n/i18n';
 
 /** Same bound as the API's explosion endpoint. */
 const MAX_EXPLOSION_QTY = 1_000_000;
@@ -50,6 +51,7 @@ const MAX_EXPLOSION_QTY = 1_000_000;
 @Component({
   selector: 'app-product-detail',
   imports: [
+    TranslatePipe,
     DatePipe,
     DecimalPipe,
     RouterLink,
@@ -151,11 +153,11 @@ export class ProductDetail {
     const component = this.newComponent();
     const qty = this.newQtyPerUnit();
     if (!component) {
-      this.bomError.set('Pick a component.');
+      this.bomError.set(t('product.pickComponent'));
       return;
     }
     if (qty === null || qty <= 0) {
-      this.bomError.set('Quantity per unit must be greater than zero.');
+      this.bomError.set(t('product.qtyAboveZero'));
       return;
     }
 
@@ -178,9 +180,9 @@ export class ProductDetail {
 
   protected removeBomLine(line: BomLine): void {
     confirm(this.dialog, {
-      title: 'Remove component',
-      message: `Remove ${line.componentCode} from this bill of materials? Existing work orders keep their own copy.`,
-      confirmLabel: 'Remove',
+      title: t('product.removeTitle'),
+      message: t('product.removeMessage', { code: line.componentCode }),
+      confirmLabel: t('product.remove'),
     })
       .pipe(
         filter(Boolean),
@@ -188,7 +190,7 @@ export class ProductDetail {
       )
       .subscribe({
         next: () => this.reloadBom(),
-        error: (error: unknown) => this.snackBar.open(errorMessage(error), 'Close'),
+        error: (error: unknown) => this.snackBar.open(errorMessage(error), t('common.close')),
       });
   }
 
@@ -207,7 +209,9 @@ export class ProductDetail {
       .afterClosed()
       .subscribe((updated) => {
         if (updated) {
-          this.snackBar.open(`Saved ${updated.code}.`, undefined, { duration: 3000 });
+          this.snackBar.open(t('product.saved', { code: updated.code }), undefined, {
+            duration: 3000,
+          });
           this.product.reload();
         }
       });
@@ -221,9 +225,13 @@ export class ProductDetail {
       .afterClosed()
       .subscribe((movement) => {
         if (movement) {
-          this.snackBar.open(`Recorded ${movement.type.toLowerCase()}.`, undefined, {
-            duration: 3000,
-          });
+          this.snackBar.open(
+            t('stock.recorded', { type: movementTypeLabel(movement.type) }),
+            undefined,
+            {
+              duration: 3000,
+            },
+          );
           this.product.reload();
           this.movements.reload();
         }

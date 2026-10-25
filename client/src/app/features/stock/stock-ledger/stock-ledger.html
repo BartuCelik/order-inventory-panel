@@ -1,17 +1,14 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <h1 class="page-title">Stock</h1>
-      <p class="page-subtitle">
-        Every receipt, issue and adjustment. Entries are never edited; a mistake is fixed with an
-        adjustment.
-      </p>
+      <h1 class="page-title">{{ 'title.stock' | t }}</h1>
+      <p class="page-subtitle">{{ 'stock.subtitle' | t }}</p>
     </div>
     @if (auth.canHandleStock()) {
       <div class="page-actions">
         <button mat-flat-button (click)="record()">
           <mat-icon>add</mat-icon>
-          Record movement
+          {{ 'stock.recordMovement' | t }}
         </button>
       </div>
     }
@@ -19,15 +16,19 @@
 
   <section class="panel">
     <div class="toolbar">
-      <app-product-picker class="filter" label="Filter by product" [(product)]="product" />
+      <app-product-picker
+        class="filter"
+        [label]="'stock.filterByProduct' | t"
+        [(product)]="product"
+      />
       @if (product(); as p) {
         <button mat-button (click)="product.set(null)">
           <mat-icon>close</mat-icon>
-          Clear filter
+          {{ 'stock.clearFilter' | t }}
         </button>
       }
       @if (page(); as page) {
-        <span class="count muted">{{ page.totalCount }} movements</span>
+        <span class="count muted">{{ 'stock.count' | t: { count: page.totalCount } }}</span>
       }
     </div>
 
@@ -50,7 +51,7 @@
         [pageSize]="pageSize()"
         [pageSizeOptions]="pageSizeOptions"
         (page)="changePage($event)"
-        aria-label="Stock movement pages"
+        [attr.aria-label]="'stock.pages' | t"
       />
     }
   </section>

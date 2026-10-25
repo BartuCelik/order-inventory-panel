@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormGroup } from '@angular/forms';
+import { t } from './i18n/i18n';
 
 /** RFC 7807 body the API returns for every error. */
 export interface ProblemDetails {
@@ -18,13 +19,13 @@ export function errorMessage(error: unknown): string {
       return problem.detail;
     }
     if (error.status === 0) {
-      return 'The API cannot be reached.';
+      return t('error.unreachable');
     }
     if (problem?.errors) {
-      return Object.values(problem.errors).flat()[0] ?? 'Please check the fields.';
+      return Object.values(problem.errors).flat()[0] ?? t('error.checkFields');
     }
   }
-  return 'Something went wrong. Please try again.';
+  return t('error.generic');
 }
 
 /**

@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { applyServerErrors, errorMessage } from '../../../core/problem';
 import { PRODUCT_TYPES, Product, ProductDetails, UNITS } from '../product.models';
 import { ProductsApi } from '../products.api';
+import { TranslatePipe } from '../../../core/i18n/i18n';
 
 export interface ProductFormDialogData {
   /** The product to edit; omitted to create a new one. */
@@ -19,6 +20,7 @@ export interface ProductFormDialogData {
 @Component({
   selector: 'app-product-form-dialog',
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,

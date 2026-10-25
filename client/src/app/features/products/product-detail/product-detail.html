@@ -1,5 +1,7 @@
 <div class="page">
-  <a class="breadcrumb" routerLink="/products"><mat-icon>arrow_back</mat-icon> Products</a>
+  <a class="breadcrumb" routerLink="/products"
+    ><mat-icon>arrow_back</mat-icon> {{ 'nav.products' | t }}</a
+  >
 
   @if (product.isLoading() && !product.hasValue()) {
     <mat-progress-bar mode="indeterminate" />
@@ -9,7 +11,7 @@
     <section class="panel">
       <div class="empty-state error">
         <mat-icon>{{ notFound() ? 'search_off' : 'error' }}</mat-icon>
-        {{ notFound() ? 'This product does not exist.' : errorMessage(error) }}
+        {{ notFound() ? ('product.notFound' | t) : errorMessage(error) }}
       </div>
     </section>
   } @else if (product.hasValue()) {
@@ -21,7 +23,7 @@
           <span class="code-badge mono">{{ p.code }}</span>
           <span class="chip" [class]="typeChip(p.type)">{{ typeLabel(p.type) }}</span>
           @if (!p.isActive) {
-            <span class="chip">Inactive</span>
+            <span class="chip">{{ 'products.inactive' | t }}</span>
           }
         </div>
         <h1 class="page-title">{{ p.name }}</h1>
@@ -30,13 +32,13 @@
         @if (auth.canHandleStock()) {
           <button mat-stroked-button (click)="recordMovement(p)">
             <mat-icon>swap_vert</mat-icon>
-            Record movement
+            {{ 'stock.recordMovement' | t }}
           </button>
         }
         @if (auth.canPlan()) {
           <button mat-flat-button (click)="edit(p)">
             <mat-icon>edit</mat-icon>
-            Edit
+            {{ 'common.edit' | t }}
           </button>
         }
       </div>
@@ -51,18 +53,18 @@
             [class.primary]="!isBelowMinimum(p)"
             ><mat-icon>inventory_2</mat-icon></span
           >
-          On hand
+          {{ 'common.onHand' | t }}
         </span>
         <span class="kpi-value" [class.error-text]="isBelowMinimum(p)">
           {{ p.onHand | number: '1.0-4' }}<small>{{ unitLabel(p.unit) }}</small>
         </span>
         <span class="kpi-foot">
           @if (isBelowMinimum(p)) {
-            <span class="chip danger">Below minimum</span>
+            <span class="chip danger">{{ 'product.belowMinimum' | t }}</span>
           } @else if (p.minStock > 0) {
-            <span class="chip success">Above minimum</span>
+            <span class="chip success">{{ 'product.aboveMinimum' | t }}</span>
           } @else {
-            No minimum set
+            {{ 'product.noMinimum' | t }}
           }
         </span>
       </section>
@@ -70,7 +72,7 @@
       <section class="panel kpi span-3">
         <span class="kpi-label">
           <span class="kpi-icon"><mat-icon>flag</mat-icon></span>
-          Minimum stock
+          {{ 'product.minimumStock' | t }}
         </span>
         <span class="kpi-value">
           {{ p.minStock | number: '1.0-4' }}<small>{{ unitLabel(p.unit) }}</small>
@@ -81,7 +83,7 @@
               ><span [style.width.%]="level"></span
             ></span>
           } @else {
-            Kept on hand as a safety buffer
+            {{ 'product.safetyBuffer' | t }}
           }
         </span>
       </section>
@@ -89,21 +91,24 @@
       <section class="panel kpi span-3">
         <span class="kpi-label">
           <span class="kpi-icon production"><mat-icon>account_tree</mat-icon></span>
-          Bill of materials
+          {{ 'product.bom' | t }}
         </span>
         @if (isRawMaterial()) {
           <span class="kpi-value">—</span>
-          <span class="kpi-foot">Bought in, not made</span>
+          <span class="kpi-foot">{{ 'product.boughtIn' | t }}</span>
         } @else {
-          <span class="kpi-value">{{ bomLines().length }}<small>components</small></span>
-          <span class="kpi-foot">Direct components per {{ unitLabel(p.unit) }}</span>
+          <span class="kpi-value"
+            >{{ bomLines().length
+            }}<small>{{ 'product.components' | t: { count: bomLines().length } }}</small></span
+          >
+          <span class="kpi-foot">{{ 'product.directPer' | t: { unit: unitLabel(p.unit) } }}</span>
         }
       </section>
 
       <section class="panel kpi span-3">
         <span class="kpi-label">
           <span class="kpi-icon success"><mat-icon>schedule</mat-icon></span>
-          Last movement
+          {{ 'product.lastMovement' | t }}
         </span>
         @if (movements.hasValue() && movements.value().items.length > 0) {
           @let last = movements.value().items[0];
@@ -117,7 +122,7 @@
           </span>
         } @else {
           <span class="kpi-value">—</span>
-          <span class="kpi-foot">No movements yet</span>
+          <span class="kpi-foot">{{ 'product.noMovements' | t }}</span>
         }
       </section>
     </div>
@@ -125,22 +130,24 @@
     @if (isRawMaterial()) {
       <section class="panel info">
         <mat-icon>info</mat-icon>
-        <span>Raw materials are bought, not made, so they have no bill of materials.</span>
+        <span>{{ 'product.rawInfo' | t }}</span>
       </section>
     } @else {
       <div class="grid">
         <section class="panel span-7">
           <header class="panel-header">
             <div>
-              <h2 class="panel-title">Bill of materials</h2>
-              <p class="panel-subtitle">Direct components needed for one {{ unitLabel(p.unit) }}</p>
+              <h2 class="panel-title">{{ 'product.bom' | t }}</h2>
+              <p class="panel-subtitle">
+                {{ 'product.bomSubtitle' | t: { unit: unitLabel(p.unit) } }}
+              </p>
             </div>
           </header>
 
           <div class="table-scroll">
             <table mat-table class="data-table" [dataSource]="bomLines()">
               <ng-container matColumnDef="code">
-                <th mat-header-cell *matHeaderCellDef>Component</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'workOrder.component' | t }}</th>
                 <td mat-cell *matCellDef="let line">
                   <a class="stack" [routerLink]="['/products', line.componentProductId]">
                     <span class="primary-line">{{ line.componentName }}</span>
@@ -149,7 +156,7 @@
                 </td>
               </ng-container>
               <ng-container matColumnDef="type">
-                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'common.type' | t }}</th>
                 <td mat-cell *matCellDef="let line">
                   <span class="chip" [class]="typeChip(line.componentType)">{{
                     typeLabel(line.componentType)
@@ -157,7 +164,7 @@
                 </td>
               </ng-container>
               <ng-container matColumnDef="qtyPerUnit">
-                <th mat-header-cell *matHeaderCellDef class="num">Per unit</th>
+                <th mat-header-cell *matHeaderCellDef class="num">{{ 'product.perUnit' | t }}</th>
                 <td mat-cell *matCellDef="let line" class="num">
                   {{ line.qtyPerUnit | number: '1.0-4' }}
                   <span class="muted">{{ unitLabel(line.componentUnit) }}</span>
@@ -170,8 +177,10 @@
                     <button
                       mat-icon-button
                       (click)="removeBomLine(line)"
-                      [attr.aria-label]="'Remove ' + line.componentCode"
-                      matTooltip="Remove"
+                      [attr.aria-label]="
+                        'product.removeComponentLabel' | t: { code: line.componentCode }
+                      "
+                      [matTooltip]="'product.remove' | t"
                     >
                       <mat-icon>delete_outline</mat-icon>
                     </button>
@@ -185,7 +194,7 @@
                 <td class="mat-mdc-cell" [attr.colspan]="bomColumns.length">
                   <div class="empty-state">
                     <mat-icon>account_tree</mat-icon>
-                    No components yet.
+                    {{ 'product.noComponents' | t }}
                   </div>
                 </td>
               </tr>
@@ -196,12 +205,12 @@
             <form class="add-line" (submit)="$event.preventDefault(); addBomLine()">
               <app-product-picker
                 class="component"
-                label="Add component"
+                [label]="'product.addComponent' | t"
                 [excludeIds]="excludedComponentIds()"
                 [(product)]="newComponent"
               />
               <mat-form-field appearance="outline" class="qty-per-unit" subscriptSizing="dynamic">
-                <mat-label>Qty per unit</mat-label>
+                <mat-label>{{ 'product.qtyPerUnit' | t }}</mat-label>
                 <input
                   matInput
                   type="number"
@@ -216,7 +225,7 @@
               </mat-form-field>
               <button mat-flat-button type="submit" [disabled]="bomSaving()">
                 <mat-icon>add</mat-icon>
-                Add
+                {{ 'product.add' | t }}
               </button>
               @if (bomError(); as error) {
                 <p class="form-error" role="alert">{{ error }}</p>
@@ -228,11 +237,11 @@
         <section class="panel span-5">
           <header class="panel-header">
             <div>
-              <h2 class="panel-title">Material requirement</h2>
-              <p class="panel-subtitle">Leaf materials through every level</p>
+              <h2 class="panel-title">{{ 'product.requirement' | t }}</h2>
+              <p class="panel-subtitle">{{ 'product.requirementSubtitle' | t }}</p>
             </div>
             <mat-form-field appearance="outline" class="qty" subscriptSizing="dynamic">
-              <mat-label>Units</mat-label>
+              <mat-label>{{ 'product.units' | t }}</mat-label>
               <input
                 matInput
                 type="number"
@@ -254,7 +263,7 @@
           @if (!quantityValid()) {
             <div class="empty-state">
               <mat-icon>calculate</mat-icon>
-              Enter a quantity above 0, up to {{ maxQty | number }}.
+              {{ 'product.quantityRange' | t: { max: (maxQty | number) ?? '' } }}
             </div>
           } @else if (explosion.error(); as error) {
             <div class="empty-state error">
@@ -265,7 +274,7 @@
             @if (explosion.value().length === 0) {
               <div class="empty-state">
                 <mat-icon>calculate</mat-icon>
-                Add components to see what making this takes.
+                {{ 'product.addComponentsHint' | t }}
               </div>
             } @else {
               <ul class="needs">
@@ -291,11 +300,11 @@
     <section class="panel">
       <header class="panel-header">
         <div>
-          <h2 class="panel-title">Stock movements</h2>
-          <p class="panel-subtitle">Latest 10 entries of this product's ledger</p>
+          <h2 class="panel-title">{{ 'product.stockMovements' | t }}</h2>
+          <p class="panel-subtitle">{{ 'product.latestEntries' | t }}</p>
         </div>
         <a mat-button routerLink="/stock">
-          Full ledger
+          {{ 'product.fullLedger' | t }}
           <mat-icon iconPositionEnd>arrow_forward</mat-icon>
         </a>
       </header>

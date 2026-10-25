@@ -1,3 +1,5 @@
+import { t } from '../../core/i18n/i18n';
+
 export type ProductType = 'RawMaterial' | 'SemiFinished' | 'Finished';
 export type UnitOfMeasure = 'Piece' | 'Meter' | 'SquareMeter' | 'Kilogram' | 'Liter';
 
@@ -63,32 +65,25 @@ export interface MaterialNeed {
   quantity: number;
 }
 
-export const PRODUCT_TYPES: readonly { value: ProductType; label: string }[] = [
-  { value: 'RawMaterial', label: 'Raw material' },
-  { value: 'SemiFinished', label: 'Semi-finished' },
-  { value: 'Finished', label: 'Finished' },
-];
+export const PRODUCT_TYPES: readonly { value: ProductType; label: string }[] = (
+  ['RawMaterial', 'SemiFinished', 'Finished'] as const
+).map((value) => ({ value, label: t(`productType.${value}`) }));
 
 const TYPE_LABELS = Object.fromEntries(PRODUCT_TYPES.map((t) => [t.value, t.label])) as Record<
   ProductType,
   string
 >;
 
-export const UNITS: readonly { value: UnitOfMeasure; label: string }[] = [
-  { value: 'Piece', label: 'Piece (pcs)' },
-  { value: 'Meter', label: 'Meter (m)' },
-  { value: 'SquareMeter', label: 'Square meter (m²)' },
-  { value: 'Kilogram', label: 'Kilogram (kg)' },
-  { value: 'Liter', label: 'Liter (L)' },
-];
+const UNIT_VALUES = ['Piece', 'Meter', 'SquareMeter', 'Kilogram', 'Liter'] as const;
 
-const UNIT_LABELS: Record<UnitOfMeasure, string> = {
-  Piece: 'pcs',
-  Meter: 'm',
-  SquareMeter: 'm²',
-  Kilogram: 'kg',
-  Liter: 'L',
-};
+export const UNITS: readonly { value: UnitOfMeasure; label: string }[] = UNIT_VALUES.map(
+  (value) => ({ value, label: t(`unitName.${value}`) }),
+);
+
+const UNIT_LABELS = Object.fromEntries(UNIT_VALUES.map((u) => [u, t(`unit.${u}`)])) as Record<
+  UnitOfMeasure,
+  string
+>;
 
 /** CSS chip modifier for a product type (see .chip in styles.scss). */
 export function typeChip(type: ProductType): string {

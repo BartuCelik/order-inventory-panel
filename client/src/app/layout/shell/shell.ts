@@ -7,8 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { map } from 'rxjs';
-import { AuthService } from '../../core/auth/auth.service';
+import { AuthService, roleLabel } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme.service';
+import { t, TranslatePipe } from '../../core/i18n/i18n';
+import { LanguagePicker } from '../../shared/language-picker/language-picker';
 
 interface NavItem {
   label: string;
@@ -17,6 +19,8 @@ interface NavItem {
 }
 
 interface NavGroup {
+  /** Stable id for aria-labelledby; the label is translated. */
+  id: string;
   label: string;
   items: NavItem[];
 }
@@ -24,6 +28,8 @@ interface NavGroup {
 @Component({
   selector: 'app-shell',
   imports: [
+    TranslatePipe,
+    LanguagePicker,
     DatePipe,
     RouterOutlet,
     RouterLink,
@@ -38,9 +44,13 @@ interface NavGroup {
 export class Shell {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
+  protected readonly roleLabel = roleLabel;
 
   protected readonly themeLabel = computed(
-    () => ({ system: 'Match system', light: 'Light', dark: 'Dark' })[this.theme.choice()],
+    () =>
+      ({ system: t('theme.system'), light: t('theme.light'), dark: t('theme.dark') })[
+        this.theme.choice()
+      ],
   );
   protected readonly themeIcon = computed(
     () => ({ system: 'contrast', light: 'light_mode', dark: 'dark_mode' })[this.theme.choice()],
@@ -58,24 +68,27 @@ export class Shell {
   /** Grouped the way the workshop works: what is being made, what was ordered, what is on the shelves. */
   protected readonly navGroups: NavGroup[] = [
     {
-      label: 'Floor',
+      id: 'floor',
+      label: t('nav.floor'),
       items: [
-        { label: 'Overview', icon: 'space_dashboard', route: '/dashboard' },
-        { label: 'Work orders', icon: 'precision_manufacturing', route: '/work-orders' },
+        { label: t('nav.overview'), icon: 'space_dashboard', route: '/dashboard' },
+        { label: t('nav.workOrders'), icon: 'precision_manufacturing', route: '/work-orders' },
       ],
     },
     {
-      label: 'Orders',
+      id: 'orders',
+      label: t('nav.orders'),
       items: [
-        { label: 'Sales orders', icon: 'receipt_long', route: '/sales-orders' },
-        { label: 'Customers', icon: 'storefront', route: '/customers' },
+        { label: t('nav.salesOrders'), icon: 'receipt_long', route: '/sales-orders' },
+        { label: t('nav.customers'), icon: 'storefront', route: '/customers' },
       ],
     },
     {
-      label: 'Inventory',
+      id: 'inventory',
+      label: t('nav.inventory'),
       items: [
-        { label: 'Products', icon: 'category', route: '/products' },
-        { label: 'Stock ledger', icon: 'inventory', route: '/stock' },
+        { label: t('nav.products'), icon: 'category', route: '/products' },
+        { label: t('nav.stockLedger'), icon: 'inventory', route: '/stock' },
       ],
     },
   ];

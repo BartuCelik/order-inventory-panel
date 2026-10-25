@@ -1,21 +1,23 @@
 <div class="page narrow">
-  <a class="breadcrumb" routerLink="/sales-orders"><mat-icon>arrow_back</mat-icon>Sales orders</a>
+  <a class="breadcrumb" routerLink="/sales-orders"
+    ><mat-icon>arrow_back</mat-icon>{{ 'nav.salesOrders' | t }}</a
+  >
   <header class="page-header">
     <div>
-      <h1 class="page-title">New sales order</h1>
-      <p class="page-subtitle">
-        Finished products only. Plan production from the order once it is saved.
-      </p>
+      <h1 class="page-title">{{ 'salesOrders.new' | t }}</h1>
+      <p class="page-subtitle">{{ 'salesOrderNew.subtitle' | t }}</p>
     </div>
   </header>
 
   <form (ngSubmit)="save()">
     <section class="panel">
-      <header class="panel-header"><h2 class="panel-title">Customer and dates</h2></header>
+      <header class="panel-header">
+        <h2 class="panel-title">{{ 'salesOrderNew.customerAndDates' | t }}</h2>
+      </header>
       <div class="panel-body head-fields">
         <div class="customer">
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Customer</mat-label>
+            <mat-label>{{ 'salesOrderNew.customer' | t }}</mat-label>
             <mat-select
               [value]="customerId()"
               (valueChange)="customerId.set($event)"
@@ -28,11 +30,11 @@
           </mat-form-field>
           <button mat-button type="button" (click)="newCustomer()">
             <mat-icon>add</mat-icon>
-            New customer
+            {{ 'customers.new' | t }}
           </button>
         </div>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Order date</mat-label>
+          <mat-label>{{ 'salesOrderNew.orderDate' | t }}</mat-label>
           <input
             matInput
             type="date"
@@ -42,7 +44,7 @@
           />
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Due date</mat-label>
+          <mat-label>{{ 'salesOrderNew.dueDate' | t }}</mat-label>
           <input
             matInput
             type="date"
@@ -57,10 +59,10 @@
 
     <section class="panel lines-panel">
       <header class="panel-header">
-        <h2 class="panel-title">Lines</h2>
+        <h2 class="panel-title">{{ 'salesOrder.lines' | t }}</h2>
         <button mat-button type="button" (click)="addLine()">
           <mat-icon>add</mat-icon>
-          Add line
+          {{ 'salesOrderNew.addLine' | t }}
         </button>
       </header>
       <ol class="lines">
@@ -69,18 +71,18 @@
             <span class="line-no" aria-hidden="true">{{ i + 1 }}</span>
             <app-product-picker
               class="picker"
-              label="Finished product"
+              [label]="'salesOrderNew.finishedProduct' | t"
               type="Finished"
               [product]="line.product"
               (productChange)="setProduct(line.key, $event)"
               [error]="
                 line.product && duplicateIds().includes(line.product.id)
-                  ? 'Already on another line'
+                  ? ('salesOrderNew.duplicate' | t)
                   : null
               "
             />
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qty">
-              <mat-label>Quantity</mat-label>
+              <mat-label>{{ 'common.quantity' | t }}</mat-label>
               <input
                 matInput
                 type="number"
@@ -99,7 +101,7 @@
               type="button"
               [disabled]="lines().length === 1"
               (click)="removeLine(line.key)"
-              [attr.aria-label]="'Remove line ' + (i + 1)"
+              [attr.aria-label]="'salesOrderNew.removeLine' | t: { number: i + 1 }"
             >
               <mat-icon>close</mat-icon>
             </button>
@@ -120,8 +122,10 @@
     }
 
     <div class="actions">
-      <a mat-button routerLink="/sales-orders">Discard</a>
-      <button mat-flat-button type="submit" [disabled]="saving()">Create sales order</button>
+      <a mat-button routerLink="/sales-orders">{{ 'salesOrderNew.discard' | t }}</a>
+      <button mat-flat-button type="submit" [disabled]="saving()">
+        {{ 'salesOrderNew.create' | t }}
+      </button>
     </div>
   </form>
 </div>

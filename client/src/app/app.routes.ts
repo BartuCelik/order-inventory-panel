@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { Shell } from './layout/shell/shell';
+import { pageTitle } from './core/i18n/i18n';
 
 export const routes: Routes = [
   {
     path: 'login',
-    title: 'Sign in · Workshop panel',
+    title: pageTitle('title.signIn'),
     loadComponent: () => import('./features/login/login').then((m) => m.Login),
   },
   {
@@ -16,7 +17,7 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
-        title: 'Shop floor · Workshop panel',
+        title: pageTitle('title.shopFloor'),
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {

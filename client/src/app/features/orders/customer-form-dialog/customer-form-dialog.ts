@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { applyServerErrors, errorMessage } from '../../../core/problem';
 import { Customer, CustomerRequest } from '../order.models';
 import { OrdersApi } from '../orders.api';
+import { TranslatePipe } from '../../../core/i18n/i18n';
 
 export interface CustomerFormDialogData {
   /** The customer to edit; omitted to add a new one. */
@@ -16,6 +17,7 @@ export interface CustomerFormDialogData {
 @Component({
   selector: 'app-customer-form-dialog',
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatDialogModule,
@@ -23,33 +25,33 @@ export interface CustomerFormDialogData {
     MatInputModule,
   ],
   template: `
-    <h2 mat-dialog-title>{{ customer ? 'Edit customer' : 'New customer' }}</h2>
+    <h2 mat-dialog-title>{{ (customer ? 'customers.edit' : 'customers.new') | t }}</h2>
     <form [formGroup]="form" (ngSubmit)="save()">
       <mat-dialog-content class="fields">
         <mat-form-field appearance="outline">
-          <mat-label>Name</mat-label>
+          <mat-label>{{ 'customers.name' | t }}</mat-label>
           <input matInput formControlName="name" cdkFocusInitial />
           @if (form.controls.name.hasError('required')) {
-            <mat-error>Enter the customer's name.</mat-error>
+            <mat-error>{{ 'customers.nameRequired' | t }}</mat-error>
           } @else if (form.controls.name.hasError('server')) {
             <mat-error>{{ form.controls.name.getError('server') }}</mat-error>
           }
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Contact person</mat-label>
+          <mat-label>{{ 'customers.contactPerson' | t }}</mat-label>
           <input matInput formControlName="contactName" />
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Email</mat-label>
+          <mat-label>{{ 'customers.email' | t }}</mat-label>
           <input matInput type="email" formControlName="email" />
           @if (form.controls.email.hasError('email')) {
-            <mat-error>Enter a valid email address.</mat-error>
+            <mat-error>{{ 'customers.emailInvalid' | t }}</mat-error>
           } @else if (form.controls.email.hasError('server')) {
             <mat-error>{{ form.controls.email.getError('server') }}</mat-error>
           }
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Phone</mat-label>
+          <mat-label>{{ 'customers.phone' | t }}</mat-label>
           <input matInput formControlName="phone" />
         </mat-form-field>
         @if (error(); as message) {
@@ -57,9 +59,9 @@ export interface CustomerFormDialogData {
         }
       </mat-dialog-content>
       <mat-dialog-actions align="end">
-        <button mat-button type="button" mat-dialog-close>Close</button>
+        <button mat-button type="button" mat-dialog-close>{{ 'common.close' | t }}</button>
         <button mat-flat-button type="submit" [disabled]="saving()">
-          {{ customer ? 'Save customer' : 'Add customer' }}
+          {{ (customer ? 'customers.save' : 'customers.add') | t }}
         </button>
       </mat-dialog-actions>
     </form>

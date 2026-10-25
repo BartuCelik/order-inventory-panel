@@ -1,5 +1,6 @@
 import { UnitOfMeasure } from '../products/product.models';
 import { WorkOrderStatus } from '../work-orders/work-order.models';
+import { t } from '../../core/i18n/i18n';
 
 export interface Customer {
   id: number;
@@ -18,11 +19,9 @@ export interface CustomerRequest {
 
 export type SalesOrderStatus = 'Open' | 'Shipped' | 'Cancelled';
 
-export const SALES_ORDER_STATUSES: { value: SalesOrderStatus; label: string }[] = [
-  { value: 'Open', label: 'Open' },
-  { value: 'Shipped', label: 'Shipped' },
-  { value: 'Cancelled', label: 'Cancelled' },
-];
+export const SALES_ORDER_STATUSES: { value: SalesOrderStatus; label: string }[] = (
+  ['Open', 'Shipped', 'Cancelled'] as const
+).map((value) => ({ value, label: t(`salesStatus.${value}`) }));
 
 /** A row of GET /sales-orders. isLate is derived by the API (rule 15). */
 export interface SalesOrderSummary {
@@ -67,6 +66,10 @@ export interface CreateSalesOrderRequest {
   lines: { productId: number; quantity: number }[];
 }
 
+export function orderStatusLabel(status: SalesOrderStatus): string {
+  return t(`salesStatus.${status}`);
+}
+
 /** CSS modifier for .status: open = hollow, shipped = tick, cancelled = struck. */
 export function orderStatusClass(status: SalesOrderStatus): string {
   return status === 'Shipped' ? 'done' : status === 'Cancelled' ? 'cancelled' : 'planned';
@@ -82,10 +85,10 @@ export function daysUntil(date: string, today = new Date()): number {
 /** "Due today", "Due in 3 days", "2 days late". */
 export function dueLabel(date: string, today = new Date()): string {
   const days = daysUntil(date, today);
-  if (days === 0) return 'Due today';
-  if (days === 1) return 'Due tomorrow';
-  if (days > 1) return `Due in ${days} days`;
-  return days === -1 ? '1 day late' : `${-days} days late`;
+  if (days === 0) return t('due.today');
+  if (days === 1) return t('due.tomorrow');
+  if (days > 1) return t('due.inDays', { count: days });
+  return t('due.daysLate', { count: -days });
 }
 
 /** yyyy-MM-dd in local time, the format the API takes for DateOnly. */

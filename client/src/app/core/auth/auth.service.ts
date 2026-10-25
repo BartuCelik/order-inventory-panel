@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { API_BASE_URL } from '../api';
+import { t } from '../i18n/i18n';
 
 export type UserRole = 'Admin' | 'Planner' | 'Warehouse';
 
@@ -79,6 +80,10 @@ export class AuthService {
       // Nothing stored to clear.
     }
   }
+}
+
+export function roleLabel(role: UserRole): string {
+  return t(`role.${role}`);
 }
 
 function hasRole(user: SessionUser | null, ...roles: UserRole[]): boolean {

@@ -18,6 +18,7 @@ import {
 } from '../customer-form-dialog/customer-form-dialog';
 import { Customer, isoDate } from '../order.models';
 import { OrdersApi } from '../orders.api';
+import { t, TranslatePipe } from '../../../core/i18n/i18n';
 
 interface DraftLine {
   key: number;
@@ -28,6 +29,7 @@ interface DraftLine {
 @Component({
   selector: 'app-sales-order-new',
   imports: [
+    TranslatePipe,
     FormsModule,
     RouterLink,
     MatButtonModule,
@@ -73,15 +75,14 @@ export class SalesOrderNew {
 
   protected readonly problems = computed(() => {
     const problems: string[] = [];
-    if (this.customerId() == null) problems.push('Choose a customer.');
-    if (!this.dueDate()) problems.push('Enter a due date.');
+    if (this.customerId() == null) problems.push(t('salesOrderNew.chooseCustomer'));
+    if (!this.dueDate()) problems.push(t('salesOrderNew.enterDueDate'));
     else if (this.orderDate() && this.dueDate() < this.orderDate())
-      problems.push('The due date cannot be before the order date.');
-    if (this.lines().some((l) => !l.product))
-      problems.push('Pick a finished product on every line.');
+      problems.push(t('salesOrderNew.dueBeforeOrder'));
+    if (this.lines().some((l) => !l.product)) problems.push(t('salesOrderNew.pickProduct'));
     if (this.lines().some((l) => !l.quantity || l.quantity <= 0))
-      problems.push('Every line needs a quantity above zero.');
-    if (this.duplicateIds().length > 0) problems.push('Each product can appear on only one line.');
+      problems.push(t('salesOrderNew.quantityAboveZero'));
+    if (this.duplicateIds().length > 0) problems.push(t('salesOrderNew.productOnce'));
     return problems;
   });
 
