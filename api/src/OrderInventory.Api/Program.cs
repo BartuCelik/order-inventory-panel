@@ -26,6 +26,7 @@ builder.Services.AddOpenApi();
 // Who is calling: CreatedBy on stock movements comes from here, never from the request body.
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {
@@ -40,7 +41,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
 }
 
 // Startup migration is safe while the API runs as a single instance (local dev and the demo host).
@@ -56,7 +57,10 @@ if (app.Configuration.GetValue<bool>("Database:SeedDemoData"))
 }
 
 app.UseExceptionHandler();
+// 401/403 from the auth middleware have no body; this gives them a ProblemDetails one like every other error.
+app.UseStatusCodePages();
 app.UseCors(ClientCorsPolicy);
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

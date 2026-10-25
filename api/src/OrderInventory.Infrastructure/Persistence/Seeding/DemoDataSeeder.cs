@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
 using OrderInventory.Domain.Sales;
 using OrderInventory.Domain.Stock;
+using OrderInventory.Domain.Users;
 
 namespace OrderInventory.Infrastructure.Persistence.Seeding;
 
@@ -20,12 +22,47 @@ public static class DemoDataSeeder
 {
     private const string SeedUser = "seed";
 
+    /// <summary>
+    /// Shared by the demo accounts. Public on purpose: the demo invites visitors to sign in as each role.
+    /// Only written when Database:SeedDemoData is on, which is never the case for a real deployment.
+    /// </summary>
+    public const string DemoPassword = "workshop-demo";
+
     public static async Task SeedDemoDataAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
     {
         await using var scope = services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var timeProvider = scope.ServiceProvider.GetRequiredService<TimeProvider>();
         await SeedAsync(dbContext, timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
+        await SeedUsersAsync(dbContext, cancellationToken);
+    }
+
+    /// <summary>
+    /// One demo account per role. Separate from <see cref="SeedAsync"/> because a database seeded
+    /// before auth existed (the live demo) already has products but still needs users.
+    /// </summary>
+    /// <returns><c>false</c> when users already exist and nothing was written.</returns>
+    public static async Task<bool> SeedUsersAsync(AppDbContext dbContext, CancellationToken cancellationToken = default)
+    {
+        if (await dbContext.Users.AnyAsync(cancellationToken))
+        {
+            return false;
+        }
+
+        var hasher = new PasswordHasher<User>();
+        User Account(string email, string displayName, UserRole role)
+        {
+            var user = new User { Email = email, DisplayName = displayName, PasswordHash = "", Role = role };
+            user.PasswordHash = hasher.HashPassword(user, DemoPassword);
+            return user;
+        }
+
+        dbContext.Users.AddRange(
+            Account("admin@workshop.example.com", "Mira Kaplan", UserRole.Admin),
+            Account("planner@workshop.example.com", "Jonas Reed", UserRole.Planner),
+            Account("warehouse@workshop.example.com", "Lena Vogt", UserRole.Warehouse));
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     /// <returns><c>false</c> when the database already contains data and nothing was written.</returns>

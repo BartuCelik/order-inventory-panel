@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderInventory.Api.Auth;
 using OrderInventory.Application.Common;
 using OrderInventory.Application.Production;
 
@@ -16,6 +18,7 @@ public sealed class WorkOrdersController(WorkOrderService workOrders) : Controll
     public Task<WorkOrderDto> Get(int id, CancellationToken cancellationToken) =>
         workOrders.GetAsync(id, cancellationToken);
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpPost]
     public async Task<ActionResult<WorkOrderDto>> Create(CreateWorkOrderRequest request, CancellationToken cancellationToken)
     {
@@ -23,14 +26,17 @@ public sealed class WorkOrdersController(WorkOrderService workOrders) : Controll
         return CreatedAtAction(nameof(Get), new { id = workOrder.Id }, workOrder);
     }
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpPost("{id:int}/start")]
     public Task<WorkOrderDto> Start(int id, CancellationToken cancellationToken) =>
         workOrders.StartAsync(id, cancellationToken);
 
+    [Authorize(Roles = Roles.Warehouse)]
     [HttpPost("{id:int}/complete")]
     public Task<WorkOrderDto> Complete(int id, CancellationToken cancellationToken) =>
         workOrders.CompleteAsync(id, cancellationToken);
 
+    [Authorize(Roles = Roles.Planning)]
     [HttpPost("{id:int}/cancel")]
     public Task<WorkOrderDto> Cancel(int id, CancellationToken cancellationToken) =>
         workOrders.CancelAsync(id, cancellationToken);
