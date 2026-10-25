@@ -1,8 +1,8 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">Workshop overview · {{ today | date: 'EEEE, d MMMM' }}</p>
+      <h1 class="page-title">Shop floor</h1>
+      <p class="page-subtitle">{{ today | date: 'EEEE d MMMM' }}</p>
     </div>
     <div class="page-actions">
       <button mat-stroked-button (click)="refresh()" [disabled]="summary.isLoading()">
@@ -22,82 +22,140 @@
   } @else if (summary.hasValue()) {
     @let s = summary.value();
 
-    <div class="grid kpis">
-      <a class="panel kpi span-3 tile" routerLink="/products">
-        <span class="kpi-label">
-          <span class="kpi-icon primary"><mat-icon>category</mat-icon></span>
-          Active products
-        </span>
-        <span class="kpi-value">{{ activeProducts() }}</span>
-        <span class="kpi-foot">
-          <span class="chip raw">{{ s.products.rawMaterial }} raw</span>
-          <span class="chip semi">{{ s.products.semiFinished }} semi</span>
-          <span class="chip finished">{{ s.products.finished }} finished</span>
-        </span>
+    <!-- Andon strip: one segment per condition. Grey is normal; colour means someone should act. -->
+    <section class="andon" aria-label="Workshop conditions">
+      <a
+        class="segment"
+        routerLink="/sales-orders"
+        [queryParams]="{ late: true }"
+        [class.alarm]="s.orders.late > 0"
+      >
+        <span class="reading">{{ s.orders.late }}</span>
+        <span class="label">{{ s.orders.late === 1 ? 'Order late' : 'Orders late' }}</span>
+        <span class="detail">of {{ s.orders.open }} open</span>
       </a>
+      <a
+        class="segment"
+        routerLink="/work-orders"
+        [queryParams]="{ open: true }"
+        [class.caution]="s.production.shortCount > 0"
+      >
+        <span class="reading">{{ s.production.shortCount }}</span>
+        <span class="label">Short of material</span>
+        <span class="detail">open work orders</span>
+      </a>
+      <a class="segment" routerLink="/products" [class.alarm]="s.belowMinimum.length > 0">
+        <span class="reading">{{ s.belowMinimum.length }}</span>
+        <span class="label">Below minimum</span>
+        <span class="detail">products to reorder</span>
+      </a>
+      <a class="segment" routerLink="/work-orders" [queryParams]="{ status: 'InProgress' }">
+        <span class="reading">{{ s.production.inProgress }}</span>
+        <span class="label">Running</span>
+        <span class="detail">{{ s.production.planned }} planned</span>
+      </a>
+      <a class="segment" routerLink="/work-orders" [queryParams]="{ status: 'Done' }">
+        <span class="reading">{{ s.production.doneLast7Days }}</span>
+        <span class="label">Completed</span>
+        <span class="detail">last 7 days</span>
+      </a>
+    </section>
 
-      <section class="panel kpi span-3">
-        <span class="kpi-label">
-          <span
-            class="kpi-icon"
-            [class.danger]="s.belowMinimum.length > 0"
-            [class.success]="s.belowMinimum.length === 0"
-            ><mat-icon>{{ s.belowMinimum.length > 0 ? 'warning' : 'verified' }}</mat-icon></span
-          >
-          Below minimum
-        </span>
-        <span class="kpi-value" [class.error-text]="s.belowMinimum.length > 0">{{
-          s.belowMinimum.length
-        }}</span>
-        <span class="kpi-foot">
-          {{
-            s.belowMinimum.length > 0
-              ? 'Products to reorder or produce'
-              : 'Everything above its minimum'
-          }}
-        </span>
+    <div class="grid">
+      <section class="panel span-8">
+        <header class="panel-header">
+          <h2 class="panel-title">Production queue</h2>
+          <a mat-button routerLink="/work-orders" [queryParams]="{ open: true }">All open work</a>
+        </header>
+        @if (s.production.queue.length === 0) {
+          <div class="empty-state">
+            <mat-icon>precision_manufacturing</mat-icon>
+            Nothing planned. Create a work order from a sales order line.
+          </div>
+        } @else {
+          <ol class="queue">
+            @for (w of s.production.queue; track w.id) {
+              <li [class.is-short]="w.hasShortage">
+                <span class="status" [class]="statusClass(w.status)">
+                  <span class="visually-hidden">{{ statusLabel(w.status) }}</span>
+                </span>
+                <a class="stack what" [routerLink]="['/work-orders', w.id]">
+                  <span class="primary-line">
+                    {{ w.productName }}
+                    <span class="qty">× {{ w.quantity | number: '1.0-4' }}</span>
+                  </span>
+                  <span class="secondary-line">
+                    <span class="code">{{ w.number }}</span>
+                    @if (w.customerName) {
+                      for {{ w.customerName }}
+                    } @else {
+                      for stock
+                    }
+                  </span>
+                </a>
+                <span class="when">
+                  <span class="state-text">{{ statusLabel(w.status) }}</span>
+                  <span class="muted">{{ planLabel(w.plannedDate) }}</span>
+                </span>
+                <span class="flags">
+                  @if (w.hasShortage) {
+                    <span class="flag short"><mat-icon>inventory_2</mat-icon>Short</span>
+                  }
+                </span>
+              </li>
+            }
+          </ol>
+        }
       </section>
 
-      <section class="panel kpi span-3">
-        <span class="kpi-label">
-          <span class="kpi-icon success"><mat-icon>today</mat-icon></span>
-          Movements today
-        </span>
-        <span class="kpi-value">{{ todayActivity().in + todayActivity().out }}</span>
-        <span class="kpi-foot">
-          <span class="in">{{ todayActivity().in }} in</span> ·
-          <span class="out">{{ todayActivity().out }} out</span>
-        </span>
+      <section class="panel span-4">
+        <header class="panel-header">
+          <h2 class="panel-title">Orders due</h2>
+          <a mat-button routerLink="/sales-orders" [queryParams]="{ status: 'Open' }">All open</a>
+        </header>
+        @if (s.orders.dueSoon.length === 0) {
+          <div class="empty-state">
+            <mat-icon>task_alt</mat-icon>
+            No open sales orders.
+          </div>
+        } @else {
+          <ul class="due">
+            @for (o of s.orders.dueSoon; track o.id) {
+              <li [class.is-late]="o.isLate">
+                <a class="stack" [routerLink]="['/sales-orders', o.id]">
+                  <span class="primary-line">{{ o.customerName }}</span>
+                  <span class="secondary-line code">{{ o.number }}</span>
+                </a>
+                <span class="due-when">
+                  @if (o.isLate) {
+                    <span class="flag late">{{ dueLabel(o.dueDate) }}</span>
+                  } @else {
+                    {{ dueLabel(o.dueDate) }}
+                  }
+                  <span class="muted">{{ o.dueDate | date: 'd MMM' }}</span>
+                </span>
+              </li>
+            }
+          </ul>
+        }
       </section>
-
-      <a class="panel kpi span-3 tile" routerLink="/stock">
-        <span class="kpi-label">
-          <span class="kpi-icon production"><mat-icon>swap_vert</mat-icon></span>
-          Last 14 days
-        </span>
-        <span class="kpi-value"
-          >{{ periodTotals().in + periodTotals().out }}<small>movements</small></span
-        >
-        <span class="kpi-foot">
-          <span class="in">{{ periodTotals().in }} in</span> ·
-          <span class="out">{{ periodTotals().out }} out</span>
-        </span>
-      </a>
     </div>
 
     <div class="grid">
       <section class="panel span-8">
         <header class="panel-header">
-          <div>
-            <h2 class="panel-title">Stock activity</h2>
-            <p class="panel-subtitle">Movements per day over the last two weeks</p>
-          </div>
-          <div class="legend">
-            <span><i class="swatch in-swatch"></i>Stock in</span>
-            <span><i class="swatch out-swatch"></i>Stock out</span>
+          <h2 class="panel-title">Stock movements, last 14 days</h2>
+          <div class="legend" aria-hidden="true">
+            <span><i class="swatch in-swatch"></i>In</span>
+            <span><i class="swatch out-swatch"></i>Out</span>
           </div>
         </header>
-        <div class="chart" role="img" aria-label="Stock movements per day, last 14 days">
+        <div class="chart" role="img" [attr.aria-label]="chartLabel()">
+          <div class="scale" aria-hidden="true">
+            <span>{{ chartMax() }}</span>
+            <span>{{ chartMax() / 2 | number: '1.0-1' }}</span>
+            <span>0</span>
+          </div>
           @for (day of activity(); track day.date; let last = $last) {
             <div
               class="day"
@@ -111,65 +169,19 @@
                 <span class="bar out-bar" [style.height.%]="barHeight(day.out)"></span>
               </div>
               <span class="day-label">{{ day.date | date: 'd' }}</span>
-              <span class="weekday">{{ day.date | date: 'EEEEE' }}</span>
             </div>
           }
         </div>
+        <p class="chart-foot muted">
+          {{ periodTotals().in }} in and {{ periodTotals().out }} out over two weeks;
+          {{ todayActivity().in + todayActivity().out }} today.
+        </p>
       </section>
 
       <section class="panel span-4">
         <header class="panel-header">
-          <div>
-            <h2 class="panel-title">System status</h2>
-            <p class="panel-subtitle">Live health of the API and its database</p>
-          </div>
-        </header>
-        <div class="panel-progress">
-          @if (healthLoading()) {
-            <mat-progress-bar mode="indeterminate" />
-          }
-        </div>
-        <ul class="status-list">
-          <li>
-            <span>API</span>
-            @switch (apiReachable()) {
-              @case (true) {
-                <span class="chip success">Reachable</span>
-              }
-              @case (false) {
-                <span class="chip danger">Unreachable</span>
-              }
-              @default {
-                <span class="chip">Checking…</span>
-              }
-            }
-          </li>
-          @for (check of report()?.checks ?? []; track check.name) {
-            <li>
-              <span class="check-name">{{ check.name }}</span>
-              <span class="check-status">
-                <span class="muted">{{ check.durationMs | number: '1.0-0' }} ms</span>
-                <span
-                  class="chip"
-                  [class.success]="check.status === 'Healthy'"
-                  [class.warning]="check.status === 'Degraded'"
-                  [class.danger]="check.status === 'Unhealthy'"
-                  >{{ check.status }}</span
-                >
-              </span>
-            </li>
-          }
-        </ul>
-      </section>
-    </div>
-
-    <div class="grid">
-      <section class="panel span-6">
-        <header class="panel-header">
-          <div>
-            <h2 class="panel-title">Below minimum stock</h2>
-            <p class="panel-subtitle">Active products under their minimum, most critical first</p>
-          </div>
+          <h2 class="panel-title">Below minimum</h2>
+          <a mat-button routerLink="/products">Products</a>
         </header>
         @if (s.belowMinimum.length === 0) {
           <div class="empty-state">
@@ -177,64 +189,21 @@
             Every product is at or above its minimum.
           </div>
         } @else {
-          <ul class="rows">
+          <ul class="levels">
             @for (p of s.belowMinimum; track p.productId) {
               <li>
                 <a class="stack" [routerLink]="['/products', p.productId]">
                   <span class="primary-line">{{ p.name }}</span>
-                  <span class="secondary-line mono">{{ p.code }}</span>
+                  <span class="secondary-line code">{{ p.code }}</span>
                 </a>
-                <div class="level">
+                <span class="level">
                   <span class="num">
-                    <strong class="error-text">{{ p.onHand | number: '1.0-4' }}</strong>
+                    <strong>{{ p.onHand | number: '1.0-4' }}</strong>
                     <span class="muted">
                       / {{ p.minStock | number: '1.0-4' }} {{ unitLabel(p.unit) }}</span
                     >
                   </span>
                   <span class="meter low"><span [style.width.%]="stockLevel(p) ?? 0"></span></span>
-                </div>
-              </li>
-            }
-          </ul>
-        }
-      </section>
-
-      <section class="panel span-6">
-        <header class="panel-header">
-          <div>
-            <h2 class="panel-title">Recent movements</h2>
-            <p class="panel-subtitle">The latest entries in the stock ledger</p>
-          </div>
-          <a mat-button routerLink="/stock">
-            View all
-            <mat-icon iconPositionEnd>arrow_forward</mat-icon>
-          </a>
-        </header>
-        @if (s.recentMovements.length === 0) {
-          <div class="empty-state">
-            <mat-icon>receipt_long</mat-icon>
-            No stock movements yet.
-          </div>
-        } @else {
-          <ul class="rows">
-            @for (m of s.recentMovements; track m.id) {
-              <li>
-                <a class="stack" [routerLink]="['/products', m.productId]">
-                  <span class="primary-line">{{ m.productName }}</span>
-                  <span class="secondary-line">
-                    <span class="chip plain" [class]="movementTypeChip(m.type)">{{
-                      movementTypeLabel(m.type)
-                    }}</span>
-                    {{ m.createdAt | date: 'd MMM, HH:mm' }}
-                  </span>
-                </a>
-                <span
-                  class="num movement-qty"
-                  [class.in]="m.quantity > 0"
-                  [class.out]="m.quantity < 0"
-                >
-                  {{ m.quantity > 0 ? '+' : '' }}{{ m.quantity | number: '1.0-4' }}
-                  <span class="muted">{{ unitLabel(m.unit) }}</span>
                 </span>
               </li>
             }
@@ -242,6 +211,21 @@
         }
       </section>
     </div>
+
+    <footer class="system" aria-label="System status">
+      <span class="sys-item" [class.fault]="apiReachable() === false">
+        <i aria-hidden="true"></i>
+        API
+        {{ apiReachable() === false ? 'unreachable' : apiReachable() ? 'reachable' : 'checking' }}
+      </span>
+      @for (check of report()?.checks ?? []; track check.name) {
+        <span class="sys-item" [class.fault]="check.status !== 'Healthy'">
+          <i aria-hidden="true"></i>
+          {{ check.name }} {{ check.status | lowercase }},
+          {{ check.durationMs | number: '1.0-0' }} ms
+        </span>
+      }
+    </footer>
   } @else {
     <mat-progress-bar mode="indeterminate" />
   }

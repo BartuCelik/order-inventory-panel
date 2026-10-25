@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, LowerCasePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,10 +7,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { API_BASE_URL } from '../../core/api';
-import { HealthReport, HealthService, HealthStatus } from '../../core/health/health.service';
+import { HealthReport, HealthService } from '../../core/health/health.service';
 import { errorMessage } from '../../core/problem';
+import { daysUntil, dueLabel } from '../orders/order.models';
 import { stockLevel, unitLabel } from '../products/product.models';
-import { movementTypeChip, movementTypeLabel } from '../stock/stock.models';
+import { statusClass, statusLabel } from '../work-orders/work-order.models';
 import { DashboardSummary } from './dashboard.models';
 
 @Component({
@@ -18,6 +19,7 @@ import { DashboardSummary } from './dashboard.models';
   imports: [
     DatePipe,
     DecimalPipe,
+    LowerCasePipe,
     RouterLink,
     MatButtonModule,
     MatIconModule,
@@ -33,19 +35,12 @@ export class Dashboard {
   protected readonly today = new Date();
   protected readonly unitLabel = unitLabel;
   protected readonly stockLevel = stockLevel;
-  protected readonly movementTypeLabel = movementTypeLabel;
-  protected readonly movementTypeChip = movementTypeChip;
+  protected readonly statusClass = statusClass;
+  protected readonly statusLabel = statusLabel;
+  protected readonly dueLabel = dueLabel;
   protected readonly errorMessage = errorMessage;
 
   protected readonly summary = httpResource<DashboardSummary>(() => `${API_BASE_URL}/dashboard`);
-
-  protected readonly activeProducts = computed(() => {
-    if (!this.summary.hasValue()) {
-      return 0;
-    }
-    const { rawMaterial, semiFinished, finished } = this.summary.value().products;
-    return rawMaterial + semiFinished + finished;
-  });
 
   protected readonly activity = computed(() =>
     this.summary.hasValue() ? this.summary.value().activity : [],
@@ -57,18 +52,31 @@ export class Dashboard {
       out: 0,
     }),
   );
-  /** The busiest day sets the chart's scale; at least 1 so an empty fortnight still draws. */
-  private readonly chartMax = computed(() =>
-    Math.max(1, ...this.activity().map((d) => Math.max(d.in, d.out))),
+  /** The busiest day, rounded up to an even number, sets the chart's scale (at least 2). */
+  protected readonly chartMax = computed(() => {
+    const max = Math.max(2, ...this.activity().map((d) => Math.max(d.in, d.out)));
+    return Math.ceil(max / 2) * 2;
+  });
+  protected readonly chartLabel = computed(
+    () =>
+      `Stock movements per day over the last 14 days: ${this.periodTotals().in} in, ${this.periodTotals().out} out.`,
   );
 
   protected barHeight(count: number): number {
     return (count / this.chartMax()) * 100;
   }
 
+  /** "Today", "Tomorrow", "In 3 days", "2 days overdue" for a work order's planned date. */
+  protected planLabel(date: string): string {
+    const days = daysUntil(date);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Tomorrow';
+    if (days > 1) return `In ${days} days`;
+    return days === -1 ? 'Yesterday' : `${-days} days ago`;
+  }
+
   // ---------- system status ----------
 
-  protected readonly healthLoading = signal(false);
   protected readonly report = signal<HealthReport | null>(null);
   protected readonly apiReachable = signal<boolean | null>(null);
 
@@ -82,15 +90,9 @@ export class Dashboard {
   }
 
   private checkHealth(): void {
-    this.healthLoading.set(true);
     this.healthService.check().subscribe((report) => {
       this.report.set(report);
       this.apiReachable.set(report !== null);
-      this.healthLoading.set(false);
     });
-  }
-
-  protected statusIcon(status: HealthStatus): string {
-    return status === 'Healthy' ? 'check_circle' : status === 'Degraded' ? 'warning' : 'error';
   }
 }
