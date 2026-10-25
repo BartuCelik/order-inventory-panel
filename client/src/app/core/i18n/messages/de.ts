@@ -129,6 +129,16 @@ export const de: Messages = {
   'dashboard.dayTooltip': '{date}: {in} Zugänge, {out} Abgänge',
   'dashboard.chartFoot': '{in} Zugänge und {out} Abgänge in zwei Wochen; heute {today}.',
   'dashboard.allAboveMinimum': 'Alle Artikel liegen auf oder über ihrem Mindestbestand.',
+  'dashboard.weeklyProduction': 'Fertigung, letzte 8 Wochen',
+  'dashboard.productionChartLabel': {
+    one: '{count} Fertigungsauftrag in den letzten {weeks} Wochen erledigt.',
+    other: '{count} Fertigungsaufträge in den letzten {weeks} Wochen erledigt.',
+  },
+  'dashboard.weekOf': 'Woche ab {date}',
+  'dashboard.completedCount': {
+    one: '{count} Fertigungsauftrag erledigt',
+    other: '{count} Fertigungsaufträge erledigt',
+  },
   'dashboard.systemStatus': 'Systemstatus',
   'dashboard.api': 'API',
   'dashboard.apiUnreachable': 'nicht erreichbar',

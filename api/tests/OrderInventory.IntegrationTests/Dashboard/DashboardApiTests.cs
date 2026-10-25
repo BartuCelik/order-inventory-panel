@@ -140,6 +140,32 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
         Assert.Contains(after.Production.Queue, w => w.ProductCode == "DB-OP-TABLE" && w.HasShortage);
     }
 
+    [Fact]
+    public async Task WeeklyProduction_HasEightWeeksEndingThisWeek_CountingCompletedWorkOrders()
+    {
+        var before = await GetAsync();
+        var screw = await CreateProductAsync("DB-WK-SCREW", ProductType.RawMaterial);
+        var stool = await CreateProductAsync("DB-WK-STOOL", ProductType.Finished);
+        var bom = await _client.PostAsJsonAsync($"/products/{stool}/bom-lines",
+            new { componentProductId = screw, qtyPerUnit = 4m }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, bom.StatusCode);
+        await ReceiveAsync(screw, 8m);
+        var done = await CreateWorkOrderAsync(stool, 2m);
+        Assert.Equal(HttpStatusCode.OK, (await _client.PostAsync($"/work-orders/{done}/start", null, CancellationToken)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _client.PostAsync($"/work-orders/{done}/complete", null, CancellationToken)).StatusCode);
+        // Open work orders are not production yet.
+        await CreateWorkOrderAsync(stool, 1m);
+
+        var weekly = (await GetAsync()).Production.Weekly;
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var monday = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+        Assert.Equal(8, weekly.Count);
+        Assert.Equal(monday.AddDays(-7 * 7), weekly[0].WeekStart);
+        Assert.Equal(monday, weekly[^1].WeekStart);
+        Assert.Equal(before.Production.Weekly[^1].Completed + 1, weekly[^1].Completed);
+    }
+
     // ---------- helpers ----------
 
     private async Task<DashboardResponse> GetAsync()
@@ -204,7 +230,11 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
 
     private sealed record DueOrderResponse(int Id, string Number, bool IsLate);
 
-    private sealed record ProductionStatsResponse(int Planned, int InProgress, int DoneLast7Days, int ShortCount, IReadOnlyList<QueueResponse> Queue);
+    private sealed record ProductionStatsResponse(
+        int Planned, int InProgress, int DoneLast7Days, int ShortCount, IReadOnlyList<QueueResponse> Queue,
+        IReadOnlyList<ProductionWeekResponse> Weekly);
+
+    private sealed record ProductionWeekResponse(DateOnly WeekStart, int Completed);
 
     private sealed record QueueResponse(int Id, string ProductCode, bool HasShortage);
 

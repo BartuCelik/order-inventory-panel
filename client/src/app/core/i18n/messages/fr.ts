@@ -129,6 +129,16 @@ export const fr: Messages = {
   'dashboard.dayTooltip': '{date} : {in} entrées, {out} sorties',
   'dashboard.chartFoot': "{in} entrées et {out} sorties en deux semaines ; {today} aujourd'hui.",
   'dashboard.allAboveMinimum': 'Tous les articles sont au minimum ou au-dessus.',
+  'dashboard.weeklyProduction': 'Production, 8 dernières semaines',
+  'dashboard.productionChartLabel': {
+    one: '{count} ordre de fabrication terminé sur les {weeks} dernières semaines.',
+    other: '{count} ordres de fabrication terminés sur les {weeks} dernières semaines.',
+  },
+  'dashboard.weekOf': 'Semaine du {date}',
+  'dashboard.completedCount': {
+    one: '{count} ordre de fabrication terminé',
+    other: '{count} ordres de fabrication terminés',
+  },
   'dashboard.systemStatus': 'État du système',
   'dashboard.api': 'API',
   'dashboard.apiUnreachable': 'injoignable',

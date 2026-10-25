@@ -154,6 +154,12 @@ export const ru: Messages = {
   'dashboard.dayTooltip': '{date}: приход {in}, расход {out}',
   'dashboard.chartFoot': 'За две недели приход {in}, расход {out}; сегодня {today}.',
   'dashboard.allAboveMinimum': 'Все позиции на минимуме или выше.',
+  'dashboard.weeklyProduction': 'Производство за 8 недель',
+  'dashboard.productionChartLabel': {
+    other: 'Выполнено производственных заказов за {weeks} недель: {count}.',
+  },
+  'dashboard.weekOf': 'Неделя с {date}',
+  'dashboard.completedCount': { other: 'Выполнено производственных заказов: {count}' },
   'dashboard.systemStatus': 'Состояние системы',
   'dashboard.api': 'API',
   'dashboard.apiUnreachable': 'недоступен',

@@ -224,12 +224,27 @@
                       / {{ p.minStock | number: '1.0-4' }} {{ unitLabel(p.unit) }}</span
                     >
                   </span>
-                  <span class="meter low"><span [style.width.%]="stockLevel({ onHand: p.available, minStock: p.minStock }) ?? 0"></span></span>
+                  <span class="meter low"
+                    ><span
+                      [style.width.%]="
+                        stockLevel({ onHand: p.available, minStock: p.minStock }) ?? 0
+                      "
+                    ></span
+                  ></span>
                 </span>
               </li>
             }
           </ul>
         }
+      </section>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">{{ 'dashboard.weeklyProduction' | t }}</h2>
+        </header>
+        <app-production-chart [weeks]="s.production.weekly" />
       </section>
     </div>
 

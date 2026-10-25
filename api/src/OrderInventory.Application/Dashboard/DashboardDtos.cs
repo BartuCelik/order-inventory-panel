@@ -30,7 +30,11 @@ public sealed record DueOrderDto(int Id, string Number, string CustomerName, Dat
 
 /// <summary>
 /// Work orders per open status, completions in the last seven days, how many open ones are short
-/// (rule 9, reserved shortage) and the production queue: open work orders in plan order.
+/// (rule 9, reserved shortage), the production queue (open work orders in plan order) and completions per week.
 /// </summary>
 public sealed record ProductionStatsDto(
-    int Planned, int InProgress, int DoneLast7Days, int ShortCount, IReadOnlyList<WorkOrderSummaryDto> Queue);
+    int Planned, int InProgress, int DoneLast7Days, int ShortCount, IReadOnlyList<WorkOrderSummaryDto> Queue,
+    IReadOnlyList<ProductionWeekDto> Weekly);
+
+/// <summary>Work orders completed in the UTC week (Monday to Sunday) starting on <see cref="WeekStart"/>.</summary>
+public sealed record ProductionWeekDto(DateOnly WeekStart, int Completed);

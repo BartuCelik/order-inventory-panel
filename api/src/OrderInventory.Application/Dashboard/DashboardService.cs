@@ -15,6 +15,7 @@ public sealed class DashboardService(IAppDbContext db, WorkOrderService workOrde
     public const int ActivityDays = 14;
     public const int DueSoonCount = 6;
     public const int QueueCount = 6;
+    public const int WeeksShown = 8;
 
     private DateOnly Today => DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
@@ -70,7 +71,30 @@ public sealed class DashboardService(IAppDbContext db, WorkOrderService workOrde
             counts.GetValueOrDefault(WorkOrderStatus.InProgress),
             doneLast7Days,
             open.Items.Count(w => w.HasShortage),
-            open.Items.Take(QueueCount).ToList());
+            open.Items.Take(QueueCount).ToList(),
+            await GetWeeklyProductionAsync(cancellationToken));
+    }
+
+    private async Task<IReadOnlyList<ProductionWeekDto>> GetWeeklyProductionAsync(CancellationToken cancellationToken)
+    {
+        var today = Today;
+        var thisMonday = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+        var first = thisMonday.AddDays(-7 * (WeeksShown - 1));
+        var from = first.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        // A few weeks of a small workshop's completions: grouping them in memory is simpler than week maths in SQL.
+        var completed = await db.WorkOrders.AsNoTracking()
+            .Where(w => w.Status == WorkOrderStatus.Done && w.CompletedAt >= from)
+            .Select(w => w.CompletedAt!.Value)
+            .ToListAsync(cancellationToken);
+        var perWeek = completed
+            .GroupBy(at => (DateOnly.FromDateTime(at).DayNumber - first.DayNumber) / 7)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        // Every week of the window, including the quiet ones, so the chart has no gaps.
+        return Enumerable.Range(0, WeeksShown)
+            .Select(i => new ProductionWeekDto(first.AddDays(7 * i), perWeek.GetValueOrDefault(i)))
+            .ToList();
     }
 
     private async Task<ProductCountsDto> CountProductsAsync(CancellationToken cancellationToken)
