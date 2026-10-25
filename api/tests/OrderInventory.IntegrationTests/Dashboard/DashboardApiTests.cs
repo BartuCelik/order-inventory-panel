@@ -50,9 +50,30 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
 
         // At the minimum is not below it; no minimum means never critical; inactive products are not tracked.
         Assert.Equal(["DB-MIN-EMPTY", "DB-MIN-LOW"], mine.Select(p => p.Code));
-        Assert.Equal((empty, 0m, 10m), (mine[0].ProductId, mine[0].OnHand, mine[0].MinStock));
+        Assert.Equal((empty, 0m, 0m, 10m), (mine[0].ProductId, mine[0].OnHand, mine[0].Available, mine[0].MinStock));
         Assert.Equal((low, 7.5m), (mine[1].ProductId, mine[1].OnHand));
         Assert.DoesNotContain(dashboard.BelowMinimum, p => p.ProductId == noMin);
+    }
+
+    [Fact]
+    public async Task BelowMinimum_ComparesAvailableStock_OnHandMinusOpenWorkOrderReservations()
+    {
+        var board = await CreateProductAsync("DB-RES-BOARD", ProductType.RawMaterial, minStock: 10m);
+        var shelf = await CreateProductAsync("DB-RES-SHELF", ProductType.Finished);
+        var bom = await _client.PostAsJsonAsync($"/products/{shelf}/bom-lines",
+            new { componentProductId = board, qtyPerUnit = 2m }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, bom.StatusCode);
+        await ReceiveAsync(board, 15m);
+        await CreateWorkOrderAsync(shelf, 4m);
+        var cancelled = await CreateWorkOrderAsync(shelf, 100m);
+        var cancel = await _client.PostAsync($"/work-orders/{cancelled}/cancel", null, CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, cancel.StatusCode);
+
+        var dashboard = await GetAsync();
+
+        // 15 on hand is above the minimum, but the open work order reserves 8 (the cancelled one reserves nothing).
+        var row = Assert.Single(dashboard.BelowMinimum, p => p.ProductId == board);
+        Assert.Equal((15m, 7m, 10m), (row.OnHand, row.Available, row.MinStock));
     }
 
     [Fact]
@@ -154,6 +175,13 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 
+    private async Task<int> CreateWorkOrderAsync(int productId, decimal quantity)
+    {
+        var response = await _client.PostAsJsonAsync("/work-orders", new { productId, quantity }, ApiFactory.JsonOptions, CancellationToken);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<IdOnly>(ApiFactory.JsonOptions, CancellationToken))!.Id;
+    }
+
     private async Task<int> CreateOrderAsync(int customerId, int productId, DateOnly orderDate, DateOnly dueDate)
     {
         var response = await _client.PostAsJsonAsync("/sales-orders",
@@ -183,7 +211,7 @@ public sealed class DashboardApiTests(ApiFactory api) : IClassFixture<ApiFactory
     private sealed record ProductCountsResponse(int RawMaterial, int SemiFinished, int Finished, int Inactive);
 
     private sealed record BelowMinimumResponse(
-        int ProductId, string Code, string Name, UnitOfMeasure Unit, decimal OnHand, decimal MinStock);
+        int ProductId, string Code, string Name, UnitOfMeasure Unit, decimal OnHand, decimal Available, decimal MinStock);
 
     private sealed record MovementResponse(int Id, string ProductCode, StockMovementType Type, decimal Quantity);
 
