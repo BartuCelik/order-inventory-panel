@@ -166,6 +166,7 @@ export const en = {
   'common.forAfter': '',
   'workOrder.start': 'Start',
   'workOrder.complete': 'Complete',
+  'workOrder.downloadPdf': 'Download PDF',
   'workOrder.route': 'Route',
   'workOrder.cancelledNote': 'Its reservation was released; nothing was consumed.',
   'workOrder.progress': 'Work order progress',

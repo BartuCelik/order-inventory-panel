@@ -129,6 +129,21 @@ export class WorkOrderDetail {
       .subscribe(() => this.run(w, 'cancel', t('workOrder.cancelled', { number: w.number })));
   }
 
+  protected downloadPdf(w: WorkOrder): void {
+    this.actionError.set(null);
+    this.api.pdf(w.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${w.number}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (error: unknown) => this.actionError.set(errorMessage(error)),
+    });
+  }
+
   private run(w: WorkOrder, action: WorkOrderAction, done: string): void {
     this.busy.set(true);
     this.actionError.set(null);

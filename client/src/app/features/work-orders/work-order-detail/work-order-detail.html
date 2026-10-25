@@ -30,6 +30,10 @@
         </p>
       </div>
       <div class="page-actions">
+        <button mat-stroked-button (click)="downloadPdf(w)">
+          <mat-icon>picture_as_pdf</mat-icon>
+          {{ 'workOrder.downloadPdf' | t }}
+        </button>
         @if (isOpen(w.status) && auth.canPlan()) {
           <button mat-stroked-button (click)="cancel(w)" [disabled]="busy()">
             {{ 'common.cancel' | t }}

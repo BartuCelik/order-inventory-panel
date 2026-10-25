@@ -160,6 +160,7 @@ export const tr: Messages = {
   'common.forAfter': 'için',
   'workOrder.start': 'Başlat',
   'workOrder.complete': 'Tamamla',
+  'workOrder.downloadPdf': 'PDF indir',
   'workOrder.route': 'Rota',
   'workOrder.cancelledNote': 'Rezervasyonu serbest bırakıldı; hiçbir şey tüketilmedi.',
   'workOrder.progress': 'İş emri ilerlemesi',

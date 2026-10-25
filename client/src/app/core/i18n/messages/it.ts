@@ -172,6 +172,7 @@ export const it: Messages = {
   'common.forAfter': '',
   'workOrder.start': 'Avvia',
   'workOrder.complete': 'Completa',
+  'workOrder.downloadPdf': 'Scarica PDF',
   'workOrder.route': 'Percorso',
   'workOrder.cancelledNote': 'La prenotazione è stata liberata; non è stato consumato nulla.',
   'workOrder.progress': "Avanzamento dell'ordine di produzione",
