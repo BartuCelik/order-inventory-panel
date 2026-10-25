@@ -578,7 +578,8 @@ a.stack:hover .primary-line {
   display: block;
   width: 96px;
   height: 8px;
-  background: repeating-linear-gradient(
+  background:
+    repeating-linear-gradient(
       to right,
       transparent 0 calc(10% - 1px),
       var(--hmi-panel) calc(10% - 1px) 10%
@@ -705,4 +706,13 @@ a.stack:hover .primary-line {
 .mat-mdc-dialog-title {
   font-family: var(--hmi-condensed) !important;
   font-weight: 600 !important;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
