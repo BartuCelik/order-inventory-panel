@@ -169,6 +169,7 @@ export const de: Messages = {
   'common.forAfter': '',
   'workOrder.start': 'Starten',
   'workOrder.complete': 'Abschließen',
+  'workOrder.downloadPdf': 'PDF herunterladen',
   'workOrder.route': 'Ablauf',
   'workOrder.cancelledNote': 'Die Reservierung wurde freigegeben; nichts wurde verbraucht.',
   'workOrder.progress': 'Fortschritt des Fertigungsauftrags',

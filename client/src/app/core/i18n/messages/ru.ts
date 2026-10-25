@@ -195,6 +195,7 @@ export const ru: Messages = {
   'common.forAfter': '',
   'workOrder.start': 'Начать',
   'workOrder.complete': 'Завершить',
+  'workOrder.downloadPdf': 'Скачать PDF',
   'workOrder.route': 'Маршрут',
   'workOrder.cancelledNote': 'Резерв снят; ничего не было израсходовано.',
   'workOrder.progress': 'Ход выполнения заказа',

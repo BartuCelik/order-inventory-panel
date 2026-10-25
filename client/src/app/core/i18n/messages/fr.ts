@@ -172,6 +172,7 @@ export const fr: Messages = {
   'common.forAfter': '',
   'workOrder.start': 'Démarrer',
   'workOrder.complete': 'Terminer',
+  'workOrder.downloadPdf': 'Télécharger le PDF',
   'workOrder.route': 'Étapes',
   'workOrder.cancelledNote': "Sa réservation a été libérée ; rien n'a été consommé.",
   'workOrder.progress': "Avancement de l'ordre de fabrication",

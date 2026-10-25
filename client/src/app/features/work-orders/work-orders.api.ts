@@ -19,4 +19,9 @@ export class WorkOrdersApi {
   act(id: number, action: WorkOrderAction): Observable<WorkOrder> {
     return this.http.post<WorkOrder>(`${this.baseUrl}/${id}/${action}`, null);
   }
+
+  /** As a blob: the endpoint needs the bearer token, so a plain link cannot download it. */
+  pdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${id}/pdf`, { responseType: 'blob' });
+  }
 }
