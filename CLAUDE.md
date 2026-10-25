@@ -138,16 +138,22 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 - Client styling: use the shared classes and tokens in `client/src/styles.scss` (`page`, `page-header`, `grid`,
   `panel`, `kpi`, `chip`, `status`, `flag`, `data-table`, `meter`, `empty-state`, `toolbar`) before writing component styles.
 
-### Design rules (industrial HMI look, decided 2026-10-25 — keep consistent)
+### Design rules (Apple-like glass look, decided 2026-10-25 — keep consistent)
 
-- Modelled on ISA-101 high-performance HMI screens: **greys for normal, colour only for abnormal**.
-  `--hmi-caution` (amber) = material short (rule 9); `--hmi-alarm` (red) = late, below minimum, failed.
-  Never colour a normal state (no green "OK", no blue accents).
-- Status is shape **and** text: `.status.planned` hollow square, `.in-progress` solid, `.done` tick,
+- **Glass over a colour field:** panels, tiles, the rail and dialogs are frosted glass (`--surface` +
+  `backdrop-filter: var(--glass)`, hairline `--border`, lit top edge `--highlight`, soft `--shadow`) over soft
+  accent washes (`--bg-field`). Radii: panels 20px (`--radius-lg`), tiles/alerts 14px, controls 10px, buttons pills.
+- **Themes:** every colour is a token defined twice in `styles.scss` (light, dark). Dark follows the system unless
+  `ThemeService` sets `data-theme` on `<html>` (toggle in the rail). Components use tokens only — never hex values.
+  Angular Material reads the same tokens (`theme-type: color-scheme` + `theme-overrides`).
+- **Colour has meaning:** one accent, blue (`--accent`) = primary actions, running work, current page;
+  green (`--success`) = done; amber (`--caution`) = material short (rule 9); red (`--alarm`) = late, below minimum,
+  failed. Tinted pills (`*-soft` background, `*-ink` text) for chips and flags.
+- Status is shape **and** text: `.status.planned` ring, `.in-progress` blue dot, `.done` green tick,
   `.cancelled` struck through. Abnormal rows get `.is-short` / `.is-late` (a bar on the leading edge).
-- Type: Barlow (UI) and Barlow Semi Condensed (titles, readouts, codes), self-hosted via @fontsource;
-  tabular figures everywhere. Sentence case; no all-caps labels, no monospace.
-- Panels: square (3px), hairline edge, darker title strip, no shadows. Primary buttons are graphite.
+- Type: Inter (variable, optical sizes) self-hosted via @fontsource-variable; large bold tightly tracked titles
+  (`.page-title`). Tabular figures only on numbers (`.num`, table cells, readouts) — on body they widen hyphens
+  in codes. Sentence case; no all-caps labels, no monospace.
 - Copy says what happens ("Ship", "Plan production"); errors state what is wrong and what to do.
 - `TreatWarningsAsErrors` is on — keep the build clean.
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `chore:` …).
@@ -183,7 +189,7 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
 - [x] Design refresh and a first dashboard (requested ahead of Phase 4, merged in #10): shared design system,
       dark sidebar shell, restyled screens; `GET /dashboard` with product counts, below-minimum (on-hand, until
       reservations exist), latest movements and 14-day activity, shown as KPI tiles and a CSS chart.
-- [ ] Phase 3 — API and screens merged in #12; auth on branch `feat/phase3-auth` (**not merged**):
+- [x] Phase 3 — API and screens merged in #12, auth in #14 (live on Render):
   - [x] Work order transitions (rule 12) and availability with reservation (rule 9) — pure domain + unit tests
   - [x] Customers API; sales orders API: create (rule 13), late flag (rule 15), ship (rule 14), cancel
   - [x] Work orders API (rules 8–12): BOM snapshot, availability per component, start/cancel/complete with
@@ -200,16 +206,13 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
   - [x] Client: login page (demo accounts listed), bearer interceptor (signs out on 401), guard, user in the rail,
         actions hidden by role (`AuthService.canPlan` / `canHandleStock`)
   - [ ] Users screen (Admin) — the roles table lists it; no API yet
+- [ ] Redesign requested by the owner (branch `feat/redesign-glass`, **not merged**): Apple-like glass look,
+      light/dark themes with a toggle, Inter, restyled shell, dashboard tiles and login (see *Design rules*)
 
 ### Next session
 
-1. Owner reviews and merges the auth PR (`feat/phase3-auth`). After deploy, check that Render created
-   `Jwt__SigningKey` (the API refuses to start without it).
-2. **Redesign requested by the owner (2026-10-25):** replace the industrial HMI look with a current, Apple-like
-   style — large confident type, frosted-glass (backdrop blur) rail and cards, generous spacing, soft gradient
-   background; light and dark theme following the system setting, with a toggle. Rewrite *Design rules* above
-   when it lands; the login page gets the new look too.
-3. Then Phase 4: critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
+1. Owner reviews and merges the redesign PR (`feat/redesign-glass`).
+2. Then Phase 4: critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
    design rules), PDF work order, Excel export/import.
 
 Local dev note: the local database holds two leftover test products (`UI-TEST-…`, `UIV2-…`) from manual checks;
