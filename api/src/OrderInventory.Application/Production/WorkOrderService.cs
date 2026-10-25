@@ -280,7 +280,7 @@ public sealed class WorkOrderService(IAppDbContext db, StockLedger ledger, TimeP
                 : ClosedAvailability(w, onHand));
     }
 
-    private static IReadOnlyList<ComponentAvailability> ClosedAvailability(WorkOrder workOrder, IReadOnlyDictionary<int, decimal> onHand) =>
+    private static List<ComponentAvailability> ClosedAvailability(WorkOrder workOrder, IReadOnlyDictionary<int, decimal> onHand) =>
         workOrder.Components
             .OrderBy(c => c.ComponentProductId)
             .Select(c =>
