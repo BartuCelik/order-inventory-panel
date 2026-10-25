@@ -1,15 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using OrderInventory.Application.Abstractions;
+using OrderInventory.Application.Production;
 using OrderInventory.Application.Stock;
+using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
+using OrderInventory.Domain.Sales;
 
 namespace OrderInventory.Application.Dashboard;
 
 /// <summary>Read-only summary of products and stock for the dashboard.</summary>
-public sealed class DashboardService(IAppDbContext db, TimeProvider timeProvider)
+public sealed class DashboardService(IAppDbContext db, WorkOrderService workOrders, TimeProvider timeProvider)
 {
     public const int RecentMovementCount = 8;
     public const int ActivityDays = 14;
+    public const int DueSoonCount = 6;
+    public const int QueueCount = 6;
+
+    private DateOnly Today => DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
     public async Task<DashboardDto> GetAsync(CancellationToken cancellationToken = default)
     {
@@ -22,7 +29,48 @@ public sealed class DashboardService(IAppDbContext db, TimeProvider timeProvider
                 .Take(RecentMovementCount)
                 .Select(StockService.ToDto)
                 .ToListAsync(cancellationToken),
-            await GetActivityAsync(cancellationToken));
+            await GetActivityAsync(cancellationToken),
+            await GetOrderStatsAsync(cancellationToken),
+            await GetProductionStatsAsync(cancellationToken));
+    }
+
+    private async Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken)
+    {
+        var today = Today;
+        var open = db.SalesOrders.AsNoTracking().Where(o => o.Status == SalesOrderStatus.Open);
+
+        return new OrderStatsDto(
+            await open.CountAsync(cancellationToken),
+            await open.CountAsync(o => o.DueDate < today, cancellationToken),
+            // Ordered by due date, so late orders (due before today) come first.
+            await open
+                .OrderBy(o => o.DueDate)
+                .ThenBy(o => o.Number)
+                .Take(DueSoonCount)
+                .Select(o => new DueOrderDto(o.Id, o.Number, o.Customer!.Name, o.DueDate, o.DueDate < today))
+                .ToListAsync(cancellationToken));
+    }
+
+    private async Task<ProductionStatsDto> GetProductionStatsAsync(CancellationToken cancellationToken)
+    {
+        var since = timeProvider.GetUtcNow().UtcDateTime.AddDays(-7);
+        var counts = await db.WorkOrders.AsNoTracking()
+            .GroupBy(w => w.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Status, x => x.Count, cancellationToken);
+        var doneLast7Days = await db.WorkOrders.AsNoTracking()
+            .CountAsync(w => w.Status == WorkOrderStatus.Done && w.CompletedAt >= since, cancellationToken);
+
+        // The shortage flag needs rule 9 per work order. 100 open work orders is far more than a small
+        // workshop runs at once; the queue is the first few of them in plan order.
+        var open = await workOrders.ListAsync(new WorkOrderListQuery { Open = true, PageSize = 100 }, cancellationToken);
+
+        return new ProductionStatsDto(
+            counts.GetValueOrDefault(WorkOrderStatus.Planned),
+            counts.GetValueOrDefault(WorkOrderStatus.InProgress),
+            doneLast7Days,
+            open.Items.Count(w => w.HasShortage),
+            open.Items.Take(QueueCount).ToList());
     }
 
     private async Task<ProductCountsDto> CountProductsAsync(CancellationToken cancellationToken)
