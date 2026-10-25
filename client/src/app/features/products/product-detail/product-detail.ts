@@ -42,6 +42,7 @@ import {
 } from '../product-form-dialog/product-form-dialog';
 import { ProductPicker } from '../product-picker/product-picker';
 import { ProductsApi } from '../products.api';
+import { AuthService } from '../../../core/auth/auth.service';
 
 /** Same bound as the API's explosion endpoint. */
 const MAX_EXPLOSION_QTY = 1_000_000;
@@ -73,6 +74,7 @@ export class ProductDetail {
   private readonly api = inject(ProductsApi);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  protected readonly auth = inject(AuthService);
 
   protected readonly typeLabel = typeLabel;
   protected readonly typeChip = typeChip;

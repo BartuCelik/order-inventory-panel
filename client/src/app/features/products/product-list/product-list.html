@@ -6,12 +6,14 @@
         Raw materials, semi-finished parts and finished goods, with stock from the ledger.
       </p>
     </div>
-    <div class="page-actions">
-      <button mat-flat-button (click)="create()">
-        <mat-icon>add</mat-icon>
-        New product
-      </button>
-    </div>
+    @if (auth.canPlan()) {
+      <div class="page-actions">
+        <button mat-flat-button (click)="create()">
+          <mat-icon>add</mat-icon>
+          New product
+        </button>
+      </div>
+    }
   </header>
 
   <section class="panel">

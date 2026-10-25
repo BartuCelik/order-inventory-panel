@@ -32,6 +32,7 @@ import {
   typeLabel,
   unitLabel,
 } from '../product.models';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-product-list',
@@ -53,6 +54,7 @@ import {
 export class ProductList {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
+  protected readonly auth = inject(AuthService);
 
   protected readonly types = PRODUCT_TYPES;
   protected readonly columns = ['product', 'type', 'onHand', 'minStock', 'status'];

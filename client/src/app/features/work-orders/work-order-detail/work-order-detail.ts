@@ -22,6 +22,7 @@ import {
   statusLabel,
 } from '../work-order.models';
 import { WorkOrderAction, WorkOrdersApi } from '../work-orders.api';
+import { AuthService } from '../../../core/auth/auth.service';
 
 /** The normal route through a work order (rule 12); Cancelled leaves it from either open step. */
 const STEPS: { status: WorkOrderStatus; label: string }[] = [
@@ -48,6 +49,7 @@ export class WorkOrderDetail {
   private readonly api = inject(WorkOrdersApi);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  protected readonly auth = inject(AuthService);
 
   /** Route parameter, bound by withComponentInputBinding(). */
   readonly id = input.required<string>();

@@ -16,6 +16,7 @@ import {
 } from '../record-movement-dialog/record-movement-dialog';
 import { STOCK_MOVEMENTS_URL } from '../stock.api';
 import { StockMovement } from '../stock.models';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-stock-ledger',
@@ -33,6 +34,7 @@ import { StockMovement } from '../stock.models';
 export class StockLedger {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  protected readonly auth = inject(AuthService);
 
   protected readonly errorMessage = errorMessage;
   protected readonly pageSizeOptions = [20, 50, 100];

@@ -22,6 +22,7 @@ import {
   dueLabel,
   orderStatusClass,
 } from '../order.models';
+import { AuthService } from '../../../core/auth/auth.service';
 
 /** A single status, only the late ones, or everything. */
 type OrderFilter = SalesOrderStatus | 'late' | 'all';
@@ -53,6 +54,7 @@ type OrderFilter = SalesOrderStatus | 'late' | 'all';
 })
 export class SalesOrderList {
   private readonly router = inject(Router);
+  protected readonly auth = inject(AuthService);
 
   protected readonly statuses = SALES_ORDER_STATUSES;
   protected readonly columns = ['status', 'order', 'due', 'ordered'];

@@ -20,6 +20,7 @@ import {
 import { WorkOrder, isOpen, statusClass, statusLabel } from '../../work-orders/work-order.models';
 import { SalesOrder, SalesOrderLine, dueLabel, orderStatusClass } from '../order.models';
 import { OrdersApi } from '../orders.api';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-sales-order-detail',
@@ -40,6 +41,7 @@ export class SalesOrderDetail {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
+  protected readonly auth = inject(AuthService);
 
   /** Route parameter, bound by withComponentInputBinding(). */
   readonly id = input.required<string>();

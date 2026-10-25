@@ -19,6 +19,7 @@ import {
   CustomerFormDialogData,
 } from '../customer-form-dialog/customer-form-dialog';
 import { Customer } from '../order.models';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-customer-list',
@@ -39,13 +40,15 @@ import { Customer } from '../order.models';
           <h1 class="page-title">Customers</h1>
           <p class="page-subtitle">Who the workshop sells to.</p>
         </div>
-        <div class="page-actions">
-          <a mat-stroked-button routerLink="/sales-orders/new">New sales order</a>
-          <button mat-flat-button (click)="edit()">
-            <mat-icon>add</mat-icon>
-            New customer
-          </button>
-        </div>
+        @if (auth.canPlan()) {
+          <div class="page-actions">
+            <a mat-stroked-button routerLink="/sales-orders/new">New sales order</a>
+            <button mat-flat-button (click)="edit()">
+              <mat-icon>add</mat-icon>
+              New customer
+            </button>
+          </div>
+        }
       </header>
 
       <section class="panel">
@@ -111,10 +114,10 @@ import { Customer } from '../order.models';
                 <tr
                   mat-row
                   *matRowDef="let c; columns: columns"
-                  class="clickable"
-                  tabindex="0"
-                  (click)="edit(c)"
-                  (keydown.enter)="edit(c)"
+                  [class.clickable]="auth.canPlan()"
+                  [attr.tabindex]="auth.canPlan() ? 0 : null"
+                  (click)="auth.canPlan() && edit(c)"
+                  (keydown.enter)="auth.canPlan() && edit(c)"
                 ></tr>
               </table>
             </div>
@@ -139,6 +142,7 @@ import { Customer } from '../order.models';
 })
 export class CustomerList {
   private readonly dialog = inject(MatDialog);
+  protected readonly auth = inject(AuthService);
 
   protected readonly columns = ['name', 'contact', 'email', 'phone'];
   protected readonly errorMessage = errorMessage;

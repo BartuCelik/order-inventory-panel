@@ -36,6 +36,15 @@
     </nav>
 
     <div class="rail-foot">
+      @if (auth.user(); as user) {
+        <div class="user">
+          <span class="user-name">{{ user.displayName }}</span>
+          <span class="user-role">{{ user.role }}</span>
+          <button mat-icon-button (click)="auth.logout()" aria-label="Sign out" title="Sign out">
+            <mat-icon>logout</mat-icon>
+          </button>
+        </div>
+      }
       <time class="clock" [attr.datetime]="now().toISOString()">
         <span class="clock-time">{{ now() | date: 'HH:mm' }}</span>
         <span class="clock-date">{{ now() | date: 'EEE d MMM' }}</span>

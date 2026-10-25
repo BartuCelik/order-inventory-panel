@@ -4,12 +4,14 @@
       <h1 class="page-title">Sales orders</h1>
       <p class="page-subtitle">Orders from customers, soonest due first.</p>
     </div>
-    <div class="page-actions">
-      <a mat-flat-button routerLink="/sales-orders/new">
-        <mat-icon>add</mat-icon>
-        New sales order
-      </a>
-    </div>
+    @if (auth.canPlan()) {
+      <div class="page-actions">
+        <a mat-flat-button routerLink="/sales-orders/new">
+          <mat-icon>add</mat-icon>
+          New sales order
+        </a>
+      </div>
+    }
   </header>
 
   <section class="panel">
@@ -59,7 +61,9 @@
         <div class="empty-state">
           <mat-icon>receipt_long</mat-icon>
           No orders match.
-          <a mat-stroked-button routerLink="/sales-orders/new">New sales order</a>
+          @if (auth.canPlan()) {
+            <a mat-stroked-button routerLink="/sales-orders/new">New sales order</a>
+          }
         </div>
       } @else {
         <div class="table-scroll">

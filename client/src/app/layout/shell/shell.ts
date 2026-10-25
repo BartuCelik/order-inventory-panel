@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { map } from 'rxjs';
+import { AuthService } from '../../core/auth/auth.service';
 
 interface NavItem {
   label: string;
@@ -34,6 +35,8 @@ interface NavGroup {
   styleUrl: './shell.scss',
 })
 export class Shell {
+  protected readonly auth = inject(AuthService);
+
   /** Grouped the way the workshop works: what is being made, what was ordered, what is on the shelves. */
   protected readonly navGroups: NavGroup[] = [
     {
