@@ -126,7 +126,11 @@ public sealed class WorkOrdersApiTests(ApiFactory api) : IClassFixture<ApiFactor
         var legs = detail.Components.Single(c => c.ProductCode == "WOA-LEG");
         Assert.Equal((4m, 10m, 8m, 2m, 2m), (legs.RequiredQty, legs.OnHand, legs.Reserved, legs.Available, legs.Shortage));
         Assert.True(detail.HasShortage);
-        Assert.False((await GetAsync(a.Id)).HasShortage);
+        // Symmetric: A sees B's 4 legs reserved, so 6 are available for A's 8 — the planning deadlock rule 10
+        // describes. The cancelled work order reserves nothing, and tops (5 for 3) are fine for both.
+        var aLegs = (await GetAsync(a.Id)).Components.Single(c => c.ProductCode == "WOA-LEG");
+        Assert.Equal((4m, 6m, 2m), (aLegs.Reserved, aLegs.Available, aLegs.Shortage));
+        Assert.Equal(0m, detail.Components.Single(c => c.ProductCode == "WOA-TOP").Shortage);
     }
 
     [Fact]
