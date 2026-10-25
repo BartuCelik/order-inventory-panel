@@ -190,7 +190,8 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 - **Phase 5 — Showcase:** one-click demo login per role, nightly seed reset, README with screenshots, 1–2 min demo video.
 
 ### Later (not now)
-Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, routing/capacity, multi-tenant.
+Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, routing/capacity, multi-tenant,
+dashboard export to Excel (numbers only; ClosedXML cannot draw charts), translated PDFs (the PDF is English only).
 
 ## Current status
 
@@ -222,10 +223,22 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
 - [x] Translations requested by the owner (#17): seven languages, picker in the rail and on the login page
       (see *Translations*)
 
+- [ ] Phase 4 — Dashboard and outputs:
+  - [x] Critical stock on *available* (on-hand minus open work order reservations) on the dashboard (#19)
+  - [x] Weekly production chart: completed work orders per UTC week, last 8 weeks, Chart.js bars coloured
+        from the theme tokens (#20)
+  - [ ] PDF work order: `GET /work-orders/{id}/pdf` (QuestPDF, Community licence), *Download PDF* on the
+        detail page (#21, open)
+  - [ ] Excel export, then Excel import (products, opening stock)
+
 ### Next session
 
-1. Phase 4 (not started; the owner decides when): critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
-   design rules), PDF work order, Excel export/import.
+1. Merge #21 if not done.
+2. Excel export (ClosedXML): an *Export to Excel* button on each list screen (products with on-hand/available,
+   stock movements, sales orders, work orders), using the screen's current filters; `GET .../export` per list.
+3. Product list and detail still flag "below minimum" on on-hand while the dashboard uses available — align them
+   (found in the review of #19).
+4. Then Excel import (products, opening stock).
 
 Local dev note: the local database holds two leftover test products (`UI-TEST-…`, `UIV2-…`) from manual checks;
 `docker compose down -v` resets it to the seed.
