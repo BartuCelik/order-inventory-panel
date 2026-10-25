@@ -183,7 +183,7 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
 - [x] Design refresh and a first dashboard (requested ahead of Phase 4, merged in #10): shared design system,
       dark sidebar shell, restyled screens; `GET /dashboard` with product counts, below-minimum (on-hand, until
       reservations exist), latest movements and 14-day activity, shown as KPI tiles and a CSS chart.
-- [ ] Phase 3 — API and screens done on `feat/phase3-orders-v3` (PR #12, **not merged**); auth remains:
+- [ ] Phase 3 — API and screens merged in #12; auth on branch `feat/phase3-auth` (**not merged**):
   - [x] Work order transitions (rule 12) and availability with reservation (rule 9) — pure domain + unit tests
   - [x] Customers API; sales orders API: create (rule 13), late flag (rule 15), ship (rule 14), cancel
   - [x] Work orders API (rules 8–12): BOM snapshot, availability per component, start/cancel/complete with
@@ -193,20 +193,23 @@ Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, 
   - [x] Dashboard: order and production figures (late orders, short work orders, queue)
   - [x] Industrial redesign (see *Design rules*) and screens: shop-floor dashboard, work orders (list, detail),
         customers, sales orders (list, new, detail with plan production / ship / cancel)
-  - [ ] JWT auth + roles, login screen, hide actions the role may not perform
+  - [x] JWT auth + roles: `POST /auth/login` (Identity `PasswordHasher`, same 401 for unknown email and wrong
+        password), HS256 token for 8 h, fallback policy = signed in, `[Authorize(Roles = Roles.Planning|Warehouse)]`
+        per the roles table, `CreatedBy` = email claim; demo users seeded even into an already seeded database
+        (password `workshop-demo`, public by design); signing key from config (Render `generateValue`)
+  - [x] Client: login page (demo accounts listed), bearer interceptor (signs out on 401), guard, user in the rail,
+        actions hidden by role (`AuthService.canPlan` / `canHandleStock`)
+  - [ ] Users screen (Admin) — the roles table lists it; no API yet
 
 ### Next session
 
-1. Owner reviews and merges PR #12. `feat/phase3-orders-v2` is superseded by `-v3` (a rebase onto main) and can
-   be deleted.
-2. **JWT auth + roles** on a new branch (owner reviews line by line — explain every decision in the PR):
-   login endpoint, password hashing, demo users in the seed (one per role), `[Authorize]` per the roles table,
-   `CreatedBy` from the token (`ICurrentUser` is already in place), signing key from configuration
-   (Render: `generateValue: true` in `render.yaml`, never committed). Existing integration tests need an
-   authenticated client.
-3. **Client auth:** login page in the HMI style, functional interceptor and guard, current user and role in the
-   rail, hide actions the role may not perform (ship/complete = Admin, Warehouse; plan/start/cancel = Admin, Planner).
-4. Then Phase 4: critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
+1. Owner reviews and merges the auth PR (`feat/phase3-auth`). After deploy, check that Render created
+   `Jwt__SigningKey` (the API refuses to start without it).
+2. **Redesign requested by the owner (2026-10-25):** replace the industrial HMI look with a current, Apple-like
+   style — large confident type, frosted-glass (backdrop blur) rail and cards, generous spacing, soft gradient
+   background; light and dark theme following the system setting, with a toggle. Rewrite *Design rules* above
+   when it lands; the login page gets the new look too.
+3. Then Phase 4: critical stock on *available* (not on-hand), weekly production chart (Chart.js, styled to the
    design rules), PDF work order, Excel export/import.
 
 Local dev note: the local database holds two leftover test products (`UI-TEST-…`, `UIV2-…`) from manual checks;
