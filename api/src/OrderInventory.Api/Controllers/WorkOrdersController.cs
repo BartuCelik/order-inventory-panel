@@ -15,6 +15,13 @@ public sealed class WorkOrdersController(WorkOrderService workOrders) : Controll
     public Task<PagedResult<WorkOrderSummaryDto>> List([FromQuery] WorkOrderListQuery query, CancellationToken cancellationToken) =>
         workOrders.ListAsync(query, cancellationToken);
 
+    /// <summary>The list as an Excel file: the same filters, every matching row.</summary>
+    [HttpGet("export")]
+    public async Task<FileContentResult> Export(
+        [FromQuery] WorkOrderListQuery query, [FromServices] ListWorkbooks workbooks, CancellationToken cancellationToken) =>
+        File(ListWorkbooks.WorkOrders(await workOrders.ExportAsync(query, cancellationToken)),
+            ListWorkbooks.ContentType, workbooks.FileName("work-orders"));
+
     [HttpGet("{id:int}")]
     public Task<WorkOrderDto> Get(int id, CancellationToken cancellationToken) =>
         workOrders.GetAsync(id, cancellationToken);

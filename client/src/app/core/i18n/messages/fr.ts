@@ -186,6 +186,7 @@ export const fr: Messages = {
   'workOrder.consumed': 'Consommé',
   'common.onHand': 'En stock',
   'common.available': 'Disponible',
+  'common.exportExcel': 'Exporter vers Excel',
   'workOrder.reservedElsewhere': 'Réservé ailleurs',
   'workOrder.available': 'Disponible',
   'workOrder.coverage': 'Couverture',

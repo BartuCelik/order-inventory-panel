@@ -13,6 +13,10 @@ public sealed class ProductService(IAppDbContext db)
     // Passed explicitly: without an escape argument Npgsql emits ESCAPE '', which turns escaping off.
     private const string LikeEscape = @"\";
 
+    /// <summary>Every row the list's filters match, for Excel export (see <see cref="Export"/>).</summary>
+    public async Task<IReadOnlyList<ProductListItem>> ExportAsync(ProductListQuery query, CancellationToken cancellationToken) =>
+        Export.Rows(await ListAsync(query with { Page = 1, PageSize = Export.MaxRows }, cancellationToken));
+
     public async Task<PagedResult<ProductListItem>> ListAsync(ProductListQuery query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);

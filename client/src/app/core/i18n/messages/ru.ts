@@ -209,6 +209,7 @@ export const ru: Messages = {
   'workOrder.consumed': 'Израсходовано',
   'common.onHand': 'В наличии',
   'common.available': 'Доступно',
+  'common.exportExcel': 'Экспорт в Excel',
   'workOrder.reservedElsewhere': 'Зарезервировано',
   'workOrder.available': 'Доступно',
   'workOrder.coverage': 'Обеспеченность',

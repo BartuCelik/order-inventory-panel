@@ -180,6 +180,7 @@ export const en = {
   'workOrder.consumed': 'Consumed',
   'common.onHand': 'On hand',
   'common.available': 'Available',
+  'common.exportExcel': 'Export to Excel',
   'workOrder.reservedElsewhere': 'Reserved elsewhere',
   'workOrder.available': 'Available',
   'workOrder.coverage': 'Coverage',

@@ -4,14 +4,15 @@
       <h1 class="page-title">{{ 'nav.salesOrders' | t }}</h1>
       <p class="page-subtitle">{{ 'salesOrders.subtitle' | t }}</p>
     </div>
-    @if (auth.canPlan()) {
-      <div class="page-actions">
+    <div class="page-actions">
+      <app-export-button [url]="url" [filters]="filters()" fileName="sales-orders" />
+      @if (auth.canPlan()) {
         <a mat-flat-button routerLink="/sales-orders/new">
           <mat-icon>add</mat-icon>
           {{ 'salesOrders.new' | t }}
         </a>
-      </div>
-    }
+      }
+    </div>
   </header>
 
   <section class="panel">

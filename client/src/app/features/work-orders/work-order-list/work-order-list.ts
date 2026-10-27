@@ -1,6 +1,6 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
-import { Component, inject, linkedSignal, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -23,6 +23,7 @@ import {
   statusLabel,
 } from '../work-order.models';
 import { TranslatePipe } from '../../../core/i18n/i18n';
+import { ExportButton } from '../../../shared/export-button/export-button';
 
 /** The status filter: a single status, all open ones, or everything. */
 type StatusFilter = WorkOrderStatus | 'open' | 'all';
@@ -30,6 +31,7 @@ type StatusFilter = WorkOrderStatus | 'open' | 'all';
 @Component({
   selector: 'app-work-order-list',
   imports: [
+    ExportButton,
     TranslatePipe,
     DatePipe,
     DecimalPipe,
@@ -69,19 +71,22 @@ export class WorkOrderList {
     { initialValue: '' },
   );
 
-  protected readonly workOrders = httpResource<Paged<WorkOrderSummary>>(() => {
+  protected readonly url = `${API_BASE_URL}/work-orders`;
+
+  /** The table's filters without paging; the Excel export uses the same ones. */
+  protected readonly filters = computed(() => {
     const search = this.debouncedSearch().trim();
     const filter = this.filter();
     return {
-      url: `${API_BASE_URL}/work-orders`,
-      params: {
-        page: this.pageIndex() + 1,
-        pageSize: this.pageSize(),
-        ...(search ? { search } : {}),
-        ...(filter === 'open' ? { open: true } : filter === 'all' ? {} : { status: filter }),
-      },
+      ...(search ? { search } : {}),
+      ...(filter === 'open' ? { open: true } : filter === 'all' ? {} : { status: filter }),
     };
   });
+
+  protected readonly workOrders = httpResource<Paged<WorkOrderSummary>>(() => ({
+    url: this.url,
+    params: { page: this.pageIndex() + 1, pageSize: this.pageSize(), ...this.filters() },
+  }));
 
   protected readonly page = linkedSignal<
     Paged<WorkOrderSummary> | undefined,

@@ -28,6 +28,10 @@ public sealed class StockService(IAppDbContext db, StockLedger ledger)
             .SingleAsync(cancellationToken);
     }
 
+    /// <summary>Every row the list's filters match, for Excel export (see <see cref="Export"/>).</summary>
+    public async Task<IReadOnlyList<StockMovementDto>> ExportAsync(StockMovementQuery query, CancellationToken cancellationToken) =>
+        Export.Rows(await ListAsync(query with { Page = 1, PageSize = Export.MaxRows }, cancellationToken));
+
     public async Task<PagedResult<StockMovementDto>> ListAsync(StockMovementQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);

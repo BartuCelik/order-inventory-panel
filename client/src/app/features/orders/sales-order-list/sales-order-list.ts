@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
-import { Component, inject, linkedSignal, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -25,6 +25,7 @@ import {
 } from '../order.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { TranslatePipe } from '../../../core/i18n/i18n';
+import { ExportButton } from '../../../shared/export-button/export-button';
 
 /** A single status, only the late ones, or everything. */
 type OrderFilter = SalesOrderStatus | 'late' | 'all';
@@ -32,6 +33,7 @@ type OrderFilter = SalesOrderStatus | 'late' | 'all';
 @Component({
   selector: 'app-sales-order-list',
   imports: [
+    ExportButton,
     TranslatePipe,
     DatePipe,
     RouterLink,
@@ -80,19 +82,22 @@ export class SalesOrderList {
     { initialValue: '' },
   );
 
-  protected readonly orders = httpResource<Paged<SalesOrderSummary>>(() => {
+  protected readonly url = `${API_BASE_URL}/sales-orders`;
+
+  /** The table's filters without paging; the Excel export uses the same ones. */
+  protected readonly filters = computed(() => {
     const search = this.debouncedSearch().trim();
     const filter = this.filter();
     return {
-      url: `${API_BASE_URL}/sales-orders`,
-      params: {
-        page: this.pageIndex() + 1,
-        pageSize: this.pageSize(),
-        ...(search ? { search } : {}),
-        ...(filter === 'late' ? { late: true } : filter === 'all' ? {} : { status: filter }),
-      },
+      ...(search ? { search } : {}),
+      ...(filter === 'late' ? { late: true } : filter === 'all' ? {} : { status: filter }),
     };
   });
+
+  protected readonly orders = httpResource<Paged<SalesOrderSummary>>(() => ({
+    url: this.url,
+    params: { page: this.pageIndex() + 1, pageSize: this.pageSize(), ...this.filters() },
+  }));
 
   protected readonly page = linkedSignal<
     Paged<SalesOrderSummary> | undefined,
