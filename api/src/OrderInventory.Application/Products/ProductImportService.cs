@@ -44,12 +44,12 @@ public sealed class ProductImportService(IAppDbContext db)
             var product = existing[row.Code];
             if (product.Type != row.Type)
             {
-                errors.Add(new ImportError(row.Number, $"The type of {row.Code} cannot change; it is {product.Type}."));
+                errors.Add(new ImportError(row.Number, $"The type of {row.Code} cannot change; it is {ImportCells.Label(product.Type)}."));
             }
 
             if (product.Unit != row.Unit)
             {
-                errors.Add(new ImportError(row.Number, $"The unit of {row.Code} cannot change; it is {product.Unit}."));
+                errors.Add(new ImportError(row.Number, $"The unit of {row.Code} cannot change; it is {ImportCells.Label(product.Unit)}."));
             }
         }
 

@@ -39,6 +39,25 @@ public static class ImportCells
 
     public static UnitOfMeasure? Unit(string text) => Units.TryGetValue(Key(text), out var unit) ? unit : null;
 
+    /// <summary>The type as the screens and the export write it, for messages.</summary>
+    public static string Label(Domain.Products.ProductType type) => type switch
+    {
+        Domain.Products.ProductType.RawMaterial => "Raw material",
+        Domain.Products.ProductType.SemiFinished => "Semi-finished",
+        _ => type.ToString(),
+    };
+
+    /// <summary>The unit as the screens and the export write it, for messages.</summary>
+    public static string Label(UnitOfMeasure unit) => unit switch
+    {
+        UnitOfMeasure.Piece => "pcs",
+        UnitOfMeasure.Meter => "m",
+        UnitOfMeasure.SquareMeter => "m²",
+        UnitOfMeasure.Kilogram => "kg",
+        UnitOfMeasure.Liter => "L",
+        _ => unit.ToString(),
+    };
+
     /// <summary>
     /// A plain invariant number ("12.5"). The reader writes numeric cells this way; a comma is rejected
     /// rather than guessed, because "1,500" means 1.5 in some languages and 1500 in others.
