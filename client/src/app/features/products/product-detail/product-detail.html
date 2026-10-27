@@ -53,12 +53,16 @@
             [class.primary]="!isBelowMinimum(p)"
             ><mat-icon>inventory_2</mat-icon></span
           >
-          {{ 'common.onHand' | t }}
+          {{ 'common.available' | t }}
         </span>
         <span class="kpi-value" [class.error-text]="isBelowMinimum(p)">
-          {{ p.onHand | number: '1.0-4' }}<small>{{ unitLabel(p.unit) }}</small>
+          {{ p.available | number: '1.0-4' }}<small>{{ unitLabel(p.unit) }}</small>
         </span>
         <span class="kpi-foot">
+          {{
+            'record.onHand'
+              | t: { quantity: (p.onHand | number: '1.0-4') ?? '', unit: unitLabel(p.unit) }
+          }}
           @if (isBelowMinimum(p)) {
             <span class="chip danger">{{ 'product.belowMinimum' | t }}</span>
           } @else if (p.minStock > 0) {

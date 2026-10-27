@@ -185,6 +185,7 @@ export const es: Messages = {
   'workOrder.needed': 'Necesario',
   'workOrder.consumed': 'Consumido',
   'common.onHand': 'En existencias',
+  'common.available': 'Disponible',
   'workOrder.reservedElsewhere': 'Reservado aparte',
   'workOrder.available': 'Disponible',
   'workOrder.coverage': 'Cobertura',

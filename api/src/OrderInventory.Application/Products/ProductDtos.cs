@@ -20,8 +20,10 @@ public sealed record ProductListQuery
     public bool IncludeInactive { get; init; }
 }
 
+/// <summary><see cref="Available"/> is on-hand minus what open work orders still reserve (rule 9).</summary>
 public sealed record ProductListItem(
-    int Id, string Code, string Name, ProductType Type, UnitOfMeasure Unit, decimal MinStock, bool IsActive, decimal OnHand);
+    int Id, string Code, string Name, ProductType Type, UnitOfMeasure Unit, decimal MinStock, bool IsActive, decimal OnHand,
+    decimal Available);
 
 public sealed record ProductDetails(
     int Id,
@@ -32,6 +34,7 @@ public sealed record ProductDetails(
     decimal MinStock,
     bool IsActive,
     decimal OnHand,
+    decimal Available,
     IReadOnlyList<BomLineDto> BomLines);
 
 /// <summary>One direct BOM line of a product, with enough of the component to display it.</summary>

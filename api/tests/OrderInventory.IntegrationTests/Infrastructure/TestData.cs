@@ -1,3 +1,4 @@
+using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
 using OrderInventory.Domain.Stock;
 using OrderInventory.Infrastructure.Persistence;
@@ -56,6 +57,25 @@ internal static class TestData
             CreatedBy = "test",
             CreatedAt = DateTime.UtcNow,
         });
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>A work order with one component, written directly; only what reservations (rule 9) read is set.</summary>
+    public static async Task AddWorkOrderAsync(
+        AppDbContext dbContext,
+        Product product,
+        Product component,
+        decimal requiredQty,
+        WorkOrderStatus status,
+        decimal consumedQty = 0m,
+        CancellationToken cancellationToken = default)
+    {
+        var workOrder = new WorkOrder { Number = NewCode("WO"), ProductId = product.Id, Quantity = 1m, Status = status };
+        workOrder.Components.Add(new WorkOrderComponent
+        {
+            ComponentProductId = component.Id, RequiredQty = requiredQty, ConsumedQty = consumedQty,
+        });
+        dbContext.WorkOrders.Add(workOrder);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

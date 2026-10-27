@@ -185,6 +185,7 @@ export const it: Messages = {
   'workOrder.needed': 'Fabbisogno',
   'workOrder.consumed': 'Consumato',
   'common.onHand': 'Giacenza',
+  'common.available': 'Disponibile',
   'workOrder.reservedElsewhere': 'Prenotato altrove',
   'workOrder.available': 'Disponibile',
   'workOrder.coverage': 'Copertura',

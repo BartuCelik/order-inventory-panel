@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using OrderInventory.Application.Common;
 using OrderInventory.Application.Products;
+using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
 using OrderInventory.Domain.Stock;
 using OrderInventory.IntegrationTests.Infrastructure;
@@ -198,6 +199,29 @@ public sealed class ProductServiceTests(PostgresFixture postgres) : IClassFixtur
         var item = Assert.Single(page.Items);
         Assert.Equal(glue.Id, item.Id);
         Assert.Equal(4.25m, item.OnHand);
+    }
+
+    [Fact]
+    public async Task ListAndGet_ReportAvailable_OnHandMinusOpenWorkOrderReservations()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await using var dbContext = await postgres.CreateMigratedDbContextAsync(cancellationToken);
+        var token = $"Oak{TestData.Next()}";
+        var oak = await TestData.AddProductAsync(dbContext, ProductType.RawMaterial, $"{token} oak board", cancellationToken: cancellationToken);
+        var table = await TestData.AddProductAsync(dbContext, ProductType.Finished, cancellationToken: cancellationToken);
+        await TestData.AddMovementAsync(dbContext, oak, 20m, StockMovementType.Receipt, cancellationToken);
+        // Rule 9: open work orders reserve what they have not consumed yet; Done and Cancelled reserve nothing.
+        await TestData.AddWorkOrderAsync(dbContext, table, oak, 6m, WorkOrderStatus.Planned, cancellationToken: cancellationToken);
+        await TestData.AddWorkOrderAsync(dbContext, table, oak, 5m, WorkOrderStatus.InProgress, consumedQty: 2m, cancellationToken: cancellationToken);
+        await TestData.AddWorkOrderAsync(dbContext, table, oak, 4m, WorkOrderStatus.Done, consumedQty: 4m, cancellationToken: cancellationToken);
+        await TestData.AddWorkOrderAsync(dbContext, table, oak, 7m, WorkOrderStatus.Cancelled, cancellationToken: cancellationToken);
+        var service = new ProductService(dbContext);
+
+        var item = Assert.Single((await service.ListAsync(new ProductListQuery { Search = token }, cancellationToken)).Items);
+        var details = await service.GetAsync(oak.Id, cancellationToken);
+
+        Assert.Equal((20m, 11m), (item.OnHand, item.Available));
+        Assert.Equal((20m, 11m), (details.OnHand, details.Available));
     }
 
     [Fact]

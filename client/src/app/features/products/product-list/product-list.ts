@@ -59,7 +59,7 @@ export class ProductList {
   protected readonly auth = inject(AuthService);
 
   protected readonly types = PRODUCT_TYPES;
-  protected readonly columns = ['product', 'type', 'onHand', 'minStock', 'status'];
+  protected readonly columns = ['product', 'type', 'onHand', 'available', 'minStock', 'status'];
   protected readonly pageSizeOptions = [10, 20, 50, 100];
   protected readonly typeLabel = typeLabel;
   protected readonly typeChip = typeChip;
