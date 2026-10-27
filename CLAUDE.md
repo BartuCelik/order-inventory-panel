@@ -229,15 +229,16 @@ dashboard export to Excel (numbers only; ClosedXML cannot draw charts), translat
         from the theme tokens (#20)
   - [x] PDF work order: `GET /work-orders/{id}/pdf` (QuestPDF, Community licence), *Download PDF* on the
         detail page (#21)
-  - [ ] Excel export, then Excel import (products, opening stock)
+  - [x] Product list and detail flag "below minimum" on available, like the dashboard; the list shows both
+        on-hand and available (#24)
+  - [x] Excel export (ClosedXML): `GET .../export` on products, stock movements, sales orders and work orders
+        with the list's own query (paging ignored, at most 10,000 rows, else 400); *Export to Excel* on each
+        list screen, every role; English headers like the PDF (#25)
+  - [ ] Excel import (products, opening stock)
 
 ### Next session
 
-1. Excel export (ClosedXML): an *Export to Excel* button on each list screen (products with on-hand/available,
-   stock movements, sales orders, work orders), using the screen's current filters; `GET .../export` per list.
-2. Product list and detail still flag "below minimum" on on-hand while the dashboard uses available — align them
-   (found in the review of #19).
-3. Then Excel import (products, opening stock).
+1. Excel import (products, opening stock) — the last Phase 4 item.
 
 Local dev note: the local database holds two leftover test products (`UI-TEST-…`, `UIV2-…`) from manual checks;
 `docker compose down -v` resets it to the seed.
