@@ -182,6 +182,7 @@ export const de: Messages = {
   'workOrder.needed': 'Bedarf',
   'workOrder.consumed': 'Verbraucht',
   'common.onHand': 'Bestand',
+  'common.available': 'Verfügbar',
   'workOrder.reservedElsewhere': 'Anderweitig reserviert',
   'workOrder.available': 'Verfügbar',
   'workOrder.coverage': 'Deckung',

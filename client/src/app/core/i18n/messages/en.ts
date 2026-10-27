@@ -179,6 +179,7 @@ export const en = {
   'workOrder.needed': 'Needed',
   'workOrder.consumed': 'Consumed',
   'common.onHand': 'On hand',
+  'common.available': 'Available',
   'workOrder.reservedElsewhere': 'Reserved elsewhere',
   'workOrder.available': 'Available',
   'workOrder.coverage': 'Coverage',

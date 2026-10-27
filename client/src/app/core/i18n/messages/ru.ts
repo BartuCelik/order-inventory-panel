@@ -208,6 +208,7 @@ export const ru: Messages = {
   'workOrder.needed': 'Нужно',
   'workOrder.consumed': 'Израсходовано',
   'common.onHand': 'В наличии',
+  'common.available': 'Доступно',
   'workOrder.reservedElsewhere': 'Зарезервировано',
   'workOrder.available': 'Доступно',
   'workOrder.coverage': 'Обеспеченность',

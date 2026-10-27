@@ -173,6 +173,7 @@ export const tr: Messages = {
   'workOrder.needed': 'Gereken',
   'workOrder.consumed': 'Tüketilen',
   'common.onHand': 'Eldeki',
+  'common.available': 'Kullanılabilir',
   'workOrder.reservedElsewhere': 'Başka işlere ayrılan',
   'workOrder.available': 'Kullanılabilir',
   'workOrder.coverage': 'Karşılama',
