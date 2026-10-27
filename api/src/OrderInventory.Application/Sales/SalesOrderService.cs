@@ -13,6 +13,10 @@ public sealed class SalesOrderService(IAppDbContext db, StockLedger ledger, Time
 {
     private DateOnly Today => DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
+    /// <summary>Every row the list's filters match, for Excel export (see <see cref="Export"/>).</summary>
+    public async Task<IReadOnlyList<SalesOrderSummaryDto>> ExportAsync(SalesOrderListQuery query, CancellationToken cancellationToken) =>
+        Export.Rows(await ListAsync(query with { Page = 1, PageSize = Export.MaxRows }, cancellationToken));
+
     public async Task<PagedResult<SalesOrderSummaryDto>> ListAsync(SalesOrderListQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OrderInventory.Api.Auth;
 using OrderInventory.Application.Common;
 using OrderInventory.Application.Products;
+using OrderInventory.Infrastructure.Documents;
 
 namespace OrderInventory.Api.Controllers;
 
@@ -22,6 +23,13 @@ public sealed class ProductsController(ProductService products, BomService bom) 
     [HttpGet]
     public Task<PagedResult<ProductListItem>> List([FromQuery] ProductListQuery query, CancellationToken cancellationToken) =>
         products.ListAsync(query, cancellationToken);
+
+    /// <summary>The list as an Excel file: the same filters, every matching row.</summary>
+    [HttpGet("export")]
+    public async Task<FileContentResult> Export(
+        [FromQuery] ProductListQuery query, [FromServices] ListWorkbooks workbooks, CancellationToken cancellationToken) =>
+        File(ListWorkbooks.Products(await products.ExportAsync(query, cancellationToken)),
+            ListWorkbooks.ContentType, workbooks.FileName("products"));
 
     [HttpGet("{id:int}")]
     public Task<ProductDetails> Get(int id, CancellationToken cancellationToken) =>

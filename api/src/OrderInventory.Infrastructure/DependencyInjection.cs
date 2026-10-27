@@ -22,6 +22,7 @@ public static class DependencyInjection
         // Free Community licence: open-source/portfolio use, well under its revenue limit.
         QuestPDF.Settings.License = LicenseType.Community;
         services.AddSingleton<WorkOrderPdf>();
+        services.AddSingleton<ListWorkbooks>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<AppDbContext>(name: "database", tags: ["ready"]);

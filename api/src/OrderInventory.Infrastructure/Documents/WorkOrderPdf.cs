@@ -160,19 +160,7 @@ public sealed class WorkOrderPdf(TimeProvider timeProvider)
 
     private static string Quantity(decimal value) => value.ToString("0.####", Culture);
 
-    private static string StatusLabel(WorkOrderStatus status) => status switch
-    {
-        WorkOrderStatus.InProgress => "In progress",
-        _ => status.ToString(),
-    };
+    private static string StatusLabel(WorkOrderStatus status) => DocumentLabels.Of(status);
 
-    private static string UnitLabel(UnitOfMeasure unit) => unit switch
-    {
-        UnitOfMeasure.Piece => "pcs",
-        UnitOfMeasure.Meter => "m",
-        UnitOfMeasure.SquareMeter => "m²",
-        UnitOfMeasure.Kilogram => "kg",
-        UnitOfMeasure.Liter => "L",
-        _ => unit.ToString(),
-    };
+    private static string UnitLabel(UnitOfMeasure unit) => DocumentLabels.Unit(unit);
 }

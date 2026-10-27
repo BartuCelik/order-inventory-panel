@@ -14,6 +14,10 @@ public sealed class WorkOrderService(IAppDbContext db, StockLedger ledger, TimeP
 {
     private DateOnly Today => DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
+    /// <summary>Every row the list's filters match, for Excel export (see <see cref="Export"/>).</summary>
+    public async Task<IReadOnlyList<WorkOrderSummaryDto>> ExportAsync(WorkOrderListQuery query, CancellationToken cancellationToken) =>
+        Export.Rows(await ListAsync(query with { Page = 1, PageSize = Export.MaxRows }, cancellationToken));
+
     public async Task<PagedResult<WorkOrderSummaryDto>> ListAsync(WorkOrderListQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
