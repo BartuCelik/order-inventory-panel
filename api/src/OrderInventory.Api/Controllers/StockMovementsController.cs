@@ -25,6 +25,20 @@ public sealed class StockMovementsController(StockService stock) : ControllerBas
         File(ListWorkbooks.StockMovements(await stock.ExportAsync(query, cancellationToken)),
             ListWorkbooks.ContentType, workbooks.FileName("stock-movements"));
 
+    /// <summary>
+    /// Opening stock from an .xlsx (Code, Quantity): one Adjustment per product with an empty ledger.
+    /// 400 lists every problem by row and nothing is written; <paramref name="dryRun"/> only checks.
+    /// </summary>
+    [Authorize(Roles = Roles.Warehouse)]
+    [HttpPost("/stock/opening-stock")]
+    [RequestSizeLimit(SheetReader.MaxBytes)]
+    public async Task<ImportResult> ImportOpeningStock(
+        IFormFile file, [FromServices] OpeningStockImportService import, CancellationToken cancellationToken, [FromQuery] bool dryRun = false)
+    {
+        await using var stream = file.OpenReadStream();
+        return await import.ImportAsync(SheetReader.Read(stream), dryRun, cancellationToken);
+    }
+
     [Authorize(Roles = Roles.Warehouse)]
     [HttpPost]
     public async Task<ActionResult<StockMovementDto>> Record(RecordStockMovementRequest request, CancellationToken cancellationToken)

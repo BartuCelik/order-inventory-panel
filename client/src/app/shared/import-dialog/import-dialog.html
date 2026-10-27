@@ -1,0 +1,81 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content class="body">
+  <p class="hint">{{ data.hint }}</p>
+
+  <input
+    #picker
+    type="file"
+    accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    hidden
+    (change)="choose(picker.files)"
+  />
+  <!-- Cleared first so choosing the same file again (after fixing it) still fires change. -->
+  <button
+    mat-stroked-button
+    type="button"
+    class="choose"
+    [disabled]="busy()"
+    (click)="picker.value = ''; picker.click()"
+  >
+    <mat-icon>upload_file</mat-icon>
+    {{ file()?.name ?? ('import.chooseFile' | t) }}
+  </button>
+
+  @if (busy()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (preview(); as p) {
+    <dl class="counts">
+      <div>
+        <dt>{{ data.labels.created }}</dt>
+        <dd class="num">{{ p.created }}</dd>
+      </div>
+      @if (data.labels.updated) {
+        <div>
+          <dt>{{ data.labels.updated }}</dt>
+          <dd class="num">{{ p.updated }}</dd>
+        </div>
+      }
+      <div>
+        <dt>{{ data.labels.unchanged }}</dt>
+        <dd class="num">{{ p.unchanged }}</dd>
+      </div>
+    </dl>
+    <p class="muted">{{ (hasChanges() ? 'import.ready' : 'import.nothingToDo') | t }}</p>
+  }
+
+  @if (problems().length > 0) {
+    <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>{{ 'import.failed' | t }}</span>
+    </div>
+    <ul class="problems">
+      @for (problem of problems(); track problem.where) {
+        <li>
+          <strong>{{ problem.where }}</strong>
+          <span class="messages">
+            @for (message of problem.messages; track $index) {
+              <span>{{ message }}</span>
+            }
+          </span>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (error(); as message) {
+    <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>{{ message }}</span>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>{{ 'common.cancel' | t }}</button>
+  <button mat-flat-button [disabled]="busy() || !hasChanges()" (click)="import()">
+    {{ 'import.import' | t }}
+  </button>
+</mat-dialog-actions>

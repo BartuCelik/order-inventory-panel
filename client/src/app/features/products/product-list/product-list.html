@@ -7,6 +7,10 @@
     <div class="page-actions">
       <app-export-button [url]="url" [filters]="filters()" fileName="products" />
       @if (auth.canPlan()) {
+        <button mat-stroked-button (click)="importProducts()">
+          <mat-icon>upload</mat-icon>
+          {{ 'import.productsButton' | t }}
+        </button>
         <button mat-flat-button (click)="create()">
           <mat-icon>add</mat-icon>
           {{ 'products.new' | t }}

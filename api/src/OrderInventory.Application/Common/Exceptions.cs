@@ -66,3 +66,32 @@ public sealed class BusinessRuleException : Exception
     /// <summary>Machine-readable reason, returned to the client as the problem's <c>code</c>.</summary>
     public string? Code { get; }
 }
+
+/// <summary>
+/// An imported file has problems (400). Every problem is collected before this is thrown, so the user can
+/// fix the whole file at once; nothing was written.
+/// </summary>
+public sealed class ImportException : Exception
+{
+    public ImportException()
+    {
+    }
+
+    public ImportException(string message)
+        : base(message)
+    {
+    }
+
+    public ImportException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+
+    public ImportException(IReadOnlyList<ImportError> errors)
+        : base($"The file has {errors?.Count} problem(s); nothing was imported.")
+    {
+        Errors = errors ?? [];
+    }
+
+    public IReadOnlyList<ImportError> Errors { get; } = [];
+}

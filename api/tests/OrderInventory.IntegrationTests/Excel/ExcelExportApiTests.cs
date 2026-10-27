@@ -5,7 +5,7 @@ using OrderInventory.Domain.Products;
 using OrderInventory.Domain.Users;
 using OrderInventory.IntegrationTests.Infrastructure;
 
-namespace OrderInventory.IntegrationTests.Exports;
+namespace OrderInventory.IntegrationTests.Excel;
 
 /// <summary>
 /// GET .../export on the four list screens: the same filters as the list, every matching row, one sheet.

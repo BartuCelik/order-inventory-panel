@@ -43,6 +43,20 @@ public sealed class ProductsController(ProductService products, BomService bom) 
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    /// <summary>
+    /// Creates and updates products from an .xlsx with the export's columns. 400 lists every problem by row
+    /// and nothing is saved; <paramref name="dryRun"/> reports what would happen without saving.
+    /// </summary>
+    [Authorize(Roles = Roles.Planning)]
+    [HttpPost("import")]
+    [RequestSizeLimit(SheetReader.MaxBytes)]
+    public async Task<ImportResult> Import(
+        IFormFile file, [FromServices] ProductImportService import, CancellationToken cancellationToken, [FromQuery] bool dryRun = false)
+    {
+        await using var stream = file.OpenReadStream();
+        return await import.ImportAsync(SheetReader.Read(stream), dryRun, cancellationToken);
+    }
+
     [Authorize(Roles = Roles.Planning)]
     [HttpPut("{id:int}")]
     public Task<ProductDetails> Update(int id, UpdateProductRequest request, CancellationToken cancellationToken) =>

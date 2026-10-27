@@ -7,6 +7,10 @@
     <div class="page-actions">
       <app-export-button [url]="url" [filters]="filters()" fileName="stock-movements" />
       @if (auth.canHandleStock()) {
+        <button mat-stroked-button (click)="importOpeningStock()">
+          <mat-icon>upload</mat-icon>
+          {{ 'import.stockButton' | t }}
+        </button>
         <button mat-flat-button (click)="record()">
           <mat-icon>add</mat-icon>
           {{ 'stock.recordMovement' | t }}
