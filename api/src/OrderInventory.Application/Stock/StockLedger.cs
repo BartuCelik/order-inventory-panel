@@ -52,27 +52,11 @@ public sealed class StockLedger(IAppDbContext db, ICurrentUser currentUser, Time
             ? await db.Database.BeginTransactionAsync(cancellationToken)
             : null;
 
-        // Rule 4, step 2: lock the affected product rows before reading any stock. A second operation on
-        // the same product blocks here until this one commits or rolls back, so "is there enough?" is
-        // always answered from the ledger as it is after the previous writer finished. Reading on-hand
-        // first and locking afterwards would let two operations both see the same stock.
-        //
-        // The rows are locked in product id order. Two operations needing {A, B} then always lock A
-        // before B, so neither can hold B while waiting for A — the classic deadlock.
-        //
+        // Rule 4, step 2: lock the affected product rows before reading any stock (see LockAsync).
         // Every stock-changing operation must go through this method; a writer that skipped the lock
         // would not be serialised against the others.
         var productIds = movements.Select(m => m.ProductId).Distinct().Order().ToArray();
-        var products = await db.Products
-            .FromSql($"SELECT * FROM products WHERE id = ANY({productIds}) ORDER BY id FOR UPDATE")
-            .AsNoTracking()
-            .ToDictionaryAsync(p => p.Id, cancellationToken);
-
-        var missing = productIds.Where(id => !products.ContainsKey(id)).ToList();
-        if (missing.Count > 0)
-        {
-            throw new BusinessRuleException($"Product {string.Join(", ", missing)} does not exist.");
-        }
+        var products = await LockAsync(productIds, cancellationToken);
 
         // Rule 4, step 3: the check, inside the lock. Read Committed takes a fresh snapshot for this
         // statement, so it includes everything committed by whoever held the lock before us.
@@ -114,6 +98,35 @@ public sealed class StockLedger(IAppDbContext db, ICurrentUser currentUser, Time
         }
 
         return entities;
+    }
+
+    /// <summary>
+    /// Locks the product rows (<c>SELECT ... FOR UPDATE</c>) until the caller's transaction ends. A second
+    /// operation on the same product blocks here until this one commits or rolls back, so a check made after
+    /// the lock — "is there enough?" here, "is the ledger still empty?" for opening stock — sees the ledger as
+    /// the previous writer left it. Reading first and locking afterwards would let two operations both see
+    /// the same stock.
+    /// </summary>
+    /// <remarks>
+    /// The rows are locked in product id order. Two operations needing {A, B} then always lock A before B,
+    /// so neither can hold B while waiting for A — the classic deadlock. Must run inside a transaction;
+    /// locking a row again in the same transaction is a no-op, so a caller may lock and then post.
+    /// </remarks>
+    internal async Task<Dictionary<int, Product>> LockAsync(IEnumerable<int> productIds, CancellationToken cancellationToken)
+    {
+        var ids = productIds.Distinct().Order().ToArray();
+        var products = await db.Products
+            .FromSql($"SELECT * FROM products WHERE id = ANY({ids}) ORDER BY id FOR UPDATE")
+            .AsNoTracking()
+            .ToDictionaryAsync(p => p.Id, cancellationToken);
+
+        var missing = ids.Where(id => !products.ContainsKey(id)).ToList();
+        if (missing.Count > 0)
+        {
+            throw new BusinessRuleException($"Product {string.Join(", ", missing)} does not exist.");
+        }
+
+        return products;
     }
 
     private static string Describe(StockShortage shortage, Product product) => string.Format(

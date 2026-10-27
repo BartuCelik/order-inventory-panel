@@ -32,6 +32,7 @@ public sealed class ApplicationExceptionHandler(IProblemDetailsService problemDe
 
     private static ProblemDetails? ToProblem(Exception exception) => exception switch
     {
+        ImportException e => ImportProblem(e),
         ValidationException e => Problem(StatusCodes.Status400BadRequest, "Invalid request", e.Message),
         NotFoundException e => Problem(StatusCodes.Status404NotFound, "Not found", e.Message),
         ConflictException e => Problem(StatusCodes.Status409Conflict, "Conflict", e.Message),
@@ -42,6 +43,18 @@ public sealed class ApplicationExceptionHandler(IProblemDetailsService problemDe
             Problem(StatusCodes.Status409Conflict, "Conflict", "A record with the same unique value already exists."),
 
         _ => null,
+    };
+
+    /// <summary>The usual 400 validation shape, keyed "File" or "Row 7", in row order.</summary>
+    private static ValidationProblemDetails ImportProblem(ImportException exception) => new(
+        exception.Errors
+            .OrderBy(e => e.Row ?? 0)
+            .GroupBy(e => e.Row is { } row ? $"Row {row}" : "File")
+            .ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray()))
+    {
+        Status = StatusCodes.Status400BadRequest,
+        Title = "Invalid file",
+        Detail = exception.Message,
     };
 
     private static ProblemDetails Problem(int status, string title, string detail, string? code = null)

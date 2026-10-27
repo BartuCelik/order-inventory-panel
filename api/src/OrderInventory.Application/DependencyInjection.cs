@@ -18,9 +18,11 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<ProductService>();
+        services.AddScoped<ProductImportService>();
         services.AddScoped<BomService>();
         services.AddScoped<StockLedger>();
         services.AddScoped<StockService>();
+        services.AddScoped<OpeningStockImportService>();
         services.AddScoped<DashboardService>();
         services.AddScoped<CustomerService>();
         services.AddScoped<SalesOrderService>();
