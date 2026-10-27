@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, linkedSignal, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,10 +18,12 @@ import { STOCK_MOVEMENTS_URL } from '../stock.api';
 import { StockMovement, movementTypeLabel } from '../stock.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { t, TranslatePipe } from '../../../core/i18n/i18n';
+import { ExportButton } from '../../../shared/export-button/export-button';
 
 @Component({
   selector: 'app-stock-ledger',
   imports: [
+    ExportButton,
     TranslatePipe,
     MatButtonModule,
     MatIconModule,
@@ -45,17 +47,18 @@ export class StockLedger {
   protected readonly pageIndex = linkedSignal({ source: this.product, computation: () => 0 });
   protected readonly pageSize = signal(20);
 
-  protected readonly movements = httpResource<Paged<StockMovement>>(() => {
+  protected readonly url = STOCK_MOVEMENTS_URL;
+
+  /** The table's filters without paging; the Excel export uses the same ones. */
+  protected readonly filters = computed((): Record<string, number> => {
     const product = this.product();
-    return {
-      url: STOCK_MOVEMENTS_URL,
-      params: {
-        page: this.pageIndex() + 1,
-        pageSize: this.pageSize(),
-        ...(product ? { productId: product.id } : {}),
-      },
-    };
+    return product ? { productId: product.id } : {};
   });
+
+  protected readonly movements = httpResource<Paged<StockMovement>>(() => ({
+    url: this.url,
+    params: { page: this.pageIndex() + 1, pageSize: this.pageSize(), ...this.filters() },
+  }));
 
   /** The last loaded page, kept while the next one loads so the table does not flash empty. */
   protected readonly page = linkedSignal<

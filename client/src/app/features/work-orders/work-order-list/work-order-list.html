@@ -4,6 +4,9 @@
       <h1 class="page-title">{{ 'nav.workOrders' | t }}</h1>
       <p class="page-subtitle">{{ 'workOrders.subtitle' | t }}</p>
     </div>
+    <div class="page-actions">
+      <app-export-button [url]="url" [filters]="filters()" fileName="work-orders" />
+    </div>
   </header>
 
   <section class="panel">

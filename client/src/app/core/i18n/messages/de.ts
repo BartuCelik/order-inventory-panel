@@ -183,6 +183,7 @@ export const de: Messages = {
   'workOrder.consumed': 'Verbraucht',
   'common.onHand': 'Bestand',
   'common.available': 'Verfügbar',
+  'common.exportExcel': 'Nach Excel exportieren',
   'workOrder.reservedElsewhere': 'Anderweitig reserviert',
   'workOrder.available': 'Verfügbar',
   'workOrder.coverage': 'Deckung',

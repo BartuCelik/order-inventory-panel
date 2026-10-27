@@ -4,14 +4,15 @@
       <h1 class="page-title">{{ 'title.stock' | t }}</h1>
       <p class="page-subtitle">{{ 'stock.subtitle' | t }}</p>
     </div>
-    @if (auth.canHandleStock()) {
-      <div class="page-actions">
+    <div class="page-actions">
+      <app-export-button [url]="url" [filters]="filters()" fileName="stock-movements" />
+      @if (auth.canHandleStock()) {
         <button mat-flat-button (click)="record()">
           <mat-icon>add</mat-icon>
           {{ 'stock.recordMovement' | t }}
         </button>
-      </div>
-    }
+      }
+    </div>
   </header>
 
   <section class="panel">

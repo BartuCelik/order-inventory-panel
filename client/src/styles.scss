@@ -248,6 +248,11 @@ a {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 28px;
+
+  // A long subtitle wraps before the actions drop below it; on a phone they still drop.
+  > :first-child {
+    flex: 1 1 320px;
+  }
 }
 
 // Apple's "large title": big, bold and tightly tracked.

@@ -174,6 +174,7 @@ export const tr: Messages = {
   'workOrder.consumed': 'Tüketilen',
   'common.onHand': 'Eldeki',
   'common.available': 'Kullanılabilir',
+  'common.exportExcel': "Excel'e aktar",
   'workOrder.reservedElsewhere': 'Başka işlere ayrılan',
   'workOrder.available': 'Kullanılabilir',
   'workOrder.coverage': 'Karşılama',

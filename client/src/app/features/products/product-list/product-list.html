@@ -4,14 +4,15 @@
       <h1 class="page-title">{{ 'nav.products' | t }}</h1>
       <p class="page-subtitle">{{ 'products.subtitle' | t }}</p>
     </div>
-    @if (auth.canPlan()) {
-      <div class="page-actions">
+    <div class="page-actions">
+      <app-export-button [url]="url" [filters]="filters()" fileName="products" />
+      @if (auth.canPlan()) {
         <button mat-flat-button (click)="create()">
           <mat-icon>add</mat-icon>
           {{ 'products.new' | t }}
         </button>
-      </div>
-    }
+      }
+    </div>
   </header>
 
   <section class="panel">

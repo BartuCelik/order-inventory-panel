@@ -10,6 +10,7 @@ import { MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
 import { filter, switchMap } from 'rxjs';
 import { API_BASE_URL } from '../../../core/api';
+import { saveFile } from '../../../core/download';
 import { errorMessage } from '../../../core/problem';
 import { confirm } from '../../../shared/confirm-dialog/confirm-dialog';
 import { typeChip, typeLabel, unitLabel } from '../../products/product.models';
@@ -132,14 +133,7 @@ export class WorkOrderDetail {
   protected downloadPdf(w: WorkOrder): void {
     this.actionError.set(null);
     this.api.pdf(w.id).subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${w.number}.pdf`;
-        link.click();
-        URL.revokeObjectURL(url);
-      },
+      next: (blob) => saveFile(blob, `${w.number}.pdf`),
       error: (error: unknown) => this.actionError.set(errorMessage(error)),
     });
   }
