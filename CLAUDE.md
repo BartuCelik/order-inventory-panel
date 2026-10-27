@@ -223,7 +223,7 @@ dashboard export to Excel (numbers only; ClosedXML cannot draw charts), translat
 - [x] Translations requested by the owner (#17): seven languages, picker in the rail and on the login page
       (see *Translations*)
 
-- [ ] Phase 4 — Dashboard and outputs:
+- [x] Phase 4 — Dashboard and outputs (finished 2026-10-27):
   - [x] Critical stock on *available* (on-hand minus open work order reservations) on the dashboard (#19)
   - [x] Weekly production chart: completed work orders per UTC week, last 8 weeks, Chart.js bars coloured
         from the theme tokens (#20)
@@ -234,11 +234,23 @@ dashboard export to Excel (numbers only; ClosedXML cannot draw charts), translat
   - [x] Excel export (ClosedXML): `GET .../export` on products, stock movements, sales orders and work orders
         with the list's own query (paging ignored, at most 10,000 rows, else 400); *Export to Excel* on each
         list screen, every role; English headers like the PDF (#25)
-  - [ ] Excel import (products, opening stock)
+  - [x] Excel import (#27): `POST /products/import` (Planning) and `POST /stock/opening-stock` (Warehouse),
+        `?dryRun=true` for the preview; one shared dialog (choose file → preview or errors by row → Import).
+        Owner decisions 2026-10-27:
+        - Products use the export's columns; a new code creates, an existing code updates name, minimum and
+          active flag (type and unit cannot change).
+        - Opening stock is one "Opening stock" Adjustment per product, **only for products with an empty
+          ledger** (a second run is rejected, never doubled); the empty-ledger check runs inside the rule 4
+          row lock (`StockLedger.LockAsync`). Quantity 0 is skipped.
+        - All or nothing: every problem is returned as a 400 keyed "Row 7"/"File"; nothing is written.
+        - Limits: 5 MB, 10,000 rows. Server messages are English, like other API errors.
 
 ### Next session
 
-1. Excel import (products, opening stock) — the last Phase 4 item.
+1. Phase 5 — Showcase: one-click demo login per role, nightly seed reset (TRUNCATE still works with the
+   append-only trigger, rule 2), README with screenshots, 1–2 min demo video. Decide the order with the owner.
+2. Still open from Phase 3: the Users screen (Admin) has no API or screen yet — ask the owner whether it belongs
+   in Phase 5 or *Later*.
 
-Local dev note: the local database holds two leftover test products (`UI-TEST-…`, `UIV2-…`) from manual checks;
-`docker compose down -v` resets it to the seed.
+Local dev note: the local database holds leftover test products (`UI-TEST-…`, `UIV2-…`, `UI-IMP…`) and their
+opening stock from manual checks; `docker compose down -v` resets it to the seed.
