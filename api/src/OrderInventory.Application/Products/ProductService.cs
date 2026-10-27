@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using OrderInventory.Application.Abstractions;
 using OrderInventory.Application.Common;
+using OrderInventory.Domain.Production;
 using OrderInventory.Domain.Products;
 
 namespace OrderInventory.Application.Products;
@@ -39,7 +40,8 @@ public sealed class ProductService(IAppDbContext db)
             .OrderBy(p => p.Code)
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(p => new ProductListItem(
+            .Select(p => new
+            {
                 p.Id,
                 p.Code,
                 p.Name,
@@ -48,7 +50,14 @@ public sealed class ProductService(IAppDbContext db)
                 p.MinStock,
                 p.IsActive,
                 // Rule 1: on-hand is never stored, always the sum of the ledger.
-                db.StockMovements.Where(m => m.ProductId == p.Id).Sum(m => m.Quantity)))
+                OnHand = db.StockMovements.Where(m => m.ProductId == p.Id).Sum(m => m.Quantity),
+                Reserved = db.WorkOrderComponents
+                    .Where(c => c.ComponentProductId == p.Id
+                        && (c.WorkOrder!.Status == WorkOrderStatus.Planned || c.WorkOrder.Status == WorkOrderStatus.InProgress))
+                    .Sum(c => c.RequiredQty - c.ConsumedQty),
+            })
+            .Select(p => new ProductListItem(
+                p.Id, p.Code, p.Name, p.Type, p.Unit, p.MinStock, p.IsActive, p.OnHand, p.OnHand - p.Reserved))
             .ToListAsync(cancellationToken);
 
         return new PagedResult<ProductListItem>(items, query.Page, query.PageSize, totalCount);
@@ -163,6 +172,10 @@ public sealed class ProductService(IAppDbContext db)
                 p.MinStock,
                 p.IsActive,
                 OnHand = db.StockMovements.Where(m => m.ProductId == p.Id).Sum(m => m.Quantity),
+                Reserved = db.WorkOrderComponents
+                    .Where(c => c.ComponentProductId == p.Id
+                        && (c.WorkOrder!.Status == WorkOrderStatus.Planned || c.WorkOrder.Status == WorkOrderStatus.InProgress))
+                    .Sum(c => c.RequiredQty - c.ConsumedQty),
             })
             .SingleOrDefaultAsync(cancellationToken)
             ?? throw ProductNotFound(id);
@@ -182,6 +195,7 @@ public sealed class ProductService(IAppDbContext db)
             product.MinStock,
             product.IsActive,
             product.OnHand,
+            product.OnHand - product.Reserved,
             bomLines);
     }
 
