@@ -18,7 +18,9 @@ import { STOCK_MOVEMENTS_URL } from '../stock.api';
 import { StockMovement, movementTypeLabel } from '../stock.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { t, TranslatePipe } from '../../../core/i18n/i18n';
+import { API_BASE_URL } from '../../../core/api';
 import { ExportButton } from '../../../shared/export-button/export-button';
+import { openImport } from '../../../shared/import-dialog/import-dialog';
 
 @Component({
   selector: 'app-stock-ledger',
@@ -95,5 +97,17 @@ export class StockLedger {
           this.movements.reload();
         }
       });
+  }
+
+  protected importOpeningStock(): void {
+    openImport(this.dialog, {
+      title: t('import.stockTitle'),
+      hint: t('import.stockHint'),
+      url: `${API_BASE_URL}/stock/opening-stock`,
+      labels: { created: t('import.balances'), unchanged: t('import.skipped') },
+    }).subscribe(() => {
+      this.snackBar.open(t('import.done'), undefined, { duration: 3000 });
+      this.movements.reload();
+    });
   }
 }

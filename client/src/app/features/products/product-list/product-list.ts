@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
@@ -33,8 +34,9 @@ import {
   unitLabel,
 } from '../product.models';
 import { AuthService } from '../../../core/auth/auth.service';
-import { TranslatePipe } from '../../../core/i18n/i18n';
+import { TranslatePipe, t } from '../../../core/i18n/i18n';
 import { ExportButton } from '../../../shared/export-button/export-button';
+import { openImport } from '../../../shared/import-dialog/import-dialog';
 
 @Component({
   selector: 'app-product-list',
@@ -58,6 +60,7 @@ import { ExportButton } from '../../../shared/export-button/export-button';
 export class ProductList {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   protected readonly auth = inject(AuthService);
 
   protected readonly types = PRODUCT_TYPES;
@@ -136,6 +139,22 @@ export class ProductList {
           this.open(product);
         }
       });
+  }
+
+  protected importProducts(): void {
+    openImport(this.dialog, {
+      title: t('import.productsTitle'),
+      hint: t('import.productsHint'),
+      url: `${this.url}/import`,
+      labels: {
+        created: t('import.created'),
+        updated: t('import.updated'),
+        unchanged: t('import.unchanged'),
+      },
+    }).subscribe(() => {
+      this.snackBar.open(t('import.done'), undefined, { duration: 3000 });
+      this.products.reload();
+    });
   }
 
   protected open(product: Product): void {
