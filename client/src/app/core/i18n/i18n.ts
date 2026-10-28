@@ -27,7 +27,6 @@ export const LANGUAGES = [
   { code: 'fr', name: 'Français' },
   { code: 'es', name: 'Español' },
   { code: 'it', name: 'Italiano' },
-  { code: 'ru', name: 'Русский' },
 ] as const;
 
 export type Language = (typeof LANGUAGES)[number]['code'];
@@ -62,11 +61,6 @@ const LOADERS: Record<Language, () => Promise<[Messages, unknown]>> = {
     Promise.all([
       import('./messages/it').then((m) => m.it),
       locale(import('@angular/common/locales/it')),
-    ]),
-  ru: () =>
-    Promise.all([
-      import('./messages/ru').then((m) => m.ru),
-      locale(import('@angular/common/locales/ru')),
     ]),
 };
 

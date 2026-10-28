@@ -20,7 +20,7 @@ import {
       [matMenuTriggerFor]="menu"
       [attr.aria-label]="('language.label' | t) + ': ' + current.name"
     >
-      <mat-icon>translate</mat-icon>
+      <img class="lang-flag" [src]="flag(current.code)" alt="" />
       <span>{{ current.name }}</span>
       <mat-icon class="chevron">expand_more</mat-icon>
     </button>
@@ -32,10 +32,13 @@ import {
           [attr.aria-current]="language.code === current.code"
           (click)="choose(language.code)"
         >
-          <span>{{ language.name }}</span>
-          @if (language.code === current.code) {
-            <mat-icon class="check">check</mat-icon>
-          }
+          <!-- The check sits inside the span: a direct mat-icon child would be moved to the start. -->
+          <span class="item"
+            ><img class="lang-flag" [src]="flag(language.code)" alt="" />{{ language.name }}
+            @if (language.code === current.code) {
+              <mat-icon class="check">check</mat-icon>
+            }
+          </span>
         </button>
       }
     </mat-menu>
@@ -70,6 +73,20 @@ import {
     .chevron {
       margin-left: auto;
     }
+    /* Images, not emoji: Windows shows flag emoji as two letters. The name beside it is the label. */
+    .lang-flag {
+      width: 20px;
+      height: 14px;
+      flex: none;
+      object-fit: cover;
+      border-radius: 2px;
+      box-shadow: 0 0 0 1px var(--border);
+    }
+    .item {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
     .check {
       margin-left: 12px;
       color: var(--accent);
@@ -79,6 +96,11 @@ import {
 export class LanguagePicker {
   protected readonly languages = LANGUAGES;
   protected readonly current = LANGUAGES.find((l) => l.code === currentLanguage()) ?? LANGUAGES[0];
+
+  /** English shows the UK flag (owner decision 2026-10-28). Files live in client/public/flags. */
+  protected flag(language: Language): string {
+    return `flags/${language}.svg`;
+  }
 
   protected choose(language: Language): void {
     if (language !== this.current.code) {

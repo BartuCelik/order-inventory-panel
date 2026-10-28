@@ -140,14 +140,17 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 
 ### Translations (decided 2026-10-25)
 
-- Languages: English (default), Turkish, German, French, Spanish, Italian, Russian. Own small module, no library:
+- Languages: English (default), Turkish, German, French, Spanish, Italian (Russian removed by the owner 2026-10-28).
+  Own small module, no library:
   `client/src/app/core/i18n/` — `t('key', params)` in TypeScript, `{{ 'key' | t: params }}` in templates.
 - **Every UI string is a key.** Add it to `messages/en.ts` first, then to every other `messages/*.ts`; they are typed
   against English, so a missing or misspelt key fails the build. `{name}` placeholders; plurals are objects keyed by
-  `Intl.PluralRules` category (`one`/`other`, Russian also `few`/`many`), chosen by `params.count`.
+  `Intl.PluralRules` category (`one`/`other`), chosen by `params.count`.
 - The language is fixed per page load (`main.ts` loads it before the app; switching reloads). Labels built at module
   load (status lists, nav) are therefore safe. Dates and numbers follow `LOCALE_ID` = the chosen language.
 - Not translated: API error `detail` texts (English from the server) and data (product, customer names).
+- The language picker shows a flag per language: SVG files in `client/public/flags/` (not emoji — Windows renders
+  flag emoji as two letters). English uses the UK flag (owner decision 2026-10-28).
 
 ### Design rules (Apple-like glass look, decided 2026-10-25 — keep consistent)
 
@@ -222,7 +225,7 @@ would break it until the nightly reset).
   - Users screen (Admin) moved to *Later* (owner decision 2026-10-28)
 - [x] Redesign requested by the owner (#16): Apple-like glass look, light/dark themes with a toggle, Inter,
       restyled shell, dashboard tiles and login (see *Design rules*)
-- [x] Translations requested by the owner (#17): seven languages, picker in the rail and on the login page
+- [x] Translations requested by the owner (#17): seven languages (six since Russian was removed 2026-10-28), picker in the rail and on the login page
       (see *Translations*)
 
 - [x] Phase 4 — Dashboard and outputs (finished 2026-10-27):

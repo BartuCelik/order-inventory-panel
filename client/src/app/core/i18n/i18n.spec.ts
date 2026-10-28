@@ -18,13 +18,20 @@ describe('t', () => {
   });
 
   it('uses the saved language, with its own plural rules', async () => {
+    localStorage.setItem('workshop.language', 'fr');
+    await loadLanguage();
+
+    expect(currentLanguage()).toBe('fr');
+    // French counts 0 as singular, English does not ("0 orders").
+    expect(t('salesOrders.count', { count: 0 })).toBe('0 commande');
+    expect(t('salesOrders.count', { count: 3 })).toBe('3 commandes');
+  });
+
+  it('falls back to English for Russian, which was removed', async () => {
     localStorage.setItem('workshop.language', 'ru');
     await loadLanguage();
 
-    expect(currentLanguage()).toBe('ru');
-    expect(t('salesOrders.count', { count: 1 })).toBe('1 заказ');
-    expect(t('salesOrders.count', { count: 3 })).toBe('3 заказа');
-    expect(t('salesOrders.count', { count: 5 })).toBe('5 заказов');
+    expect(currentLanguage()).toBe('en');
   });
 
   it('falls back to English for an unknown saved language', async () => {
