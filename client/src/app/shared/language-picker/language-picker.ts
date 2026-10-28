@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, booleanAttribute, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import {
@@ -17,12 +17,17 @@ import {
     <button
       type="button"
       class="picker"
+      [class.compact]="compact()"
       [matMenuTriggerFor]="menu"
       [attr.aria-label]="('language.label' | t) + ': ' + current.name"
     >
       <img class="lang-flag" [src]="flag(current.code)" alt="" />
-      <span>{{ current.name }}</span>
-      <mat-icon class="chevron">expand_more</mat-icon>
+      @if (compact()) {
+        <span class="code">{{ current.code.toUpperCase() }}</span>
+      } @else {
+        <span>{{ current.name }}</span>
+        <mat-icon class="chevron">expand_more</mat-icon>
+      }
     </button>
     <mat-menu #menu="matMenu">
       @for (language of languages; track language.code) {
@@ -65,6 +70,20 @@ import {
     .picker:hover {
       color: var(--text);
     }
+    /* In the top bar: flag and code only, a plain icon-sized button. */
+    .picker.compact {
+      gap: 8px;
+      width: auto;
+      height: 36px;
+      padding: 0 10px;
+      background: none;
+    }
+    .picker.compact:hover {
+      background: var(--surface-muted);
+    }
+    .code {
+      font-size: 13px;
+    }
     mat-icon {
       font-size: 18px;
       width: 18px;
@@ -94,6 +113,9 @@ import {
   `,
 })
 export class LanguagePicker {
+  /** Flag and language code only, for the top bar. */
+  readonly compact = input(false, { transform: booleanAttribute });
+
   protected readonly languages = LANGUAGES;
   protected readonly current = LANGUAGES.find((l) => l.code === currentLanguage()) ?? LANGUAGES[0];
 

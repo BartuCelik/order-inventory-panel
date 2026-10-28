@@ -202,6 +202,12 @@ a {
   --mat-button-outlined-outline-color: var(--border);
 }
 
+// Material shows keyboard focus only as a faint state layer; give its buttons the same ring as everything else.
+.mat-mdc-button-base:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .mat-mdc-outlined-button:not(:disabled) {
   background: var(--surface);
 

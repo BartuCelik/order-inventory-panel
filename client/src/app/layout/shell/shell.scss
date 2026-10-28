@@ -1,167 +1,137 @@
 :host {
-  display: block;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 
-.container {
-  height: 100%;
-  background: transparent;
-}
+// ---------- the top bar: brand, pages, language, theme, user ----------
 
-// ---------- the rail: a frosted pane floating over the colour field ----------
-
-.rail {
-  width: 248px;
-  border: none;
-  border-right: 1px solid var(--border);
-  border-radius: 0;
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--border);
   background: var(--surface);
-  -webkit-backdrop-filter: var(--glass);
-  backdrop-filter: var(--glass);
-  color: var(--text);
-
-  ::ng-deep .mat-drawer-inner-container {
-    display: flex;
-    flex-direction: column;
-  }
 }
 
-// The app icon: a gradient tile like a home-screen icon.
-.app-icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: linear-gradient(145deg, #0a84ff, #5e5ce6 55%, #bf5af2);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 35%),
-    0 4px 12px -2px rgb(10 132 255 / 45%);
-  color: #fff;
-
-  mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-  }
-
-  &.small {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-
-    mat-icon {
-      font-size: 17px;
-      width: 17px;
-      height: 17px;
-    }
-  }
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  max-width: 1320px;
+  height: 64px;
+  margin: 0 auto;
+  padding: 0 40px;
+  box-sizing: border-box;
 }
 
 .brand {
   display: flex;
+  flex: none;
   align-items: center;
-  gap: 12px;
-  padding: 24px 20px 18px;
+  gap: 10px;
   color: var(--text);
   text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+// The brand mark: a plain square, no gradient.
+.mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--bg);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .brand-name {
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 nav {
-  padding: 4px 0;
-}
-
-.group {
-  padding: 10px 0 4px;
+  display: flex;
+  align-self: stretch;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
 
   ul {
+    display: flex;
     margin: 0;
     padding: 0;
     list-style: none;
   }
-}
 
-.group-label {
-  display: block;
-  padding: 0 22px 6px;
-  color: var(--text-3);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 2px 12px;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-weight: 500;
-  text-decoration: none;
-  transition:
-    background-color 0.15s var(--ease),
-    color 0.15s var(--ease);
-
-  mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    color: var(--accent);
+  li {
+    display: flex;
   }
 
-  &:hover {
-    background: var(--surface-muted);
+  a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: var(--text-2);
+    font-weight: 500;
+    white-space: nowrap;
     text-decoration: none;
-  }
 
-  &.active {
-    background: var(--accent);
-    color: var(--on-accent);
-    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--accent) 70%, transparent);
+    &:hover {
+      color: var(--text);
+      text-decoration: none;
+    }
 
-    mat-icon {
-      color: var(--on-accent);
+    &:focus-visible {
+      outline-offset: -2px;
+    }
+
+    // The current page: dark text and a line on the bar's bottom edge.
+    &.active {
+      color: var(--text);
+
+      &::after {
+        content: '';
+        position: absolute;
+        right: 10px;
+        bottom: 0;
+        left: 10px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--accent);
+      }
     }
   }
 }
 
-.rail-foot {
-  display: grid;
-  gap: 12px;
-  margin-top: auto;
-  padding: 16px 16px 18px;
+.nav-sep {
+  flex: none;
+  width: 1px;
+  margin: 22px 8px;
+  background: var(--border);
 }
 
-.theme-toggle {
+.top-right {
   display: flex;
+  flex: none;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--surface-muted);
-  color: var(--text-2);
-  font: inherit;
-  font-size: 13.5px;
-  font-weight: 550;
-  cursor: pointer;
+  gap: 4px;
+  margin-left: auto;
 
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-
-  &:hover {
-    color: var(--text);
+  button {
+    color: var(--text-2);
   }
 }
 
@@ -169,79 +139,117 @@ nav {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 4px 10px 10px;
-  border-radius: var(--radius);
-  background: var(--surface-strong);
-  box-shadow: var(--shadow);
-
-  button {
-    margin-left: auto;
-    color: var(--text-2);
-  }
+  margin-left: 6px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
 }
 
 .avatar {
   display: grid;
   flex: none;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
   border-radius: 50%;
-  background: linear-gradient(145deg, #ff9f0a, #ff375f);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  background: var(--surface-muted);
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 600;
 }
 
 .user-text {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  line-height: 1.25;
 }
 
 .user-name {
-  overflow: hidden;
-  font-weight: 600;
-  text-overflow: ellipsis;
+  font-size: 13.5px;
+  font-weight: 550;
   white-space: nowrap;
 }
 
 .user-role {
-  color: var(--text-2);
-  font-size: 12.5px;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+// ---------- content and footer ----------
+
+.content {
+  flex: 1;
+  min-width: 0;
 }
 
 .demo-note {
-  margin: 0;
-  padding: 0 4px;
+  padding: 8px 16px 28px;
   color: var(--text-3);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 12.5px;
+  text-align: center;
 }
 
-// ---------- content ----------
+// Mid widths: long labels (French, German, Turkish) need the room, so the user's name goes (the avatar and the
+// sign-out button stay) and the gaps tighten. Checked with every language from 1100px up.
+@media (max-width: 1439px) {
+  .topbar-inner {
+    gap: 20px;
+    padding: 0 24px;
+  }
 
-.content {
-  background: transparent;
+  .user-text {
+    display: none;
+  }
+
+  nav a {
+    padding: 0 8px;
+  }
 }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 56px;
-  padding: 0 8px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  -webkit-backdrop-filter: var(--glass);
-  backdrop-filter: var(--glass);
+@media (max-width: 1279px) {
+  .topbar-inner {
+    gap: 14px;
+  }
 
-  strong {
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+  nav a {
+    padding: 0 6px;
+  }
+
+  .nav-sep {
+    margin: 22px 4px;
+  }
+}
+
+// Narrow screens: two rows. Brand and user on top, the pages below as a row that scrolls on its own,
+// so the page itself never scrolls sideways.
+@media (max-width: 1099px) {
+  .topbar-inner {
+    flex-wrap: wrap;
+    gap: 0 12px;
+    height: auto;
+    padding: 0 16px;
+  }
+
+  .brand {
+    height: 56px;
+  }
+
+  nav {
+    order: 3;
+    flex-basis: calc(100% + 32px);
+    height: 44px;
+    margin: 0 -16px;
+    // Link text lines up with the brand above: 16px page gutter minus the links' own padding.
+    padding: 0 10px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .nav-sep {
+    margin: 12px 6px;
+  }
+
+  .user-text {
+    display: none;
   }
 }
