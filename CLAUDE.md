@@ -191,7 +191,9 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 
 ### Later (not now)
 Partial completion, purchasing/suppliers, lot/serial tracking, multi-warehouse, routing/capacity, multi-tenant,
-dashboard export to Excel (numbers only; ClosedXML cannot draw charts), translated PDFs (the PDF is English only).
+dashboard export to Excel (numbers only; ClosedXML cannot draw charts), translated PDFs (the PDF is English only),
+Users screen for Admin (owner decision 2026-10-28: demo users come from the seed; editing them on a public demo
+would break it until the nightly reset).
 
 ## Current status
 
@@ -217,7 +219,7 @@ dashboard export to Excel (numbers only; ClosedXML cannot draw charts), translat
         (password `workshop-demo`, public by design); signing key from config (Render `generateValue`)
   - [x] Client: login page (demo accounts listed), bearer interceptor (signs out on 401), guard, user in the rail,
         actions hidden by role (`AuthService.canPlan` / `canHandleStock`)
-  - [ ] Users screen (Admin) — the roles table lists it; no API yet
+  - Users screen (Admin) moved to *Later* (owner decision 2026-10-28)
 - [x] Redesign requested by the owner (#16): Apple-like glass look, light/dark themes with a toggle, Inter,
       restyled shell, dashboard tiles and login (see *Design rules*)
 - [x] Translations requested by the owner (#17): seven languages, picker in the rail and on the login page
@@ -245,12 +247,15 @@ dashboard export to Excel (numbers only; ClosedXML cannot draw charts), translat
         - All or nothing: every problem is returned as a 400 keyed "Row 7"/"File"; nothing is written.
         - Limits: 5 MB, 10,000 rows. Server messages are English, like other API errors.
 
+- [ ] Phase 5 — Showcase (order chosen by the owner 2026-10-28):
+  - [x] One-click demo login: the role buttons on the login page fill in the demo account and sign in
+  - [ ] Nightly seed reset (TRUNCATE still works with the append-only trigger, rule 2)
+  - [ ] README with screenshots
+  - [ ] 1–2 min demo video
+
 ### Next session
 
-1. Phase 5 — Showcase: one-click demo login per role, nightly seed reset (TRUNCATE still works with the
-   append-only trigger, rule 2), README with screenshots, 1–2 min demo video. Decide the order with the owner.
-2. Still open from Phase 3: the Users screen (Admin) has no API or screen yet — ask the owner whether it belongs
-   in Phase 5 or *Later*.
+1. Phase 5: nightly seed reset on the live demo (Render + Neon), then README with screenshots.
 
 Local dev note: the local database holds leftover test products (`UI-TEST-…`, `UIV2-…`, `UI-IMP…`) and their
 opening stock from manual checks; `docker compose down -v` resets it to the seed.

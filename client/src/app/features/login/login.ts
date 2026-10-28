@@ -65,8 +65,9 @@ const DEMO_PASSWORD = 'workshop-demo';
               <button
                 type="button"
                 class="role"
-                (click)="fill(account.email)"
-                [attr.aria-label]="'login.fillDemo' | t: { role: roleLabel(account.role) }"
+                (click)="signInAs(account.email)"
+                [disabled]="busy()"
+                [attr.aria-label]="'login.signInAs' | t: { role: roleLabel(account.role) }"
               >
                 <mat-icon>{{ account.icon }}</mat-icon>
                 {{ roleLabel(account.role) }}
@@ -179,8 +180,12 @@ const DEMO_PASSWORD = 'workshop-demo';
       cursor: pointer;
       transition: transform 0.15s var(--ease);
     }
-    .role:hover {
+    .role:hover:enabled {
       transform: translateY(-1px);
+    }
+    .role:disabled {
+      opacity: 0.6;
+      cursor: default;
     }
     .role mat-icon {
       font-size: 17px;
@@ -213,8 +218,10 @@ export class Login {
     password: ['', Validators.required],
   });
 
-  protected fill(email: string): void {
+  /** One click: fills in the demo account so the visitor sees what was used, then signs in. */
+  protected signInAs(email: string): void {
     this.form.setValue({ email, password: DEMO_PASSWORD });
+    this.submit();
   }
 
   protected submit(): void {
