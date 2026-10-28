@@ -251,19 +251,33 @@ would break it until the nightly reset).
         - Limits: 5 MB, 10,000 rows. Server messages are English, like other API errors.
 
 - [ ] Phase 5 — Showcase (order chosen by the owner 2026-10-28):
-  - [x] One-click demo login: the role buttons on the login page fill in the demo account and sign in
-  - [x] Nightly seed reset: `POST /demo/reset` (only with `Database:SeedDemoData` and `Demo:ResetKey`, else 404;
-        the key in `X-Demo-Reset-Key` is the credential, not a JWT, because demo passwords are public) truncates
-        everything except users and reseeds in one transaction; `.github/workflows/demo-reset.yml` calls it at
-        03:00 UTC (a timer in the API would not fire while the free host sleeps). Needs `Demo__ResetKey` on Render
-        and the same value as the GitHub secret `DEMO_RESET_KEY`.
-  - [x] README rewritten for visitors, with screenshots of the live demo in `docs/screenshots/` (taken right
-        after a reset; retake them when a screen changes)
-  - [ ] 1–2 min demo video
+  - [x] One-click demo login (#29): the role buttons on the login page fill in the demo account and sign in
+  - [x] Nightly seed reset (#30, live and verified 2026-10-28): `POST /demo/reset` (only with
+        `Database:SeedDemoData` and `Demo:ResetKey`, else 404; the key in `X-Demo-Reset-Key` is the credential,
+        not a JWT, because demo passwords are public) truncates everything except users and reseeds in one
+        transaction; `.github/workflows/demo-reset.yml` calls it at 03:00 UTC (06:00 Turkey) and can be run by hand
+        (a timer in the API would not fire while the free host sleeps). `Demo__ResetKey` on Render and the GitHub
+        secret `DEMO_RESET_KEY` hold the same value.
+  - [x] README rewritten for visitors, with screenshots of the live demo in `docs/screenshots/` (#31; taken right
+        after a reset with Playwright driving the local Edge; retake them when a screen changes)
+  - [x] Fix: separator on the product's Available tile (#32)
+  - [x] Language picker shows SVG flags (`client/public/flags/`, UK flag for English); Russian removed (#33)
+  - [ ] **Plain-tool redesign** (owner request 2026-10-28: the glass look reads as "AI-made"). Direction approved on
+        a dashboard mockup: plain tool, roomy spacing, **black accent**, navigation in a **top bar** instead of
+        the left rail, the greeting kept. Spec: `docs/superpowers/specs/2026-10-28-plain-tool-redesign-design.md`
+        (waiting for the owner's review) → implementation plan → one PR. It replaces the *Design rules* above.
+  - [ ] README screenshots retaken after the redesign is live, README updated
+  - [ ] 1–2 min demo video, recorded last on the final UI: Claude records the raw run with Playwright, the owner
+        adds captions (Clipchamp). Story: late order → shortage after reservations → BOM → complete → outputs.
 
 ### Next session
 
-1. Phase 5: the 1–2 min demo video (the owner records it; a shot list can be prepared).
+1. Owner reviews the redesign spec; then write the implementation plan and build it (one branch, one PR).
+2. After the deploy: retake the README screenshots from the live demo (right after running *Demo reset*), update
+   the README.
+3. Record the demo video on the final UI.
+
+The owner wants a mockup before any large visual change (the redesign started with a static HTML mockup).
 
 Local dev note: the local database holds leftover test products (`UI-TEST-…`, `UIV2-…`, `UI-IMP…`) and their
 opening stock from manual checks; `docker compose down -v` resets it to the seed.
