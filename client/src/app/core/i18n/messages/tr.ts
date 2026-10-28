@@ -31,7 +31,7 @@ export const tr: Messages = {
   'login.password': 'Şifre',
   'login.submit': 'Giriş yap',
   'login.tryDemo': 'Demoyu şu rolle dene',
-  'login.fillDemo': '{role} demo hesabını doldur',
+  'login.signInAs': '{role} olarak giriş yap',
   'login.demoPassword': 'Şifre',
   'title.signIn': 'Giriş',
   'title.shopFloor': 'Üretim alanı',

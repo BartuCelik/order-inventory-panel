@@ -30,7 +30,7 @@ export const en = {
   'login.password': 'Password',
   'login.submit': 'Sign in',
   'login.tryDemo': 'Try the demo as',
-  'login.fillDemo': 'Fill in the {role} demo account',
+  'login.signInAs': 'Sign in as {role}',
   'login.demoPassword': 'Password',
   'title.signIn': 'Sign in',
   'title.shopFloor': 'Shop floor',

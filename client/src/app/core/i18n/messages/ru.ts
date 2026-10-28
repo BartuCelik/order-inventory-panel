@@ -31,7 +31,7 @@ export const ru: Messages = {
   'login.password': 'Пароль',
   'login.submit': 'Войти',
   'login.tryDemo': 'Попробовать демо как',
-  'login.fillDemo': 'Заполнить демо-аккаунт «{role}»',
+  'login.signInAs': 'Войти как «{role}»',
   'login.demoPassword': 'Пароль',
   'title.signIn': 'Вход',
   'title.shopFloor': 'Производство',

@@ -31,7 +31,7 @@ export const de: Messages = {
   'login.password': 'Passwort',
   'login.submit': 'Anmelden',
   'login.tryDemo': 'Demo ausprobieren als',
-  'login.fillDemo': 'Demokonto {role} eintragen',
+  'login.signInAs': 'Als {role} anmelden',
   'login.demoPassword': 'Passwort',
   'title.signIn': 'Anmelden',
   'title.shopFloor': 'Fertigung',
