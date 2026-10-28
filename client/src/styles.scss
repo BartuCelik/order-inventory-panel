@@ -148,6 +148,14 @@ html {
       corner-full: 6px,
     )
   );
+
+  // A switch stays round: a squared track reads as a checkbox, not a toggle.
+  @include mat.slide-toggle-overrides(
+    (
+      track-shape: 999px,
+      handle-shape: 50%,
+    )
+  );
 }
 
 body {
@@ -755,6 +763,12 @@ a.stack:hover {
     flex: 1 1 260px;
     max-width: 420px;
   }
+
+  // Filter toggles scroll on their own when a phone is too narrow for all of them.
+  .mat-button-toggle-group {
+    max-width: 100%;
+    overflow-x: auto;
+  }
 }
 
 .mat-mdc-paginator {
@@ -782,6 +796,8 @@ a.stack:hover {
 
 .visually-hidden {
   position: absolute !important;
+  // Without a positioned parent it would sit where it was written and could widen the page (inside wide tables).
+  left: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;

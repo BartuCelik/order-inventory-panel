@@ -5,7 +5,7 @@
   margin-bottom: 20px;
   padding: 14px 18px;
   border-radius: var(--radius);
-  background: var(--alarm-soft);
+  border: 1px solid var(--alarm-line);
   color: var(--alarm-ink);
   font-weight: 550;
 }
@@ -58,7 +58,6 @@
 
   .current .node {
     border: 5px solid var(--accent);
-    box-shadow: 0 0 0 5px var(--accent-soft);
   }
 
   .step-label {
