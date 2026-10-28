@@ -1,51 +1,39 @@
-<mat-sidenav-container class="container">
-  <mat-sidenav
-    #drawer
-    class="rail"
-    [mode]="compact() ? 'over' : 'side'"
-    [opened]="!compact()"
-    [fixedInViewport]="compact()"
-  >
-    <a class="brand" routerLink="/dashboard" (click)="compact() && drawer.close()">
-      <span class="app-icon" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" routerLink="/dashboard">
+      <span class="mark" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
       <span class="brand-name">{{ 'app.name' | t }}</span>
     </a>
 
     <nav [attr.aria-label]="'nav.main' | t">
-      @for (group of navGroups; track group.label) {
-        <div class="group">
-          <span class="group-label" [id]="'nav-' + group.id">{{ group.label }}</span>
-          <ul [attr.aria-labelledby]="'nav-' + group.id">
-            @for (item of group.items; track item.route) {
-              <li>
-                <a
-                  class="nav-item"
-                  [routerLink]="item.route"
-                  routerLinkActive="active"
-                  ariaCurrentWhenActive="page"
-                  (click)="compact() && drawer.close()"
-                >
-                  <mat-icon>{{ item.icon }}</mat-icon>
-                  <span>{{ item.label }}</span>
-                </a>
-              </li>
-            }
-          </ul>
-        </div>
+      @for (group of navGroups; track group.id; let first = $first) {
+        @if (!first) {
+          <span class="nav-sep" aria-hidden="true"></span>
+        }
+        <span class="visually-hidden" [id]="'nav-' + group.id">{{ group.label }}</span>
+        <ul [attr.aria-labelledby]="'nav-' + group.id">
+          @for (item of group.items; track item.route) {
+            <li>
+              <a [routerLink]="item.route" routerLinkActive="active" ariaCurrentWhenActive="page">{{
+                item.label
+              }}</a>
+            </li>
+          }
+        </ul>
       }
     </nav>
 
-    <div class="rail-foot">
+    <div class="top-right">
+      <app-language-picker compact />
       <button
+        mat-icon-button
         type="button"
-        class="theme-toggle"
         (click)="theme.cycle()"
         [attr.aria-label]="'theme.change' | t: { theme: themeLabel() }"
+        [title]="themeLabel()"
       >
         <mat-icon>{{ themeIcon() }}</mat-icon>
-        <span>{{ themeLabel() }}</span>
       </button>
-      <app-language-picker />
 
       @if (auth.user(); as user) {
         <div class="user">
@@ -64,24 +52,15 @@
           </button>
         </div>
       }
-
-      <p class="demo-note">
-        <time [attr.datetime]="now().toISOString()">{{ now() | date: 'EEE d MMM, HH:mm' }}</time>
-        · {{ 'shell.demoNote' | t }}
-      </p>
     </div>
-  </mat-sidenav>
+  </div>
+</header>
 
-  <mat-sidenav-content class="content">
-    @if (compact()) {
-      <header class="topbar">
-        <button mat-icon-button (click)="drawer.toggle()" [attr.aria-label]="'nav.open' | t">
-          <mat-icon>menu</mat-icon>
-        </button>
-        <span class="app-icon small" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
-        <strong>{{ 'app.name' | t }}</strong>
-      </header>
-    }
-    <router-outlet />
-  </mat-sidenav-content>
-</mat-sidenav-container>
+<main class="content">
+  <router-outlet />
+</main>
+
+<footer class="demo-note">
+  <time [attr.datetime]="now().toISOString()">{{ now() | date: 'EEE d MMM, HH:mm' }}</time>
+  · {{ 'shell.demoNote' | t }}
+</footer>

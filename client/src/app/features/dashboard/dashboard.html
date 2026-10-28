@@ -24,7 +24,7 @@
   } @else if (summary.hasValue()) {
     @let s = summary.value();
 
-    <!-- Status tiles: neutral when all is well; tinted only when someone should act. -->
+    <!-- Status strip: neutral when all is well; the number turns red or amber only when someone should act. -->
     <section class="tiles" [attr.aria-label]="'dashboard.conditions' | t">
       <a
         class="tile"
@@ -32,9 +32,8 @@
         [queryParams]="{ late: true }"
         [class.alarm]="s.orders.late > 0"
       >
-        <span class="tile-icon"><mat-icon>schedule</mat-icon></span>
-        <span class="reading">{{ s.orders.late }}</span>
         <span class="label">{{ 'dashboard.ordersLate' | t: { count: s.orders.late } }}</span>
+        <span class="reading">{{ s.orders.late }}</span>
         <span class="detail">{{ 'dashboard.ofOpen' | t: { count: s.orders.open } }}</span>
       </a>
       <a
@@ -43,27 +42,23 @@
         [queryParams]="{ open: true }"
         [class.caution]="s.production.shortCount > 0"
       >
-        <span class="tile-icon"><mat-icon>inventory_2</mat-icon></span>
-        <span class="reading">{{ s.production.shortCount }}</span>
         <span class="label">{{ 'dashboard.shortOfMaterial' | t }}</span>
+        <span class="reading">{{ s.production.shortCount }}</span>
         <span class="detail">{{ 'dashboard.openWorkOrders' | t }}</span>
       </a>
       <a class="tile" routerLink="/products" [class.alarm]="s.belowMinimum.length > 0">
-        <span class="tile-icon"><mat-icon>trending_down</mat-icon></span>
-        <span class="reading">{{ s.belowMinimum.length }}</span>
         <span class="label">{{ 'dashboard.belowMinimum' | t }}</span>
+        <span class="reading">{{ s.belowMinimum.length }}</span>
         <span class="detail">{{ 'dashboard.productsToReorder' | t }}</span>
       </a>
       <a class="tile running" routerLink="/work-orders" [queryParams]="{ status: 'InProgress' }">
-        <span class="tile-icon"><mat-icon>precision_manufacturing</mat-icon></span>
-        <span class="reading">{{ s.production.inProgress }}</span>
         <span class="label">{{ 'dashboard.running' | t }}</span>
+        <span class="reading">{{ s.production.inProgress }}</span>
         <span class="detail">{{ 'dashboard.planned' | t: { count: s.production.planned } }}</span>
       </a>
       <a class="tile done" routerLink="/work-orders" [queryParams]="{ status: 'Done' }">
-        <span class="tile-icon"><mat-icon>task_alt</mat-icon></span>
-        <span class="reading">{{ s.production.doneLast7Days }}</span>
         <span class="label">{{ 'dashboard.completed' | t }}</span>
+        <span class="reading">{{ s.production.doneLast7Days }}</span>
         <span class="detail">{{ 'dashboard.last7Days' | t }}</span>
       </a>
     </section>
@@ -72,7 +67,7 @@
       <section class="panel span-8">
         <header class="panel-header">
           <h2 class="panel-title">{{ 'dashboard.productionQueue' | t }}</h2>
-          <a mat-button routerLink="/work-orders" [queryParams]="{ open: true }">{{
+          <a class="panel-link" routerLink="/work-orders" [queryParams]="{ open: true }">{{
             'dashboard.allOpenWork' | t
           }}</a>
         </header>
@@ -83,11 +78,14 @@
           </div>
         } @else {
           <ol class="queue">
+            <li class="queue-head" aria-hidden="true">
+              <span>{{ 'workOrders.workOrder' | t }}</span>
+              <span>{{ 'common.status' | t }}</span>
+              <span>{{ 'workOrders.planned' | t }}</span>
+              <span class="right">{{ 'workOrder.materials' | t }}</span>
+            </li>
             @for (w of s.production.queue; track w.id) {
               <li [class.is-short]="w.hasShortage">
-                <span class="status" [class]="statusClass(w.status)">
-                  <span class="visually-hidden">{{ statusLabel(w.status) }}</span>
-                </span>
                 <a class="stack what" [routerLink]="['/work-orders', w.id]">
                   <span class="primary-line">
                     {{ w.productName }}
@@ -102,15 +100,11 @@
                     }
                   </span>
                 </a>
-                <span class="when">
-                  <span class="state-text">{{ statusLabel(w.status) }}</span>
-                  <span class="muted">{{ planLabel(w.plannedDate) }}</span>
-                </span>
+                <span class="status" [class]="statusClass(w.status)">{{ statusLabel(w.status) }}</span>
+                <span class="muted">{{ planLabel(w.plannedDate) }}</span>
                 <span class="flags">
                   @if (w.hasShortage) {
-                    <span class="flag short"
-                      ><mat-icon>inventory_2</mat-icon>{{ 'common.short' | t }}</span
-                    >
+                    <span class="flag short">{{ 'common.short' | t }}</span>
                   }
                 </span>
               </li>
@@ -122,7 +116,7 @@
       <section class="panel span-4">
         <header class="panel-header">
           <h2 class="panel-title">{{ 'dashboard.ordersDue' | t }}</h2>
-          <a mat-button routerLink="/sales-orders" [queryParams]="{ status: 'Open' }">{{
+          <a class="panel-link" routerLink="/sales-orders" [queryParams]="{ status: 'Open' }">{{
             'dashboard.allOpen' | t
           }}</a>
         </header>
@@ -202,7 +196,7 @@
       <section class="panel span-4">
         <header class="panel-header">
           <h2 class="panel-title">{{ 'dashboard.belowMinimum' | t }}</h2>
-          <a mat-button routerLink="/products">{{ 'nav.products' | t }}</a>
+          <a class="panel-link" routerLink="/products">{{ 'nav.products' | t }}</a>
         </header>
         @if (s.belowMinimum.length === 0) {
           <div class="empty-state">

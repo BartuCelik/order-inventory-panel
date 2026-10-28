@@ -152,22 +152,31 @@ All quantities are `decimal` stored as `numeric(18,4)`. Timestamps are UTC (`tim
 - The language picker shows a flag per language: SVG files in `client/public/flags/` (not emoji — Windows renders
   flag emoji as two letters). English uses the UK flag (owner decision 2026-10-28).
 
-### Design rules (Apple-like glass look, decided 2026-10-25 — keep consistent)
+### Design rules (plain tool, decided 2026-10-28 — replaces the glass look; keep consistent)
 
-- **Glass over a colour field:** panels, tiles, the rail and dialogs are frosted glass (`--surface` +
-  `backdrop-filter: var(--glass)`, hairline `--border`, lit top edge `--highlight`, soft `--shadow`) over soft
-  accent washes (`--bg-field`). Radii: panels 20px (`--radius-lg`), tiles/alerts 14px, controls 10px, buttons pills.
+Reference: `docs/superpowers/specs/2026-10-28-plain-tool-mockup.html` (the dashboard the owner approved).
+
+- **Plain and flat:** panels, tiles and the top bar are `--surface` on a `--bg` page with a 1px `--border`.
+  **No shadows** (overlays — menus, dialogs, dropdowns — are the one exception), no `backdrop-filter`, no gradients,
+  no background washes. Radii: panels 10px (`--radius-lg`), tiles/alerts/overlays 8px, controls and buttons 6px,
+  badges/chips/flags 4px. Roomy spacing: page padding 48/40px, panel padding 24px, table rows 60px.
+- **Navigation is a top bar:** brand, the pages in three groups split by hairlines, language (flag + code), theme,
+  user. Below 1440px the user's name is hidden, below 1100px the bar becomes two rows and the page links scroll on
+  their own. The page itself never scrolls sideways (checked at 390px).
 - **Themes:** every colour is a token defined twice in `styles.scss` (light, dark). Dark follows the system unless
-  `ThemeService` sets `data-theme` on `<html>` (toggle in the rail). Components use tokens only — never hex values.
-  Angular Material reads the same tokens (`theme-type: color-scheme` + `theme-overrides`).
-- **Colour has meaning:** one accent, blue (`--accent`) = primary actions, running work, current page;
-  green (`--success`) = done; amber (`--caution`) = material short (rule 9); red (`--alarm`) = late, below minimum,
-  failed. Tinted pills (`*-soft` background, `*-ink` text) for chips and flags.
-- Status is shape **and** text: `.status.planned` ring, `.in-progress` blue dot, `.done` green tick,
+  `ThemeService` sets `data-theme` on `<html>` (toggle in the top bar). Components use tokens only — never hex
+  values. Angular Material reads the same tokens (`theme-type: color-scheme` + `theme-overrides`).
+- **Colour has meaning, nothing else is coloured:** the accent is **black** (white in dark, `--accent` /
+  `--on-accent`) = primary actions, links, the current page; green (`--success`) = done; amber (`--caution`) =
+  material short (rule 9); red (`--alarm`) = late, below minimum, failed. Chips and flags are **outlined**
+  (`*-ink` text, `*-line` border), never filled. Links show themselves by underlining on hover, since the accent
+  equals the text colour.
+- Status is shape **and** text: `.status.planned` ring, `.in-progress` dot, `.done` green tick,
   `.cancelled` struck through. Abnormal rows get `.is-short` / `.is-late` (a bar on the leading edge).
-- Type: Inter (variable, optical sizes) self-hosted via @fontsource-variable; large bold tightly tracked titles
-  (`.page-title`). Tabular figures only on numbers (`.num`, table cells, readouts) — on body they widen hyphens
-  in codes. Sentence case; no all-caps labels, no monospace.
+- Focus: every interactive element shows a 2px `--accent` outline on keyboard focus (Material buttons too).
+- Type: Inter (variable) self-hosted via @fontsource-variable; titles 32px/650 (`.page-title`), panel titles
+  15px/600. Tabular figures only on numbers (`.num`, table cells, readouts) — on body they widen hyphens in codes.
+  Sentence case; no all-caps labels, no monospace. No icon tiles; icons only inside buttons and empty states.
 - Copy says what happens ("Ship", "Plan production"); errors state what is wrong and what to do.
 - `TreatWarningsAsErrors` is on — keep the build clean.
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `chore:` …).
@@ -262,17 +271,16 @@ would break it until the nightly reset).
         after a reset with Playwright driving the local Edge; retake them when a screen changes)
   - [x] Fix: separator on the product's Available tile (#32)
   - [x] Language picker shows SVG flags (`client/public/flags/`, UK flag for English); Russian removed (#33)
-  - [ ] **Plain-tool redesign** (owner request 2026-10-28: the glass look reads as "AI-made"). Direction approved on
-        a dashboard mockup: plain tool, roomy spacing, **black accent**, navigation in a **top bar** instead of
-        the left rail, the greeting kept. Spec: `docs/superpowers/specs/2026-10-28-plain-tool-redesign-design.md`
-        (waiting for the owner's review) → implementation plan → one PR. It replaces the *Design rules* above.
+  - [x] **Plain-tool redesign** (owner request 2026-10-28: the glass look read as "AI-made"): plain tool, roomy
+        spacing, **black accent**, navigation in a **top bar**, the greeting kept (see *Design rules*). Spec and plan
+        in `docs/superpowers/`; built on `feat/plain-tool-redesign`, one PR.
   - [ ] README screenshots retaken after the redesign is live, README updated
   - [ ] 1–2 min demo video, recorded last on the final UI: Claude records the raw run with Playwright, the owner
         adds captions (Clipchamp). Story: late order → shortage after reservations → BOM → complete → outputs.
 
 ### Next session
 
-1. Owner reviews the redesign spec; then write the implementation plan and build it (one branch, one PR).
+1. Owner reviews and merges the redesign PR.
 2. After the deploy: retake the README screenshots from the live demo (right after running *Demo reset*), update
    the README.
 3. Record the demo video on the final UI.

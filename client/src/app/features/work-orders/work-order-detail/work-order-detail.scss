@@ -5,7 +5,7 @@
   margin-bottom: 20px;
   padding: 14px 18px;
   border-radius: var(--radius);
-  background: var(--alarm-soft);
+  border: 1px solid var(--alarm-line);
   color: var(--alarm-ink);
   font-weight: 550;
 }
@@ -58,7 +58,6 @@
 
   .current .node {
     border: 5px solid var(--accent);
-    box-shadow: 0 0 0 5px var(--accent-soft);
   }
 
   .step-label {
@@ -152,4 +151,13 @@
   padding: 12px max(20px, calc(100% - 72ch)) 16px 20px;
   border-top: 1px solid var(--border-soft);
   font-size: 13.5px;
+}
+
+// The materials table needs about 760px; side by side with the route it only gets that from 1280px up.
+// Below, the route sits above the materials.
+@media (max-width: 1279px) {
+  .grid > .span-4,
+  .grid > .span-8 {
+    grid-column: span 12;
+  }
 }

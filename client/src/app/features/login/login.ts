@@ -32,7 +32,7 @@ const DEMO_PASSWORD = 'workshop-demo';
   template: `
     <main class="login">
       <section class="card">
-        <span class="app-icon" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
+        <span class="mark" aria-hidden="true"><mat-icon>carpenter</mat-icon></span>
         <h1>{{ 'login.title' | t }}</h1>
         <p class="lead">{{ 'login.lead' | t }}</p>
 
@@ -88,50 +88,37 @@ const DEMO_PASSWORD = 'workshop-demo';
       display: grid;
       place-items: center;
       padding: 24px 16px;
+      box-sizing: border-box;
     }
     .card {
-      width: min(420px, 100%);
+      width: min(400px, 100%);
       box-sizing: border-box;
-      padding: 40px 32px 28px;
+      padding: 36px 32px 28px;
       border: 1px solid var(--border);
-      border-radius: 28px;
+      border-radius: var(--radius-lg);
       background: var(--surface);
-      -webkit-backdrop-filter: var(--glass);
-      backdrop-filter: var(--glass);
-      box-shadow:
-        inset 0 1px 0 var(--highlight),
-        var(--shadow-lift);
       text-align: center;
-      animation: rise 0.5s var(--ease) both;
     }
-    @keyframes rise {
-      from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.98);
-      }
-    }
-    .app-icon {
+    /* The brand mark from the top bar, larger: a plain square, no gradient. */
+    .mark {
       display: inline-grid;
       place-items: center;
-      width: 64px;
-      height: 64px;
-      border-radius: 16px;
-      background: linear-gradient(145deg, #0a84ff, #5e5ce6 55%, #bf5af2);
-      box-shadow:
-        inset 0 1px 0 rgb(255 255 255 / 35%),
-        0 10px 24px -6px rgb(10 132 255 / 50%);
-      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      background: var(--text);
+      color: var(--bg);
     }
-    .app-icon mat-icon {
-      font-size: 34px;
-      width: 34px;
-      height: 34px;
+    .mark mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
     }
     h1 {
-      margin: 20px 0 6px;
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -0.028em;
+      margin: 18px 0 6px;
+      font-size: 24px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
     }
     .lead {
       margin: 0 0 28px;
@@ -143,8 +130,8 @@ const DEMO_PASSWORD = 'workshop-demo';
       text-align: left;
     }
     .submit {
-      height: 44px;
-      font-size: 16px;
+      height: 42px;
+      font-size: 15px;
     }
     .error-text {
       margin: 0 0 10px;
@@ -163,25 +150,25 @@ const DEMO_PASSWORD = 'workshop-demo';
       flex-wrap: wrap;
       justify-content: center;
       gap: 8px;
-      margin: 10px 0;
+      margin: 12px 0;
     }
     .role {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       height: 34px;
-      padding: 0 14px;
-      border: 0;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text);
       font: inherit;
-      font-weight: 600;
+      font-weight: 550;
       cursor: pointer;
-      transition: transform 0.15s var(--ease);
+      transition: background-color 0.15s var(--ease);
     }
     .role:hover:enabled {
-      transform: translateY(-1px);
+      background: var(--surface-muted);
     }
     .role:disabled {
       opacity: 0.6;
@@ -191,6 +178,7 @@ const DEMO_PASSWORD = 'workshop-demo';
       font-size: 17px;
       width: 17px;
       height: 17px;
+      color: var(--text-2);
     }
     .hint {
       color: var(--text-3);
