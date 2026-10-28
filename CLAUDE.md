@@ -249,13 +249,17 @@ would break it until the nightly reset).
 
 - [ ] Phase 5 — Showcase (order chosen by the owner 2026-10-28):
   - [x] One-click demo login: the role buttons on the login page fill in the demo account and sign in
-  - [ ] Nightly seed reset (TRUNCATE still works with the append-only trigger, rule 2)
+  - [x] Nightly seed reset: `POST /demo/reset` (only with `Database:SeedDemoData` and `Demo:ResetKey`, else 404;
+        the key in `X-Demo-Reset-Key` is the credential, not a JWT, because demo passwords are public) truncates
+        everything except users and reseeds in one transaction; `.github/workflows/demo-reset.yml` calls it at
+        03:00 UTC (a timer in the API would not fire while the free host sleeps). Needs `Demo__ResetKey` on Render
+        and the same value as the GitHub secret `DEMO_RESET_KEY`.
   - [ ] README with screenshots
   - [ ] 1–2 min demo video
 
 ### Next session
 
-1. Phase 5: nightly seed reset on the live demo (Render + Neon), then README with screenshots.
+1. Phase 5: README with screenshots, then the demo video.
 
 Local dev note: the local database holds leftover test products (`UI-TEST-…`, `UIV2-…`, `UI-IMP…`) and their
 opening stock from manual checks; `docker compose down -v` resets it to the seed.

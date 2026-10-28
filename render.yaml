@@ -26,6 +26,9 @@ services:
       # Signs the access tokens. Render generates a random value once and keeps it; it is never committed.
       - key: Jwt__SigningKey
         generateValue: true
+      # Nightly reset (.github/workflows/demo-reset.yml). Set by hand to the same value as the GitHub secret DEMO_RESET_KEY.
+      - key: Demo__ResetKey
+        sync: false
 
   - type: web
     name: order-inventory-client

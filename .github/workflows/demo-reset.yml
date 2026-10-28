@@ -1,0 +1,25 @@
+name: Demo reset
+
+# Puts the live demo back to the furniture workshop seed every night, so each visitor starts from the same
+# story (a late order, a material shortage) and the seed's "today"-relative dates stay current.
+# Needs the repository secret DEMO_RESET_KEY, equal to Demo__ResetKey on the Render API service.
+on:
+  schedule:
+    - cron: "0 3 * * *" # 03:00 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      # The free API sleeps when idle; waking it takes up to a minute, hence the long timeout and retries.
+      - name: Reset the demo database
+        env:
+          RESET_KEY: ${{ secrets.DEMO_RESET_KEY }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --max-time 180 --retry 3 --retry-all-errors --retry-delay 20 \
+            -X POST -H "X-Demo-Reset-Key: $RESET_KEY" \
+            https://order-inventory-api-wjwq.onrender.com/demo/reset
