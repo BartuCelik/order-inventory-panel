@@ -254,12 +254,13 @@ would break it until the nightly reset).
         everything except users and reseeds in one transaction; `.github/workflows/demo-reset.yml` calls it at
         03:00 UTC (a timer in the API would not fire while the free host sleeps). Needs `Demo__ResetKey` on Render
         and the same value as the GitHub secret `DEMO_RESET_KEY`.
-  - [ ] README with screenshots
+  - [x] README rewritten for visitors, with screenshots of the live demo in `docs/screenshots/` (taken right
+        after a reset; retake them when a screen changes)
   - [ ] 1–2 min demo video
 
 ### Next session
 
-1. Phase 5: README with screenshots, then the demo video.
+1. Phase 5: the 1–2 min demo video (the owner records it; a shot list can be prepared).
 
 Local dev note: the local database holds leftover test products (`UI-TEST-…`, `UIV2-…`, `UI-IMP…`) and their
 opening stock from manual checks; `docker compose down -v` resets it to the seed.
