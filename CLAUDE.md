@@ -274,16 +274,13 @@ would break it until the nightly reset).
   - [x] **Plain-tool redesign** (owner request 2026-10-28: the glass look read as "AI-made"): plain tool, roomy
         spacing, **black accent**, navigation in a **top bar**, the greeting kept (see *Design rules*). Spec and plan
         in `docs/superpowers/`; built on `feat/plain-tool-redesign`, one PR.
-  - [ ] README screenshots retaken after the redesign is live, README updated
+  - [x] README screenshots retaken from the live demo after the redesign (#36)
   - [ ] 1–2 min demo video, recorded last on the final UI: Claude records the raw run with Playwright, the owner
         adds captions (Clipchamp). Story: late order → shortage after reservations → BOM → complete → outputs.
 
 ### Next session
 
-1. Owner reviews and merges the redesign PR.
-2. After the deploy: retake the README screenshots from the live demo (right after running *Demo reset*), update
-   the README.
-3. Record the demo video on the final UI.
+1. Record the demo video on the final UI.
 
 The owner wants a mockup before any large visual change (the redesign started with a static HTML mockup).
 
