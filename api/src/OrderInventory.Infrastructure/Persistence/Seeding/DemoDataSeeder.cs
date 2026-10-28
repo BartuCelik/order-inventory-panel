@@ -73,10 +73,39 @@ public static class DemoDataSeeder
             return false;
         }
 
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await WriteDemoDataAsync(dbContext, utcNow, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return true;
+    }
+
+    /// <summary>
+    /// The nightly demo reset: empties every table except users and writes the seed again, in one
+    /// transaction, so a visitor never sees a half-empty demo. Users stay so their tokens keep working.
+    /// </summary>
+    /// <remarks>
+    /// TRUNCATE skips the append-only ledger trigger (rule 2, owner decision 2026-10-25) and waits for
+    /// running requests to finish (it takes an exclusive table lock). The tables are listed without
+    /// CASCADE on purpose: a new table that references these makes the reset fail instead of being emptied unnoticed.
+    /// </remarks>
+    public static async Task ResetAsync(AppDbContext dbContext, DateTime utcNow, CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await dbContext.Database.ExecuteSqlRawAsync(
+            """
+            TRUNCATE stock_movements, work_order_components, work_orders, sales_order_lines, sales_orders,
+                     customers, bom_lines, products
+            RESTART IDENTITY
+            """,
+            cancellationToken);
+        await WriteDemoDataAsync(dbContext, utcNow, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    private static async Task WriteDemoDataAsync(AppDbContext dbContext, DateTime utcNow, CancellationToken cancellationToken)
+    {
         var today = DateOnly.FromDateTime(utcNow);
         DateTime DaysAgo(int days) => utcNow.AddDays(-days);
-
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         // ---------- Products and BOM ----------
         var products = CreateProducts();
@@ -158,9 +187,6 @@ public static class DemoDataSeeder
 
         dbContext.StockMovements.AddRange(movements);
         await dbContext.SaveChangesAsync(cancellationToken);
-
-        await transaction.CommitAsync(cancellationToken);
-        return true;
     }
 
     private static Dictionary<string, Product> CreateProducts()

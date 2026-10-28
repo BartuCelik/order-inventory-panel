@@ -111,6 +111,43 @@ public sealed class DemoDataSeederTests(PostgresFixture postgres) : IClassFixtur
     }
 
     [Fact]
+    public async Task Reset_RemovesVisitorChanges_RestoresTheSeed_AndKeepsUsers()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await EnsureSeededAsync(cancellationToken);
+        await using (var dbContext = postgres.CreateDbContext())
+        {
+            await DemoDataSeeder.SeedUsersAsync(dbContext, cancellationToken);
+        }
+        int productCount, movementCount, userCount;
+        await using (var dbContext = postgres.CreateDbContext())
+        {
+            productCount = await dbContext.Products.CountAsync(cancellationToken);
+            movementCount = await dbContext.StockMovements.CountAsync(cancellationToken);
+            userCount = await dbContext.Users.CountAsync(cancellationToken);
+
+            // What a visitor might leave behind: a new product with stock.
+            var extra = new Product { Code = "VISITOR-1", Name = "Visitor product", Type = ProductType.RawMaterial, Unit = UnitOfMeasure.Piece };
+            dbContext.Products.Add(extra);
+            dbContext.StockMovements.Add(new StockMovement { Product = extra, Quantity = 5, Type = StockMovementType.Receipt, CreatedBy = "visitor", CreatedAt = UtcNow });
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        await using (var dbContext = postgres.CreateDbContext())
+        {
+            await DemoDataSeeder.ResetAsync(dbContext, UtcNow, cancellationToken);
+        }
+
+        await using var check = postgres.CreateDbContext();
+        Assert.False(await check.Products.AnyAsync(p => p.Code == "VISITOR-1", cancellationToken));
+        Assert.Equal(productCount, await check.Products.CountAsync(cancellationToken));
+        Assert.Equal(movementCount, await check.StockMovements.CountAsync(cancellationToken));
+        Assert.Equal(userCount, await check.Users.CountAsync(cancellationToken));
+        // Identities restart, so the demo's ids look the same every morning.
+        Assert.Equal(1, await check.Products.MinAsync(p => p.Id, cancellationToken));
+    }
+
+    [Fact]
     public async Task SeedUsers_AddsOneUserPerRole_EvenWhenProductsExist()
     {
         // The live demo database was seeded before users existed; users must still arrive there.
