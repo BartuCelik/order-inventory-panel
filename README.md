@@ -22,7 +22,7 @@ their share**.
 | **Dashboard** | Late orders, work orders short of material, products below minimum (on available, not just on hand), the production queue and a weekly production chart. |
 | **Outputs** | Work order PDF, Excel export of every list, Excel import of products and opening stock (preview first, all or nothing). |
 | **Roles** | Admin, Planner and Warehouse, each seeing only the actions it may take. The API enforces every permission. |
-| **Everything else** | Light and dark theme, seven languages (English, Turkish, German, French, Spanish, Italian, Russian). |
+| **Everything else** | Light and dark theme, six languages (English, Turkish, German, French, Spanish, Italian). |
 
 | Material shortage after reservations | Multi-level bill of materials |
 | --- | --- |
