@@ -74,17 +74,6 @@
   --radius: 8px; // tiles, alerts, overlays
   --radius-sm: 6px; // controls, buttons
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
-  // Fills are gone: outlines carry the colour.
-  --success-soft: transparent;
-  --caution-soft: transparent;
-  --alarm-soft: transparent;
-  // Glass leftovers, neutral until the last component stops using them (removed at the end of the redesign).
-  --surface-strong: var(--surface);
-  --glass: none;
-  --highlight: transparent;
-  --shadow: none;
-  --shadow-lift: none;
-  --bg-field: none;
 
   @include light-tokens;
 }

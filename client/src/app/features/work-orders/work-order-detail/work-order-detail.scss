@@ -152,3 +152,12 @@
   border-top: 1px solid var(--border-soft);
   font-size: 13.5px;
 }
+
+// The materials table needs about 760px; side by side with the route it only gets that from 1280px up.
+// Below, the route sits above the materials.
+@media (max-width: 1279px) {
+  .grid > .span-4,
+  .grid > .span-8 {
+    grid-column: span 12;
+  }
+}
