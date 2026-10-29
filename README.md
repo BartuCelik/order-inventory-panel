@@ -9,6 +9,11 @@ their share**.
 > The demo data (an invented furniture workshop) is reset every night at 03:00 UTC, so feel free to ship,
 > complete and cancel things. Free hosting: the first load after a quiet period can take up to a minute.
 
+**90-second tour:** a late order, the material shortage behind it, the bill of materials, completing a work order
+and the outputs. It has a voice-over, so turn the sound on.
+
+https://github.com/user-attachments/assets/5bec6ab6-1f9c-43a7-943c-131f3684a78c
+
 ![Shop-floor dashboard](docs/screenshots/dashboard.png)
 
 ## What it does
