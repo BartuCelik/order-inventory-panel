@@ -10,7 +10,7 @@ their share**.
 > complete and cancel things. Free hosting: the first load after a quiet period can take up to a minute.
 
 **90-second tour:** a late order, the material shortage behind it, the bill of materials, completing a work order
-and the outputs (with sound).
+and the outputs. It has a voice-over, so turn the sound on.
 
 https://github.com/user-attachments/assets/5bec6ab6-1f9c-43a7-943c-131f3684a78c
 
