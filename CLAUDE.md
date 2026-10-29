@@ -259,7 +259,7 @@ would break it until the nightly reset).
         - All or nothing: every problem is returned as a 400 keyed "Row 7"/"File"; nothing is written.
         - Limits: 5 MB, 10,000 rows. Server messages are English, like other API errors.
 
-- [ ] Phase 5 — Showcase (order chosen by the owner 2026-10-28):
+- [x] Phase 5 — Showcase (order chosen by the owner 2026-10-28, finished 2026-10-29):
   - [x] One-click demo login (#29): the role buttons on the login page fill in the demo account and sign in
   - [x] Nightly seed reset (#30, live and verified 2026-10-28): `POST /demo/reset` (only with
         `Database:SeedDemoData` and `Demo:ResetKey`, else 404; the key in `X-Demo-Reset-Key` is the credential,
@@ -275,12 +275,15 @@ would break it until the nightly reset).
         spacing, **black accent**, navigation in a **top bar**, the greeting kept (see *Design rules*). Spec and plan
         in `docs/superpowers/`; built on `feat/plain-tool-redesign`, one PR.
   - [x] README screenshots retaken from the live demo after the redesign (#36)
-  - [ ] 1–2 min demo video, recorded last on the final UI: Claude records the raw run with Playwright, the owner
-        adds captions (Clipchamp). Story: late order → shortage after reservations → BOM → complete → outputs.
+  - [x] 90-second demo video at the top of the README: recorded on the final UI with Playwright, English voice-over
+        (edge-tts, `en-US-AndrewNeural`, owner's choice) and captions burned in, identical to the spoken text. Story:
+        late order → shortage after reservations → BOM → complete → outputs → themes and languages. The video is
+        uploaded to GitHub (user-attachments), not committed; the recording and narration scripts are kept outside
+        the repo. Re-record it when a screen in the story changes.
 
 ### Next session
 
-1. Record the demo video on the final UI.
+The roadmap is complete. New ideas go to *Later* and are started only when the owner asks.
 
 The owner wants a mockup before any large visual change (the redesign started with a static HTML mockup).
 
